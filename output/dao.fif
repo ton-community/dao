@@ -1,0 +1,230 @@
+PROGRAM{
+  DECLPROC parse_work_addr
+  DECLPROC serialize_work_addr
+  DECLPROC load_base_data
+  DECLPROC store_base_data
+  DECLPROC load_member_slice
+  DECLPROC load_member
+  DECLPROC store_member
+  DECLPROC op_proposal
+  DECLPROC op_vote
+  DECLPROC op_execute
+  DECLPROC recv_internal
+  DECLPROC recv_external
+  DECLGLOBVAR ctx_version
+  DECLGLOBVAR ctx_members
+  DECLGLOBVAR ctx_proposals
+  DECLGLOBVAR ctx_params
+  DECLGLOBVAR ctx_total_shares
+  DECLGLOBVAR ctx_allocated_shares
+  DECLGLOBVAR ctx_total_members
+  DECLGLOBVAR ctx_seq_proposal
+  DECLGLOBVAR ctx_seq_members
+  DECLGLOBVAR ctx_member
+  DECLGLOBVAR ctx_member_exist
+  DECLGLOBVAR ctx_member_shares
+  parse_work_addr PROC:<{
+    //  cs
+    REWRITEVARADDR	//  sender_wc sender_addr
+    70 PUSHINT	//  sender_wc sender_addr _4
+    s0 s2 XCHG	//  _4 sender_addr sender_wc
+    0 EQINT	//  _4 sender_addr _6
+    s1 s2 XCHG	//  sender_addr _4 _6
+    THROWANYIFNOT
+    256 LDU	//  _14 _13
+    DROP	//  _8
+  }>
+  serialize_work_addr PROC:<{
+    //  addr
+    0 PUSHINT	//  addr _1=0
+    DUP	//  addr _1=0 _2=0
+    2 PUSHINT	//  addr _1=0 _2=0 _3=2
+    NEWC	//  addr _1=0 _2=0 _3=2 _4
+    2 STU	//  addr _1=0 _2=0 _6
+    1 STU	//  addr _1=0 _8
+    8 STU	//  addr _10
+    256 STU	//  _12
+    ENDC	//  _13
+    CTOS	//  _14
+  }>
+  load_base_data PROC:<{
+    // 
+    c4 PUSH	//  _1
+    CTOS	//  ds
+    16 LDU	//  _3 ds
+    SWAP	//  ds _3
+    ctx_version SETGLOB
+    32 LDU	//  _6 ds
+    SWAP	//  ds _6
+    ctx_total_shares SETGLOB
+    32 LDU	//  _9 ds
+    SWAP	//  ds _9
+    ctx_allocated_shares SETGLOB
+    64 LDU	//  _12 ds
+    SWAP	//  ds _12
+    ctx_seq_proposal SETGLOB
+    64 LDU	//  _15 ds
+    SWAP	//  ds _15
+    ctx_seq_members SETGLOB
+    32 LDU	//  _18 ds
+    SWAP	//  ds _18
+    ctx_total_members SETGLOB
+    LDREF	//  _21 ds
+    SWAP	//  ds _21
+    ctx_members SETGLOB
+    LDREF	//  _23 ds
+    SWAP	//  ds _23
+    ctx_proposals SETGLOB
+    LDREF	//  _25 ds
+    SWAP	//  ds _25
+    ctx_params SETGLOB
+    ENDS
+  }>
+  store_base_data PROC:<{
+    // 
+    ctx_params GETGLOB	//  _0
+    ctx_proposals GETGLOB	//  _0 _1
+    ctx_members GETGLOB	//  _0 _1 _2
+    ctx_total_members GETGLOB	//  _0 _1 _2 _3
+    ctx_seq_members GETGLOB	//  _0 _1 _2 _3 _4
+    ctx_seq_proposal GETGLOB	//  _0 _1 _2 _3 _4 _5
+    ctx_allocated_shares GETGLOB	//  _0 _1 _2 _3 _4 _5 _6
+    ctx_total_shares GETGLOB	//  _0 _1 _2 _3 _4 _5 _6 _7
+    ctx_version GETGLOB	//  _0 _1 _2 _3 _4 _5 _6 _7 _8
+    NEWC	//  _0 _1 _2 _3 _4 _5 _6 _7 _8 _9
+    16 STU	//  _0 _1 _2 _3 _4 _5 _6 _7 _11
+    32 STU	//  _0 _1 _2 _3 _4 _5 _6 _13
+    32 STU	//  _0 _1 _2 _3 _4 _5 _15
+    64 STU	//  _0 _1 _2 _3 _4 _17
+    64 STU	//  _0 _1 _2 _3 _19
+    32 STU	//  _0 _1 _2 _21
+    STREF	//  _0 _1 _22
+    STREF	//  _0 _23
+    STREF	//  _24
+    ENDC	//  _25
+    c4 POP
+  }>
+  load_member_slice PROC:<{
+    //  cs
+    LDGRAMS	//  _1 cs
+    SWAP	//  cs _1
+    ctx_member_shares SETGLOB
+  }>
+  load_member PROC:<{
+    //  member
+    ctx_members GETGLOB	//  member _3
+    s1 s(-1) PUXC
+    8 PUSHPOW2	//  member member _3 _4=256
+    DICTUGET
+    NULLSWAPIFNOT	//  member cs found
+    s0 s2 XCHG	//  found cs member
+    ctx_member SETGLOB
+    SWAP	//  cs found
+    IF:<{	//  cs
+      load_member_slice CALLDICT	//  cs
+      ENDS
+      TRUE	//  _8
+      ctx_member_exist SETGLOB
+    }>ELSE<{	//  cs
+      DROP	// 
+      0 PUSHINT	//  _9=0
+      ctx_member_shares SETGLOB
+      FALSE	//  _10
+      ctx_member_exist SETGLOB
+    }>
+  }>
+  store_member PROC:<{
+    // 
+    ctx_member_shares GETGLOB	//  _1
+    0 GTINT	//  shouldExist
+    DUP	//  shouldExist shouldExist
+    NOT	//  shouldExist _4
+    ctx_member_exist GETGLOB	//  shouldExist _4 _5
+    AND	//  shouldExist _6
+    IF:<{	//  shouldExist
+      DROP	// 
+      ctx_member GETGLOB	//  _9
+      ctx_members GETGLOB	//  _9 _10
+      8 PUSHPOW2	//  _9 _10 _11=256
+      DICTUDEL	//  _22 _23
+      DROP	//  changed
+      ctx_members SETGLOB
+    }>ELSE<{	//  shouldExist
+      IF:<{	// 
+        NEWC	//  _14
+        ctx_member_shares GETGLOB	//  _14 _15
+        STGRAMS	//  data
+        ctx_member GETGLOB	//  data _18
+        ctx_members GETGLOB	//  data _18 _19
+        8 PUSHPOW2	//  data _18 _19 _20=256
+        DICTUSETB	//  changed
+        ctx_members SETGLOB
+      }>	// 
+    }>
+  }>
+  op_proposal PROC:<{
+    //  s_addr value in_msg
+    3 BLKDROP	// 
+  }>
+  op_vote PROC:<{
+    //  s_addr value in_msg
+    3 BLKDROP	// 
+  }>
+  op_execute PROC:<{
+    //  s_addr value in_msg
+    3 BLKDROP	// 
+  }>
+  recv_internal PROC:<{
+    //  msg_value in_msg_cell in_msg
+    SWAP	//  msg_value in_msg in_msg_cell
+    CTOS	//  msg_value in_msg cs
+    4 LDU	//  msg_value in_msg flags cs
+    LDMSGADDR	//  msg_value in_msg flags _34 _33
+    DROP	//  msg_value in_msg flags s_addr
+    SWAP
+    1 PUSHINT	//  msg_value in_msg s_addr flags _12=1
+    AND	//  msg_value in_msg s_addr _13
+    IFJMP:<{	//  msg_value in_msg s_addr
+      3 BLKDROP	// 
+    }>	//  msg_value in_msg s_addr
+    load_base_data CALLDICT
+    OVER	//  msg_value in_msg s_addr in_msg
+    SBITS	//  msg_value in_msg s_addr _15
+    32 LESSINT	//  msg_value in_msg s_addr _17
+    IFJMP:<{	//  msg_value in_msg s_addr
+      3 BLKDROP	// 
+    }>	//  msg_value in_msg s_addr
+    SWAP	//  msg_value s_addr in_msg
+    32 LDU	//  msg_value s_addr op in_msg
+    3241702467 PUSHINT	//  msg_value s_addr op in_msg _22
+    s2 s(-1) PUXC	//  msg_value s_addr op in_msg op _22
+    EQUAL	//  msg_value s_addr op in_msg _23
+    IFJMP:<{	//  msg_value s_addr op in_msg
+      NIP	//  msg_value s_addr in_msg
+      s1 s2 XCHG	//  s_addr msg_value in_msg
+      op_proposal CALLDICT
+    }>	//  msg_value s_addr op in_msg
+    3047515073 PUSHINT	//  msg_value s_addr op in_msg _25
+    s2 s(-1) PUXC	//  msg_value s_addr op in_msg op _25
+    EQUAL	//  msg_value s_addr op in_msg _26
+    IFJMP:<{	//  msg_value s_addr op in_msg
+      NIP	//  msg_value s_addr in_msg
+      s1 s2 XCHG	//  s_addr msg_value in_msg
+      op_vote CALLDICT
+    }>	//  msg_value s_addr op in_msg
+    2483002579 PUSHINT	//  msg_value s_addr op in_msg _28
+    s1 s2 XCHG	//  msg_value s_addr in_msg op _28
+    EQUAL	//  msg_value s_addr in_msg _29
+    IFJMP:<{	//  msg_value s_addr in_msg
+      s1 s2 XCHG	//  s_addr msg_value in_msg
+      op_execute CALLDICT
+    }>	//  msg_value s_addr in_msg
+    3 BLKDROP	// 
+  }>
+  recv_external PROC:<{
+    //  in_msg
+    DROP	// 
+    72 PUSHINT	//  _1
+    THROWANY
+  }>
+}END>c

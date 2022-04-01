@@ -1,0 +1,22 @@
+;; Commands
+int op::proposal() asm "3241702467 PUSHINT";
+int op::proposal::ok() asm "2391675301 PUSHINT";
+int op::proposal::failed() asm "3508280713 PUSHINT";
+
+int op::vote() asm "3047515073 PUSHINT";
+int op::vote::ok() asm "1127259026 PUSHINT";
+int op::vote::failed() asm "3486613244 PUSHINT";
+
+int op::execute() asm "2483002579 PUSHINT";
+int op::execute::ok() asm "2514550856 PUSHINT";
+int op::execute::failed() asm "2163078063 PUSHINT";
+
+;; Proposals
+int proposal::transaction() asm "1225918510 PUSHINT";
+
+;; Errors
+int error::invalid_address() asm "70 PUSHINT";
+int error::invalid_message() asm "72 PUSHINT";
+int error::access_denied() asm "73 PUSHINT";
+int error::internal_error() asm "74 PUSHINT";
+int error::too_low_value() asm "76 PUSHINT";

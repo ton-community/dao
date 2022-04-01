@@ -1,0 +1,11 @@
+() op_proposal(slice s_addr, int value, slice in_msg) impure {
+
+}
+
+() op_vote(slice s_addr, int value, slice in_msg) impure {
+
+}
+
+() op_execute(slice s_addr, int value, slice in_msg) impure {
+
+}

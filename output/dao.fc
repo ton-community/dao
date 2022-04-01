@@ -1,0 +1,187 @@
+;; Commands
+int op::proposal() asm "3241702467 PUSHINT";
+int op::proposal::ok() asm "2391675301 PUSHINT";
+int op::proposal::failed() asm "3508280713 PUSHINT";
+
+int op::vote() asm "3047515073 PUSHINT";
+int op::vote::ok() asm "1127259026 PUSHINT";
+int op::vote::failed() asm "3486613244 PUSHINT";
+
+int op::execute() asm "2483002579 PUSHINT";
+int op::execute::ok() asm "2514550856 PUSHINT";
+int op::execute::failed() asm "2163078063 PUSHINT";
+
+;; Proposals
+int proposal::transaction() asm "1225918510 PUSHINT";
+
+;; Errors
+int error::invalid_address() asm "70 PUSHINT";
+int error::invalid_message() asm "72 PUSHINT";
+int error::access_denied() asm "73 PUSHINT";
+int error::internal_error() asm "74 PUSHINT";
+int error::too_low_value() asm "76 PUSHINT";
+
+;;
+;; Basic workchain addresses
+;;
+
+int parse_work_addr(slice cs) {
+  (int sender_wc, slice sender_addr) = parse_var_addr(cs);
+  throw_unless(error::invalid_address(), 0 == sender_wc);
+  return sender_addr~load_uint(256);
+}
+
+(slice) serialize_work_addr(int addr) {
+   return (begin_cell()
+     .store_uint(2, 2)  ;; Is std address
+     .store_uint(0, 1)  ;; Non-unicast
+     .store_uint(0, 8)  ;; Basic workchain
+     .store_uint(addr, 256) ;; Address hash
+   ).end_cell().begin_parse();
+}
+
+;;
+;; Custom Commands
+;;
+
+builder store_coins(builder b, int x) asm "STGRAMS";
+(slice, int) load_coins(slice s) asm( -> 1 0) "LDGRAMS";
+
+global int ctx_version;
+global cell ctx_members;
+global cell ctx_proposals;
+global cell ctx_params;
+global int ctx_total_shares;
+global int ctx_allocated_shares;
+global int ctx_total_members;
+global int ctx_seq_proposal;
+global int ctx_seq_members;
+
+() load_base_data() impure {
+    var ds = get_data().begin_parse();
+    ctx_version = ds~load_uint(16);
+    ctx_total_shares = ds~load_uint(32);
+    ctx_allocated_shares = ds~load_uint(32);
+    ctx_seq_proposal = ds~load_uint(64);
+    ctx_seq_members = ds~load_uint(64);
+    ctx_total_members = ds~load_uint(32);
+    ctx_members = ds~load_ref();
+    ctx_proposals = ds~load_ref();
+    ctx_params = ds~load_ref();
+    ds.end_parse();
+}
+
+() store_base_data() impure {
+    set_data(begin_cell()
+        .store_uint(ctx_version, 16)
+        .store_uint(ctx_total_shares, 32)
+        .store_uint(ctx_allocated_shares, 32)
+        .store_uint(ctx_seq_proposal, 64)
+        .store_uint(ctx_seq_members, 64)
+        .store_uint(ctx_total_members, 32)
+        .store_ref(ctx_members)
+        .store_ref(ctx_proposals)
+        .store_ref(ctx_params)
+    .end_cell());
+}
+
+global int ctx_member;
+global int ctx_member_exist;
+global int ctx_member_shares;
+
+slice load_member_slice(slice cs) impure {
+    ctx_member_shares = cs~load_coins();
+    return cs;
+}
+
+() load_member(int member) impure {
+    var (cs, found) = ctx_members.udict_get?(256, member);
+    ctx_member = member;
+    if (found) {
+        cs = load_member_slice(cs);
+        cs.end_parse();
+        ctx_member_exist = true;
+    } else {
+        ctx_member_shares = 0;
+        ctx_member_exist = false;
+    }
+}
+
+() store_member() impure {
+    var shouldExist = (ctx_member_shares > 0);
+    if ((~ shouldExist) & ctx_member_exist) {
+        
+        ;; Compiler crashes when single lined
+        var (changed, _) = udict_delete?(ctx_members, 256, ctx_member);
+        ctx_members = changed;
+
+    } elseif (shouldExist) {
+
+        var data = begin_cell()
+            .store_coins(ctx_member_shares);
+        
+        ;; Compiler crashes when single lined
+        var changed = udict_set_builder(ctx_members, 256, ctx_member, data);
+        ctx_members = changed;
+    }
+}
+
+
+
+() op_proposal(slice s_addr, int value, slice in_msg) impure {
+
+}
+
+() op_vote(slice s_addr, int value, slice in_msg) impure {
+
+}
+
+() op_execute(slice s_addr, int value, slice in_msg) impure {
+
+}
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    ;; Prepare message context
+    var cs = in_msg_cell.begin_parse();
+    var flags = cs~load_uint(4);  ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool
+    slice s_addr = cs~load_msg_addr();
+
+    ;; Bounced
+    ;; DAO accepts all bounced messages in case of invalid 
+    ;; message was sent by DAO
+    if (flags & 1) {
+        return ();
+    }
+
+    ;; Load base data
+    load_base_data();
+
+    ;; Ignore invalid operations
+    if (in_msg.slice_bits() < 32) {
+        return ();
+    }
+
+    ;; Parse operation
+    int op = in_msg~load_uint(32);
+    if (op == op::proposal()) {
+        op_proposal(s_addr, msg_value, in_msg);
+        return ();
+    }
+    if (op == op::vote()) {
+        op_vote(s_addr, msg_value, in_msg);
+        return ();
+    }
+    if (op == op::execute()) {
+        op_execute(s_addr, msg_value, in_msg);
+        return ();
+    }
+
+    ;; Ignore all invalid operations since DAO could vote to return coins to sender
+    return ();
+}
+
+() recv_external(slice in_msg) impure {
+    ;; Do not accept external messages
+    throw(error::invalid_message());
+}
+

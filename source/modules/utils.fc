@@ -1,0 +1,25 @@
+;;
+;; Basic workchain addresses
+;;
+
+int parse_work_addr(slice cs) {
+  (int sender_wc, slice sender_addr) = parse_var_addr(cs);
+  throw_unless(error::invalid_address(), 0 == sender_wc);
+  return sender_addr~load_uint(256);
+}
+
+(slice) serialize_work_addr(int addr) {
+   return (begin_cell()
+     .store_uint(2, 2)  ;; Is std address
+     .store_uint(0, 1)  ;; Non-unicast
+     .store_uint(0, 8)  ;; Basic workchain
+     .store_uint(addr, 256) ;; Address hash
+   ).end_cell().begin_parse();
+}
+
+;;
+;; Custom Commands
+;;
+
+builder store_coins(builder b, int x) asm "STGRAMS";
+(slice, int) load_coins(slice s) asm( -> 1 0) "LDGRAMS";
