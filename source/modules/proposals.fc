@@ -1,0 +1,133 @@
+;;
+;; Check proposal body
+;;
+
+int check_proposal(cell proposal) {
+    slice cs = proposal.begin_parse();
+    int kind = cs~load_uint(32);
+    if (kind == proposal::transaction()) {
+        cs~load_msg_addr(); ;; Load target
+        cs~load_coins(); ;; Load coins
+        ;; Load maybe stateinit
+        if (cs~load_int(1)) {
+            cs~load_ref();
+        }
+        ;; Load maybe payload
+        if (cs~load_int(1)) {
+            cs~load_ref();
+        }
+        cs.end_parse();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+int get_success_treshold(int total) {
+    return (total * 51) / 100
+}
+
+int get_fail_treshold(int total) {
+    return (total * 25) / 100
+}
+
+;;
+;; Register proposal
+;;
+
+() register_proposal(int seq, cell proposal, int member) impure {
+
+    ;; Check seq
+    throw_unless(seq == ctx_seq_proposal, error::invalid_message());
+
+    ;; Resolve state
+    int state = state::pending();
+    
+
+    ;; Default vote
+    cell votes = null();
+    votes~udict_set_builder(member, 256, begin_cell().store_int(vote::yes(), 2));
+
+    ;; Create proposal container
+    builder container = begin_cell()
+        .store_uint(state::pending(), 2) ;; State
+        .store_coins(ctx_member_shares) ;; Voted yes
+        .store_coins(0) ;; Voted no
+        .store_coins(0) ;; Voted abstent
+        .store_coins(ctx_total_shares) ;; Persist total shares
+        .store_uint(member, 256) ;; Author
+        .store_ref(votes)
+        .store_ref(proposal)
+        .store_ref(ctx_members); ;; Members on time of proposal
+
+    ;; Register proposal
+    cell changed = udict_set_builder(ctx_proposals, 32, seq, container);
+    ctx_proposals = changed;
+
+    ;; Persist
+    store_base_data();
+}
+
+;;
+;; Register vote
+;;
+
+() register_vote(int proposalId, int member, int vote) impure {
+
+    ;; Load proposal
+    var (cs, found) = ctx_proposals.udict_get(32, proposalId);
+    throw_unless(found, error::invalid_message());
+
+    ;; Load data
+    int state = cs~load_uint(2);
+    int voted_yes = cs~load_coins();
+    int voted_no = cs~load_coins();
+    int voted_abstent = cs~load_coins();
+    int author = cs~load_uint(member, 256);
+    cell votes = cs~load_ref();
+    cell proposal = cs~load_ref();
+    cell members = cs~load_ref();
+
+    ;; Check proposal state
+    throw_unless(state == state::pending(), error::invalid_message());
+
+    ;; Check if already voted
+    var (vs, vfound) = votes.udict_get(256, member);
+    throw_if(vfound, error::invalid_message());
+
+    ;; Check if had shares
+    var (ss, sfound) = members.udict_get(256, member);
+    throw_unless(vfound, error::invalid_message());
+    int shares = ss~load_coins();
+    throw_unless(shares > 0, error::invalid_message());
+
+    ;; Register vote
+    if (vote == vote::yes()) {
+        voted_yes = voted_yes + shares;
+    } elseif (vote == vote::no()) {
+        voted_no = voted_no + shares;
+    } elseif (vote == vote::abstent()) {
+        voted_abstent = voted_abstent + shares;
+    } else {
+        throw(error::invalid_message());
+    }
+    votes~udict_set_builder(member, 256, begin_cell().store_int(vote, 2));
+
+    ;; Update proposal
+    builder container = begin_cell()
+        .store_uint(state, 2)
+        .store_coins(voted_yes)
+        .store_coins(voted_no)
+        .store_coins(voted_abstent)
+        .store_uint(author, 256)
+        .store_ref(votes)
+        .store_ref(proposal)
+        .store_ref(members);
+
+    ;; Register proposal
+    cell changed = udict_set_builder(ctx_proposals, 32, seq, container);
+    ctx_proposals = changed;
+
+    ;; Persist
+    store_base_data();
+}

@@ -1,12 +1,10 @@
 global int ctx_version;
 global cell ctx_members;
 global cell ctx_proposals;
-global cell ctx_params;
 global int ctx_total_shares;
 global int ctx_allocated_shares;
 global int ctx_total_members;
 global int ctx_seq_proposal;
-global int ctx_seq_members;
 
 () load_base_data() impure {
     var ds = get_data().begin_parse();
@@ -14,11 +12,9 @@ global int ctx_seq_members;
     ctx_total_shares = ds~load_uint(32);
     ctx_allocated_shares = ds~load_uint(32);
     ctx_seq_proposal = ds~load_uint(64);
-    ctx_seq_members = ds~load_uint(64);
     ctx_total_members = ds~load_uint(32);
     ctx_members = ds~load_ref();
     ctx_proposals = ds~load_ref();
-    ctx_params = ds~load_ref();
     ds.end_parse();
 }
 
@@ -28,10 +24,8 @@ global int ctx_seq_members;
         .store_uint(ctx_total_shares, 32)
         .store_uint(ctx_allocated_shares, 32)
         .store_uint(ctx_seq_proposal, 64)
-        .store_uint(ctx_seq_members, 64)
         .store_uint(ctx_total_members, 32)
         .store_ref(ctx_members)
         .store_ref(ctx_proposals)
-        .store_ref(ctx_params)
     .end_cell());
 }

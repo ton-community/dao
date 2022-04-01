@@ -20,6 +20,7 @@ int error::invalid_message() asm "72 PUSHINT";
 int error::access_denied() asm "73 PUSHINT";
 int error::internal_error() asm "74 PUSHINT";
 int error::too_low_value() asm "76 PUSHINT";
+int error::no_voting_power() asm "77 PUSHINT";
 
 ;;
 ;; Basic workchain addresses
@@ -50,12 +51,10 @@ builder store_coins(builder b, int x) asm "STGRAMS";
 global int ctx_version;
 global cell ctx_members;
 global cell ctx_proposals;
-global cell ctx_params;
 global int ctx_total_shares;
 global int ctx_allocated_shares;
 global int ctx_total_members;
 global int ctx_seq_proposal;
-global int ctx_seq_members;
 
 () load_base_data() impure {
     var ds = get_data().begin_parse();
@@ -63,11 +62,9 @@ global int ctx_seq_members;
     ctx_total_shares = ds~load_uint(32);
     ctx_allocated_shares = ds~load_uint(32);
     ctx_seq_proposal = ds~load_uint(64);
-    ctx_seq_members = ds~load_uint(64);
     ctx_total_members = ds~load_uint(32);
     ctx_members = ds~load_ref();
     ctx_proposals = ds~load_ref();
-    ctx_params = ds~load_ref();
     ds.end_parse();
 }
 
@@ -77,11 +74,9 @@ global int ctx_seq_members;
         .store_uint(ctx_total_shares, 32)
         .store_uint(ctx_allocated_shares, 32)
         .store_uint(ctx_seq_proposal, 64)
-        .store_uint(ctx_seq_members, 64)
         .store_uint(ctx_total_members, 32)
         .store_ref(ctx_members)
         .store_ref(ctx_proposals)
-        .store_ref(ctx_params)
     .end_cell());
 }
 
@@ -128,16 +123,66 @@ slice load_member_slice(slice cs) impure {
 
 
 
-() op_proposal(slice s_addr, int value, slice in_msg) impure {
+;;
+;; Check proposal body
+;;
 
+int check_proposal(cell proposal) {
+    slice cs = proposal.begin_parse();
+    int kind = cs~load_uint(32);
+    if (kind == proposal::transaction()) {
+        cs~load_msg_addr(); ;; Load target
+        cs~load_coins(); ;; Load coins
+        cs.end_parse();
+        return true;
+    } else {
+        return false;
+    }
 }
 
-() op_vote(slice s_addr, int value, slice in_msg) impure {
+() register_proposal(int seq, cell proposal, int member) {
 
+    ;; Check seq
+    throw_unless(seq == ctx_seq_proposal, error::invalid_message());
+
+    ;; Default vote
+    cell votes = null();
+    votes~udict_set_builder(member, 256, begin_cell().store_int(true, 1).store_coins(ctx_member_shares));
+
+    ;; Create proposal container
+    builder container = begin_cell()
+        .store_uint(0, 2) ;; State
+        .store_coins(ctx_member_shares) ;; Voted yes
+        .store_coins(0) ;; Voted no
+        .store_coins(0) ;; Voted any
+        .store_uint(member, 256) ;; Author
+        .store_ref(votes)
+        .store_ref(proposal);
+
+    ;; Register proposal
+    cell changed = udict_set_builder(ctx_proposals, 32, seq, container);
+    ctx_proposals = changed;
 }
 
-() op_execute(slice s_addr, int value, slice in_msg) impure {
+() op_proposal(int member, int value, slice in_msg) impure {
 
+    ;; Check input
+    throw_unless(error::no_voting_power(), ctx_member_shares > 0);
+    int seq = in_msg~load_uint(32);
+    cell proposal = in_msg~load_ref();
+    in_msg.end_parse();
+    throw_unless(error::invalid_message(),check_proposal(proposal));
+
+    ;; Register input
+    register_proposal(seq, proposal, member);
+}
+
+() op_vote(int member, int value, slice in_msg) impure {
+    throw_unless(error::no_voting_power(), ctx_member_shares > 0);
+}
+
+() op_execute(int member, int value, slice in_msg) impure {
+    throw_unless(error::no_voting_power(), ctx_member_shares > 0);
 }
 
 () recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
@@ -145,6 +190,7 @@ slice load_member_slice(slice cs) impure {
     var cs = in_msg_cell.begin_parse();
     var flags = cs~load_uint(4);  ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool
     slice s_addr = cs~load_msg_addr();
+    (int sender_wc, slice sender_addr) = parse_var_addr(cs);
 
     ;; Bounced
     ;; DAO accepts all bounced messages in case of invalid 
@@ -153,8 +199,15 @@ slice load_member_slice(slice cs) impure {
         return ();
     }
 
+    ;; Ignore messages from non-workchain
+    if (sender_wc != 0) {
+        return ();
+    }
+
     ;; Load base data
+    int member = sender_addr~load_uint(256);
     load_base_data();
+    load_member(member);
 
     ;; Ignore invalid operations
     if (in_msg.slice_bits() < 32) {
@@ -164,15 +217,15 @@ slice load_member_slice(slice cs) impure {
     ;; Parse operation
     int op = in_msg~load_uint(32);
     if (op == op::proposal()) {
-        op_proposal(s_addr, msg_value, in_msg);
+        op_proposal(member, msg_value, in_msg);
         return ();
     }
     if (op == op::vote()) {
-        op_vote(s_addr, msg_value, in_msg);
+        op_vote(member, msg_value, in_msg);
         return ();
     }
     if (op == op::execute()) {
-        op_execute(s_addr, msg_value, in_msg);
+        op_execute(member, msg_value, in_msg);
         return ();
     }
 

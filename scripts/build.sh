@@ -21,6 +21,10 @@ echo $'\n' >> ./output/dao.fc
 cat ./source/modules/storage-proposals.fc >> ./output/dao.fc
 echo $'\n' >> ./output/dao.fc
 
+# Model
+cat ./source/modules/proposals.fc >> ./output/dao.fc
+echo $'\n' >> ./output/dao.fc
+
 # Ops
 cat ./source/modules/ops.fc >> ./output/dao.fc
 echo $'\n' >> ./output/dao.fc

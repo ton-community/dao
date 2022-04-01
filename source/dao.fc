@@ -3,6 +3,7 @@
     var cs = in_msg_cell.begin_parse();
     var flags = cs~load_uint(4);  ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool
     slice s_addr = cs~load_msg_addr();
+    (int sender_wc, slice sender_addr) = parse_var_addr(cs);
 
     ;; Bounced
     ;; DAO accepts all bounced messages in case of invalid 
@@ -11,8 +12,15 @@
         return ();
     }
 
+    ;; Ignore messages from non-workchain
+    if (sender_wc != 0) {
+        return ();
+    }
+
     ;; Load base data
+    int member = sender_addr~load_uint(256);
     load_base_data();
+    load_member(member);
 
     ;; Ignore invalid operations
     if (in_msg.slice_bits() < 32) {
@@ -22,15 +30,15 @@
     ;; Parse operation
     int op = in_msg~load_uint(32);
     if (op == op::proposal()) {
-        op_proposal(s_addr, msg_value, in_msg);
+        op_proposal(member, msg_value, in_msg);
         return ();
     }
     if (op == op::vote()) {
-        op_vote(s_addr, msg_value, in_msg);
+        op_vote(member, msg_value, in_msg);
         return ();
     }
     if (op == op::execute()) {
-        op_execute(s_addr, msg_value, in_msg);
+        op_execute(member, msg_value, in_msg);
         return ();
     }
 

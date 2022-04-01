@@ -6,6 +6,8 @@ PROGRAM{
   DECLPROC load_member_slice
   DECLPROC load_member
   DECLPROC store_member
+  DECLPROC check_proposal
+  DECLPROC register_proposal
   DECLPROC op_proposal
   DECLPROC op_vote
   DECLPROC op_execute
@@ -14,12 +16,10 @@ PROGRAM{
   DECLGLOBVAR ctx_version
   DECLGLOBVAR ctx_members
   DECLGLOBVAR ctx_proposals
-  DECLGLOBVAR ctx_params
   DECLGLOBVAR ctx_total_shares
   DECLGLOBVAR ctx_allocated_shares
   DECLGLOBVAR ctx_total_members
   DECLGLOBVAR ctx_seq_proposal
-  DECLGLOBVAR ctx_seq_members
   DECLGLOBVAR ctx_member
   DECLGLOBVAR ctx_member_exist
   DECLGLOBVAR ctx_member_shares
@@ -63,45 +63,35 @@ PROGRAM{
     64 LDU	//  _12 ds
     SWAP	//  ds _12
     ctx_seq_proposal SETGLOB
-    64 LDU	//  _15 ds
+    32 LDU	//  _15 ds
     SWAP	//  ds _15
-    ctx_seq_members SETGLOB
-    32 LDU	//  _18 ds
-    SWAP	//  ds _18
     ctx_total_members SETGLOB
-    LDREF	//  _21 ds
-    SWAP	//  ds _21
+    LDREF	//  _18 ds
+    SWAP	//  ds _18
     ctx_members SETGLOB
-    LDREF	//  _23 ds
-    SWAP	//  ds _23
+    LDREF	//  _20 ds
+    SWAP	//  ds _20
     ctx_proposals SETGLOB
-    LDREF	//  _25 ds
-    SWAP	//  ds _25
-    ctx_params SETGLOB
     ENDS
   }>
   store_base_data PROC:<{
     // 
-    ctx_params GETGLOB	//  _0
-    ctx_proposals GETGLOB	//  _0 _1
-    ctx_members GETGLOB	//  _0 _1 _2
-    ctx_total_members GETGLOB	//  _0 _1 _2 _3
-    ctx_seq_members GETGLOB	//  _0 _1 _2 _3 _4
-    ctx_seq_proposal GETGLOB	//  _0 _1 _2 _3 _4 _5
-    ctx_allocated_shares GETGLOB	//  _0 _1 _2 _3 _4 _5 _6
-    ctx_total_shares GETGLOB	//  _0 _1 _2 _3 _4 _5 _6 _7
-    ctx_version GETGLOB	//  _0 _1 _2 _3 _4 _5 _6 _7 _8
-    NEWC	//  _0 _1 _2 _3 _4 _5 _6 _7 _8 _9
-    16 STU	//  _0 _1 _2 _3 _4 _5 _6 _7 _11
-    32 STU	//  _0 _1 _2 _3 _4 _5 _6 _13
-    32 STU	//  _0 _1 _2 _3 _4 _5 _15
-    64 STU	//  _0 _1 _2 _3 _4 _17
-    64 STU	//  _0 _1 _2 _3 _19
-    32 STU	//  _0 _1 _2 _21
-    STREF	//  _0 _1 _22
-    STREF	//  _0 _23
-    STREF	//  _24
-    ENDC	//  _25
+    ctx_proposals GETGLOB	//  _0
+    ctx_members GETGLOB	//  _0 _1
+    ctx_total_members GETGLOB	//  _0 _1 _2
+    ctx_seq_proposal GETGLOB	//  _0 _1 _2 _3
+    ctx_allocated_shares GETGLOB	//  _0 _1 _2 _3 _4
+    ctx_total_shares GETGLOB	//  _0 _1 _2 _3 _4 _5
+    ctx_version GETGLOB	//  _0 _1 _2 _3 _4 _5 _6
+    NEWC	//  _0 _1 _2 _3 _4 _5 _6 _7
+    16 STU	//  _0 _1 _2 _3 _4 _5 _9
+    32 STU	//  _0 _1 _2 _3 _4 _11
+    32 STU	//  _0 _1 _2 _3 _13
+    64 STU	//  _0 _1 _2 _15
+    32 STU	//  _0 _1 _17
+    STREF	//  _0 _18
+    STREF	//  _19
+    ENDC	//  _20
     c4 POP
   }>
   load_member_slice PROC:<{
@@ -162,63 +152,147 @@ PROGRAM{
       }>	// 
     }>
   }>
+  check_proposal PROC:<{
+    //  proposal
+    CTOS	//  cs
+    32 LDU	//  kind cs
+    1225918510 PUSHINT	//  kind cs _7
+    s1 s2 XCHG	//  cs kind _7
+    EQUAL	//  cs _8
+    IFJMP:<{	//  cs
+      LDMSGADDR	//  _19 _18
+      NIP	//  cs
+      LDGRAMS	//  _21 _20
+      NIP	//  cs
+      ENDS
+      TRUE	//  _14
+    }>	//  cs
+    DROP	// 
+    FALSE	//  _15
+  }>
+  register_proposal PROC:<{
+    //  seq proposal member
+    ctx_seq_proposal GETGLOB	//  seq proposal member _3
+    s3 s(-1) PUXC	//  seq proposal member seq _3
+    EQUAL	//  seq proposal member _4
+    72 PUSHINT	//  seq proposal member _4 _5
+    THROWANYIFNOT
+    PUSHNULL	//  seq proposal member votes
+    TRUE	//  seq proposal member votes _10
+    NEWC	//  seq proposal member votes _10 _11
+    1 STI	//  seq proposal member votes _13
+    ctx_member_shares GETGLOB	//  seq proposal member votes _13 _14
+    STGRAMS	//  seq proposal member votes _15
+    8 PUSHPOW2
+    ROT
+    s3 PUSH	//  seq proposal member _15 _16=256 votes member
+    DICTUSETB	//  seq proposal member votes
+    0 PUSHINT	//  seq proposal member votes _19=0
+    NEWC	//  seq proposal member votes _19=0 _20
+    2 STU	//  seq proposal member votes _22
+    ctx_member_shares GETGLOB	//  seq proposal member votes _22 _23
+    STGRAMS	//  seq proposal member votes _24
+    0 PUSHINT	//  seq proposal member votes _24 _25=0
+    STGRAMS	//  seq proposal member votes _26
+    0 PUSHINT	//  seq proposal member votes _26 _27=0
+    STGRAMS	//  seq proposal member votes _28
+    s1 s2 XCHG	//  seq proposal votes member _28
+    256 STU	//  seq proposal votes _30
+    STREF	//  seq proposal _31
+    STREF	//  seq container
+    ctx_proposals GETGLOB	//  seq container _34
+    s1 s2 XCHG
+    32 PUSHINT	//  container seq _34 _35=32
+    DICTUSETB	//  changed
+    ctx_proposals SETGLOB
+  }>
   op_proposal PROC:<{
-    //  s_addr value in_msg
-    3 BLKDROP	// 
+    //  member value in_msg
+    2 1 BLKDROP2	//  in_msg
+    77 PUSHINT	//  in_msg _3
+    ctx_member_shares GETGLOB	//  in_msg _3 _4
+    0 GTINT	//  in_msg _3 _6
+    THROWANYIFNOT
+    32 LDU	//  _21 _20
+    NIP	//  in_msg
+    LDREF	//  proposal in_msg
+    ENDS
+    72 PUSHINT	//  proposal _16
+    OVER	//  proposal _16 proposal
+    check_proposal CALLDICT	//  proposal _16 _17
+    1 2 BLKDROP2	//  _16 _17
+    THROWANYIFNOT
   }>
   op_vote PROC:<{
-    //  s_addr value in_msg
+    //  member value in_msg
     3 BLKDROP	// 
+    77 PUSHINT	//  _3
+    ctx_member_shares GETGLOB	//  _3 _4
+    0 GTINT	//  _3 _6
+    THROWANYIFNOT
   }>
   op_execute PROC:<{
-    //  s_addr value in_msg
+    //  member value in_msg
     3 BLKDROP	// 
+    77 PUSHINT	//  _3
+    ctx_member_shares GETGLOB	//  _3 _4
+    0 GTINT	//  _3 _6
+    THROWANYIFNOT
   }>
   recv_internal PROC:<{
     //  msg_value in_msg_cell in_msg
     SWAP	//  msg_value in_msg in_msg_cell
     CTOS	//  msg_value in_msg cs
     4 LDU	//  msg_value in_msg flags cs
-    LDMSGADDR	//  msg_value in_msg flags _34 _33
-    DROP	//  msg_value in_msg flags s_addr
-    SWAP
-    1 PUSHINT	//  msg_value in_msg s_addr flags _12=1
-    AND	//  msg_value in_msg s_addr _13
-    IFJMP:<{	//  msg_value in_msg s_addr
+    LDMSGADDR	//  msg_value in_msg flags _44 _43
+    NIP	//  msg_value in_msg flags cs
+    REWRITEVARADDR	//  msg_value in_msg flags sender_wc sender_addr
+    s0 s2 XCHG
+    1 PUSHINT	//  msg_value in_msg sender_addr sender_wc flags _15=1
+    AND	//  msg_value in_msg sender_addr sender_wc _16
+    IFJMP:<{	//  msg_value in_msg sender_addr sender_wc
+      4 BLKDROP	// 
+    }>	//  msg_value in_msg sender_addr sender_wc
+    0 NEQINT	//  msg_value in_msg sender_addr _18
+    IFJMP:<{	//  msg_value in_msg sender_addr
       3 BLKDROP	// 
-    }>	//  msg_value in_msg s_addr
+    }>	//  msg_value in_msg sender_addr
+    256 LDU	//  msg_value in_msg _48 _47
+    DROP	//  msg_value in_msg member
     load_base_data CALLDICT
-    OVER	//  msg_value in_msg s_addr in_msg
-    SBITS	//  msg_value in_msg s_addr _15
-    32 LESSINT	//  msg_value in_msg s_addr _17
-    IFJMP:<{	//  msg_value in_msg s_addr
+    DUP	//  msg_value in_msg member member
+    load_member CALLDICT
+    OVER	//  msg_value in_msg member in_msg
+    SBITS	//  msg_value in_msg member _25
+    32 LESSINT	//  msg_value in_msg member _27
+    IFJMP:<{	//  msg_value in_msg member
       3 BLKDROP	// 
-    }>	//  msg_value in_msg s_addr
-    SWAP	//  msg_value s_addr in_msg
-    32 LDU	//  msg_value s_addr op in_msg
-    3241702467 PUSHINT	//  msg_value s_addr op in_msg _22
-    s2 s(-1) PUXC	//  msg_value s_addr op in_msg op _22
-    EQUAL	//  msg_value s_addr op in_msg _23
-    IFJMP:<{	//  msg_value s_addr op in_msg
-      NIP	//  msg_value s_addr in_msg
-      s1 s2 XCHG	//  s_addr msg_value in_msg
+    }>	//  msg_value in_msg member
+    SWAP	//  msg_value member in_msg
+    32 LDU	//  msg_value member op in_msg
+    3241702467 PUSHINT	//  msg_value member op in_msg _32
+    s2 s(-1) PUXC	//  msg_value member op in_msg op _32
+    EQUAL	//  msg_value member op in_msg _33
+    IFJMP:<{	//  msg_value member op in_msg
+      NIP	//  msg_value member in_msg
+      s1 s2 XCHG	//  member msg_value in_msg
       op_proposal CALLDICT
-    }>	//  msg_value s_addr op in_msg
-    3047515073 PUSHINT	//  msg_value s_addr op in_msg _25
-    s2 s(-1) PUXC	//  msg_value s_addr op in_msg op _25
-    EQUAL	//  msg_value s_addr op in_msg _26
-    IFJMP:<{	//  msg_value s_addr op in_msg
-      NIP	//  msg_value s_addr in_msg
-      s1 s2 XCHG	//  s_addr msg_value in_msg
+    }>	//  msg_value member op in_msg
+    3047515073 PUSHINT	//  msg_value member op in_msg _35
+    s2 s(-1) PUXC	//  msg_value member op in_msg op _35
+    EQUAL	//  msg_value member op in_msg _36
+    IFJMP:<{	//  msg_value member op in_msg
+      NIP	//  msg_value member in_msg
+      s1 s2 XCHG	//  member msg_value in_msg
       op_vote CALLDICT
-    }>	//  msg_value s_addr op in_msg
-    2483002579 PUSHINT	//  msg_value s_addr op in_msg _28
-    s1 s2 XCHG	//  msg_value s_addr in_msg op _28
-    EQUAL	//  msg_value s_addr in_msg _29
-    IFJMP:<{	//  msg_value s_addr in_msg
-      s1 s2 XCHG	//  s_addr msg_value in_msg
+    }>	//  msg_value member op in_msg
+    2483002579 PUSHINT	//  msg_value member op in_msg _38
+    s1 s2 XCHG	//  msg_value member in_msg op _38
+    EQUAL	//  msg_value member in_msg _39
+    IFJMP:<{	//  msg_value member in_msg
+      s1 s2 XCHG	//  member msg_value in_msg
       op_execute CALLDICT
-    }>	//  msg_value s_addr in_msg
+    }>	//  msg_value member in_msg
     3 BLKDROP	// 
   }>
   recv_external PROC:<{

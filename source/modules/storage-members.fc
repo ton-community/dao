@@ -1,6 +1,21 @@
+;;
+;; Members storage
+;; NOTE: this storage have to store ONLY voting shares, do not add anything else here
+;;       since it is copied furing proposal creation
+;;
+
 global int ctx_member;
 global int ctx_member_exist;
 global int ctx_member_shares;
+
+int get_shares(cell dict, int member) {
+    var (cs, found) = dict.udict_get?(256, member);
+    if (found) {
+        return cs~load_coins();
+    } else {
+        return 0;
+    }
+}
 
 slice load_member_slice(slice cs) impure {
     ctx_member_shares = cs~load_coins();

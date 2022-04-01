@@ -20,3 +20,14 @@ int error::invalid_message() asm "72 PUSHINT";
 int error::access_denied() asm "73 PUSHINT";
 int error::internal_error() asm "74 PUSHINT";
 int error::too_low_value() asm "76 PUSHINT";
+int error::no_voting_power() asm "77 PUSHINT";
+
+;; State
+int vote::yes() asm "1 PUSHINT";
+int vote::no() asm "0 PUSHINT";
+int vote::abstent() asm "2 PUSHINT";
+
+int state::pending() asm "0 PUSHINT";
+int state::success() asm "1 PUSHINT";
+int state::failure() asm "2 PUSHINT";
+int state::executed() asm "3 PUSHINT";
