@@ -5,6 +5,8 @@ PROGRAM{
   DECLPROC store_base_data
   DECLPROC load_shares
   DECLPROC store_shares
+  DECLPROC load_proposal
+  DECLPROC store_proposal
   DECLPROC check_proposal
   DECLPROC execute_proposal
   DECLPROC get_success_treshold
@@ -27,6 +29,22 @@ PROGRAM{
   DECLGLOBVAR ctx_proposals_seq
   DECLGLOBVAR ctx_proposals_dict
   DECLGLOBVAR ctx_proposals_ids
+  DECLGLOBVAR ctx_proposal_id
+  DECLGLOBVAR ctx_proposal_state
+  DECLGLOBVAR ctx_proposal_voted_yes
+  DECLGLOBVAR ctx_proposal_voted_no
+  DECLGLOBVAR ctx_proposal_voted_abstain
+  DECLGLOBVAR ctx_proposal_author
+  DECLGLOBVAR ctx_proposal_created
+  DECLGLOBVAR ctx_proposal_treshold_success
+  DECLGLOBVAR ctx_proposal_treshold_failure
+  DECLGLOBVAR ctx_proposal_metadata
+  DECLGLOBVAR ctx_proposal_votes
+  DECLGLOBVAR ctx_proposal_body
+  DECLGLOBVAR ctx_proposal_members
+  DECLGLOBVAR ctx_proposal_members_total
+  DECLGLOBVAR ctx_proposal_members_shares_total
+  DECLGLOBVAR ctx_proposal_members_shares_allocated
   parse_work_addr PROC:<{
     //  cs
     REWRITEVARADDR	//  sender_wc sender_addr
@@ -151,6 +169,129 @@ PROGRAM{
     DICTUDEL	//  _17 _18
     DROP	//  changed
   }>
+  load_proposal PROC:<{
+    //  id
+    ctx_proposals_dict GETGLOB	//  id _3
+    s1 s(-1) PUXC
+    32 PUSHINT	//  id id _3 _4=32
+    DICTUGETREF	//  id cl found
+    72 PUSHINT	//  id cl found _6
+    SWAP	//  id cl _6 found
+    THROWANYIFNOT
+    CTOS	//  id cs
+    SWAP	//  cs id
+    ctx_proposal_id SETGLOB
+    72 PUSHINT	//  cs _10
+    SWAP	//  _10 cs
+    1 LDU	//  _10 _11 cs
+    SWAP	//  _10 cs _11
+    0 NEQINT	//  _10 cs _15
+    s1 s2 XCHG	//  cs _10 _15
+    THROWANYIF
+    4 LDU	//  _17 cs
+    SWAP	//  cs _17
+    ctx_proposal_state SETGLOB
+    LDGRAMS	//  _20 cs
+    SWAP	//  cs _20
+    ctx_proposal_voted_yes SETGLOB
+    LDGRAMS	//  _22 cs
+    SWAP	//  cs _22
+    ctx_proposal_voted_no SETGLOB
+    LDGRAMS	//  _24 cs
+    SWAP	//  cs _24
+    ctx_proposal_voted_abstain SETGLOB
+    LDREF	//  params_cell cs
+    LDREF	//  params_cell _29 cs
+    SWAP	//  params_cell cs _29
+    ctx_proposal_votes SETGLOB
+    LDREF	//  params_cell _31 cs
+    SWAP	//  params_cell cs _31
+    ctx_proposal_body SETGLOB
+    LDREF	//  params_cell members_cell cs
+    ENDS
+    SWAP	//  members_cell params_cell
+    CTOS	//  members_cell cs
+    256 LDU	//  members_cell _38 cs
+    SWAP	//  members_cell cs _38
+    ctx_proposal_author SETGLOB
+    32 LDU	//  members_cell _41 cs
+    SWAP	//  members_cell cs _41
+    ctx_proposal_created SETGLOB
+    LDGRAMS	//  members_cell _44 cs
+    SWAP	//  members_cell cs _44
+    ctx_proposal_treshold_success SETGLOB
+    LDGRAMS	//  members_cell _46 cs
+    SWAP	//  members_cell cs _46
+    ctx_proposal_treshold_failure SETGLOB
+    LDREF	//  members_cell _48 cs
+    SWAP	//  members_cell cs _48
+    ctx_proposal_metadata SETGLOB
+    ENDS
+    CTOS	//  cs
+    LDGRAMS	//  _52 cs
+    SWAP	//  cs _52
+    ctx_proposal_members_shares_total SETGLOB
+    LDGRAMS	//  _54 cs
+    SWAP	//  cs _54
+    ctx_proposal_members_shares_allocated SETGLOB
+    LDGRAMS	//  _56 cs
+    SWAP	//  cs _56
+    ctx_proposal_members_total SETGLOB
+    LDREF	//  _58 cs
+    SWAP	//  cs _58
+    ctx_proposal_members SETGLOB
+    ENDS
+  }>
+  store_proposal PROC:<{
+    // 
+    ctx_proposal_members GETGLOB	//  _1
+    NEWC	//  _1 _2
+    ctx_proposal_members_shares_total GETGLOB	//  _1 _2 _3
+    STGRAMS	//  _1 _4
+    ctx_proposal_members_shares_allocated GETGLOB	//  _1 _4 _5
+    STGRAMS	//  _1 _6
+    ctx_proposal_members_total GETGLOB	//  _1 _6 _7
+    STGRAMS	//  _1 _8
+    STREF	//  _9
+    ENDC	//  _10
+    ctx_proposal_body GETGLOB	//  _10 _11
+    ctx_proposal_votes GETGLOB	//  _10 _11 _12
+    ctx_proposal_metadata GETGLOB	//  _10 _11 _12 _13
+    ctx_proposal_created GETGLOB	//  _10 _11 _12 _13 _14
+    ctx_proposal_author GETGLOB	//  _10 _11 _12 _13 _14 _15
+    NEWC	//  _10 _11 _12 _13 _14 _15 _16
+    256 STU	//  _10 _11 _12 _13 _14 _18
+    32 STU	//  _10 _11 _12 _13 _20
+    ctx_proposal_treshold_success GETGLOB	//  _10 _11 _12 _13 _20 _21
+    STGRAMS	//  _10 _11 _12 _13 _22
+    ctx_proposal_treshold_failure GETGLOB	//  _10 _11 _12 _13 _22 _23
+    STGRAMS	//  _10 _11 _12 _13 _24
+    STREF	//  _10 _11 _12 _25
+    ENDC	//  _10 _11 _12 _26
+    ctx_proposal_state GETGLOB	//  _10 _11 _12 _26 _27
+    0 PUSHINT	//  _10 _11 _12 _26 _27 _28=0
+    NEWC	//  _10 _11 _12 _26 _27 _28=0 _29
+    1 STU	//  _10 _11 _12 _26 _27 _31
+    4 STU	//  _10 _11 _12 _26 _33
+    ctx_proposal_voted_yes GETGLOB	//  _10 _11 _12 _26 _33 _34
+    STGRAMS	//  _10 _11 _12 _26 _35
+    ctx_proposal_voted_no GETGLOB	//  _10 _11 _12 _26 _35 _36
+    STGRAMS	//  _10 _11 _12 _26 _37
+    ctx_proposal_voted_abstain GETGLOB	//  _10 _11 _12 _26 _37 _38
+    STGRAMS	//  _10 _11 _12 _26 _39
+    STREF	//  _10 _11 _12 _40
+    STREF	//  _10 _11 _41
+    STREF	//  _10 _42
+    STREF	//  _43
+    ENDC	//  container
+    NEWC	//  container _46
+    STREF	//  data
+    ctx_proposal_id GETGLOB	//  data _48
+    ctx_proposals_dict GETGLOB	//  data _48 _49
+    32 PUSHINT	//  data _48 _49 _50=32
+    DICTUSETB	//  _51
+    ctx_proposals_dict SETGLOB
+  }>
   check_proposal PROC:<{
     //  proposal
     CTOS	//  cs
@@ -263,220 +404,164 @@ PROGRAM{
     DIV	//  _4
   }>
   register_proposal PROC:<{
-    //  seq proposal member
-    ctx_members_dict GETGLOB	//  seq proposal member _4
-    OVER	//  seq proposal member _4 member
-    load_shares CALLDICT	//  seq proposal member shares
-    77 PUSHINT	//  seq proposal member shares _6
-    OVER	//  seq proposal member shares _6 shares
-    0 GTINT	//  seq proposal member shares _6 _8
+    //  seq proposal metadata member
+    ctx_members_dict GETGLOB	//  seq proposal metadata member _5
+    OVER	//  seq proposal metadata member _5 member
+    load_shares CALLDICT	//  seq proposal metadata member shares
+    77 PUSHINT	//  seq proposal metadata member shares _7
+    OVER	//  seq proposal metadata member shares _7 shares
+    0 GTINT	//  seq proposal metadata member shares _7 _9
     THROWANYIFNOT
-    72 PUSHINT	//  seq proposal member shares _10
-    ctx_proposals_seq GETGLOB	//  seq proposal member shares _10 _11
-    s5 s(-1) PUXC	//  seq proposal member shares _10 seq _11
-    EQUAL	//  seq proposal member shares _10 _12
+    72 PUSHINT	//  seq proposal metadata member shares _11
+    ctx_proposals_seq GETGLOB	//  seq proposal metadata member shares _11 _12
+    s6 s(-1) PUXC	//  seq proposal metadata member shares _11 seq _12
+    EQUAL	//  seq proposal metadata member shares _11 _13
     THROWANYIFNOT
-    0 PUSHINT	//  seq proposal member shares state
-    ctx_members_shares_allocated GETGLOB	//  seq proposal member shares state _17
-    get_success_treshold CALLDICT	//  seq proposal member shares state treshold_success
-    ctx_members_shares_total GETGLOB	//  seq proposal member shares state treshold_success _20
-    get_success_treshold CALLDICT	//  seq proposal member shares state treshold_success treshold_failure
-    s3 s1 PUSH2	//  seq proposal member shares state treshold_success treshold_failure shares treshold_success
-    GEQ	//  seq proposal member shares state treshold_success treshold_failure _22
-    IF:<{	//  seq proposal member shares state treshold_success treshold_failure
-      s2 POP	//  seq proposal member shares treshold_failure treshold_success
-      1 PUSHINT	//  seq proposal member shares treshold_failure treshold_success state
-      s0 s2 XCHG	//  seq proposal member shares state treshold_success treshold_failure
-    }>	//  seq proposal member shares state treshold_success treshold_failure
-    PUSHNULL	//  seq proposal member shares state treshold_success treshold_failure votes
-    1 PUSHINT	//  seq proposal member shares state treshold_success treshold_failure votes _27
-    NEWC	//  seq proposal member shares state treshold_success treshold_failure votes _27 _28
-    2 STU	//  seq proposal member shares state treshold_success treshold_failure votes _30
-    s6 s1 PUXC
-    8 PUSHPOW2	//  seq proposal member shares state treshold_success treshold_failure _30 member votes _31=256
-    DICTUSETB	//  seq proposal member shares state treshold_success treshold_failure votes
-    ctx_members_dict GETGLOB	//  seq proposal member shares state treshold_success treshold_failure votes _34
-    NEWC	//  seq proposal member shares state treshold_success treshold_failure votes _34 _35
-    ctx_members_shares_total GETGLOB	//  seq proposal member shares state treshold_success treshold_failure votes _34 _35 _36
-    STGRAMS	//  seq proposal member shares state treshold_success treshold_failure votes _34 _37
-    ctx_members_shares_allocated GETGLOB	//  seq proposal member shares state treshold_success treshold_failure votes _34 _37 _38
-    STGRAMS	//  seq proposal member shares state treshold_success treshold_failure votes _34 _39
-    ctx_members_total GETGLOB	//  seq proposal member shares state treshold_success treshold_failure votes _34 _39 _40
-    STGRAMS	//  seq proposal member shares state treshold_success treshold_failure votes _34 _41
-    STREF	//  seq proposal member shares state treshold_success treshold_failure votes _42
-    ENDC	//  seq proposal member shares state treshold_success treshold_failure votes _43
-    s0 s6 XCHG
-    NEWC	//  seq proposal _43 shares state treshold_success treshold_failure votes member _44
-    256 STU	//  seq proposal _43 shares state treshold_success treshold_failure votes _46
-    s0 s3 XCHG2	//  seq proposal _43 shares state votes treshold_failure _46 treshold_success
-    STGRAMS	//  seq proposal _43 shares state votes treshold_failure _47
-    SWAP	//  seq proposal _43 shares state votes _47 treshold_failure
-    STGRAMS	//  seq proposal _43 shares state votes _48
-    ENDC	//  seq proposal _43 shares state votes _49
-    0 PUSHINT	//  seq proposal _43 shares state votes _49 _50=0
-    NEWC	//  seq proposal _43 shares state votes _49 _50=0 _51
-    1 STU	//  seq proposal _43 shares state votes _49 _53
-    s1 s3 XCHG	//  seq proposal _43 shares _49 votes state _53
-    4 STU	//  seq proposal _43 shares _49 votes _55
-    s0 s3 XCHG2	//  seq proposal _43 votes _49 _55 shares
-    STGRAMS	//  seq proposal _43 votes _49 _56
-    0 PUSHINT	//  seq proposal _43 votes _49 _56 _57=0
-    STGRAMS	//  seq proposal _43 votes _49 _58
-    0 PUSHINT	//  seq proposal _43 votes _49 _58 _59=0
-    STGRAMS	//  seq proposal _43 votes _49 _60
-    STREF	//  seq proposal _43 votes _61
-    STREF	//  seq proposal _43 _62
-    s1 s2 XCHG	//  seq _43 proposal _62
-    STREF	//  seq _43 _63
-    STREF	//  seq container
-    ctx_proposals_dict GETGLOB	//  seq container _66
-    s2 s(-1) PUXC
-    32 PUSHINT	//  seq container seq _66 _67=32
-    DICTUSETB	//  seq changed
-    ctx_proposals_dict SETGLOB
-    INC	//  _70
+    0 PUSHINT	//  seq proposal metadata member shares state
+    ctx_members_shares_allocated GETGLOB	//  seq proposal metadata member shares state _18
+    get_success_treshold CALLDICT	//  seq proposal metadata member shares state treshold_success
+    ctx_members_shares_allocated GETGLOB	//  seq proposal metadata member shares state treshold_success _21
+    get_success_treshold CALLDICT	//  seq proposal metadata member shares state treshold_success treshold_failure
+    s3 s1 PUSH2	//  seq proposal metadata member shares state treshold_success treshold_failure shares treshold_success
+    GEQ	//  seq proposal metadata member shares state treshold_success treshold_failure _23
+    IF:<{	//  seq proposal metadata member shares state treshold_success treshold_failure
+      s2 POP	//  seq proposal metadata member shares treshold_failure treshold_success
+      1 PUSHINT	//  seq proposal metadata member shares treshold_failure treshold_success state
+      s0 s2 XCHG	//  seq proposal metadata member shares state treshold_success treshold_failure
+    }>	//  seq proposal metadata member shares state treshold_success treshold_failure
+    s7 PUSH	//  seq proposal metadata member shares state treshold_success treshold_failure seq
+    ctx_proposal_id SETGLOB
+    s0 s2 XCHG	//  seq proposal metadata member shares treshold_failure treshold_success state
+    ctx_proposal_state SETGLOB
+    s0 s2 XCHG	//  seq proposal metadata member treshold_success treshold_failure shares
+    ctx_proposal_voted_yes SETGLOB
+    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _25=0
+    ctx_proposal_voted_no SETGLOB
+    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _26=0
+    ctx_proposal_voted_abstain SETGLOB
+    s2 PUSH	//  seq proposal metadata member treshold_success treshold_failure member
+    ctx_proposal_author SETGLOB
+    NOW	//  seq proposal metadata member treshold_success treshold_failure _27
+    ctx_proposal_created SETGLOB
+    SWAP	//  seq proposal metadata member treshold_failure treshold_success
+    ctx_proposal_treshold_success SETGLOB
+    ctx_proposal_treshold_failure SETGLOB
+    SWAP	//  seq proposal member metadata
+    ctx_proposal_metadata SETGLOB
+    PUSHNULL	//  seq proposal member votes
+    1 PUSHINT	//  seq proposal member votes _31
+    NEWC	//  seq proposal member votes _31 _32
+    2 STU	//  seq proposal member votes _34
+    -ROT
+    8 PUSHPOW2	//  seq proposal _34 member votes _35=256
+    DICTUSETB	//  seq proposal votes
+    ctx_proposal_votes SETGLOB
+    ctx_proposal_body SETGLOB
+    ctx_members_dict GETGLOB	//  seq _37
+    ctx_proposal_members SETGLOB
+    ctx_members_total GETGLOB	//  seq _38
+    ctx_proposal_members_total SETGLOB
+    ctx_members_shares_total GETGLOB	//  seq _39
+    ctx_proposal_members_shares_total SETGLOB
+    ctx_members_shares_allocated GETGLOB	//  seq _40
+    ctx_proposal_members_shares_allocated SETGLOB
+    INC	//  _42
     ctx_proposals_seq SETGLOB
+    store_proposal CALLDICT
     store_base_data CALLDICT
   }>
   register_vote PROC:<{
     //  proposalId member vote
-    ctx_proposals_dict GETGLOB	//  proposalId member vote _5
-    s3 s(-1) PUXC
-    32 PUSHINT	//  proposalId member vote proposalId _5 _6=32
-    DICTUGET
-    NULLSWAPIFNOT	//  proposalId member vote cs found
-    72 PUSHINT	//  proposalId member vote cs found _8
-    SWAP	//  proposalId member vote cs _8 found
+    s0 s2 XCHG	//  vote member proposalId
+    load_proposal CALLDICT
+    72 PUSHINT	//  vote member _4
+    ctx_proposal_state GETGLOB	//  vote member _4 _5
+    0 PUSHINT	//  vote member _4 _5 _6
+    EQUAL	//  vote member _4 _7
     THROWANYIFNOT
-    1 LDU	//  proposalId member vote version cs
-    4 LDU	//  proposalId member vote version state cs
-    LDGRAMS	//  proposalId member vote version state voted_yes cs
-    LDGRAMS	//  proposalId member vote version state voted_yes voted_no cs
-    LDGRAMS	//  proposalId member vote version state voted_yes voted_no voted_abstent cs
-    LDREF	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell cs
-    LDREF	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes cs
-    LDREF	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal cs
-    LDREF	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal membersCell cs
-    ENDS
-    s3 PUSH	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal membersCell paramsCell
-    CTOS	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal membersCell cs
-    256 LDU	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal membersCell _146 _145
-    NIP	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal membersCell cs
-    LDGRAMS	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal membersCell treshold_success cs
-    LDGRAMS	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal membersCell treshold_success treshold_failure cs
-    ENDS
-    s0 s2 XCHG	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success membersCell
-    CTOS	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success cs
-    LDGRAMS	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success _152 _151
-    NIP	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success cs
-    LDGRAMS	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated cs
-    LDGRAMS	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated _156 _155
-    NIP	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated cs
-    LDREF	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members cs
-    ENDS
-    72 PUSHINT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members _66
-    0 PUSHINT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members _66 _67
-    s12 s(-1) PUXC	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members _66 state _67
-    EQUAL	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members _66 _68
-    THROWANYIFNOT
-    s13 s5 PUSH2
-    8 PUSHPOW2	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members member votes _72=256
+    ctx_proposal_votes GETGLOB	//  vote member _11
+    s1 s(-1) PUXC
+    8 PUSHPOW2	//  vote member member _11 _12=256
     DICTUGET
-    NULLSWAPIFNOT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members _159 _160
-    NIP	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members vfound
-    72 PUSHINT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members vfound _74
+    NULLSWAPIFNOT	//  vote member _62 _63
+    NIP	//  vote member vfound
+    72 PUSHINT	//  vote member vfound _14
+    SWAP	//  vote member _14 vfound
     THROWANYIF
-    s0 s13 PUSH2	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members members member
-    load_shares CALLDICT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares
-    77 PUSHINT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares _78
-    OVER	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares _78 shares
-    0 GTINT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares _78 _80
+    ctx_proposal_members GETGLOB	//  vote member _17
+    OVER	//  vote member _17 member
+    load_shares CALLDICT	//  vote member shares
+    77 PUSHINT	//  vote member shares _19
+    OVER	//  vote member shares _19 shares
+    0 GTINT	//  vote member shares _19 _21
     THROWANYIFNOT
-    1 PUSHINT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares _82
-    s14 s(-1) PUXC	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares vote _82
-    EQUAL	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares _83
-    IF:<{	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares
-      s1 s10 XCHG	//  proposalId member vote version state members voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated voted_yes shares
-      ADD	//  proposalId member vote version state members voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated voted_yes
-    }>ELSE<{	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares
-      0 PUSHINT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares _85
-      s14 s(-1) PUXC	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares vote _85
-      EQUAL	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares _86
-      IF:<{	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares
-        s1 s9 XCHG	//  proposalId member vote version state voted_yes members voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated voted_no shares
-        ADD	//  proposalId member vote version state voted_yes members voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated voted_no
-      }>ELSE<{	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares
-        2 PUSHINT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares _88
-        s14 s(-1) PUXC	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares vote _88
-        EQUAL	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares _89
-        IF:<{	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares
-          s1 s8 XCHG	//  proposalId member vote version state voted_yes voted_no members paramsCell votes proposal treshold_failure treshold_success shares_allocated voted_abstent shares
-          ADD	//  proposalId member vote version state voted_yes voted_no members paramsCell votes proposal treshold_failure treshold_success shares_allocated voted_abstent
-        }>ELSE<{	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members shares
-          DROP	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members
-          72 PUSHINT	//  proposalId member vote version state voted_yes voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated members _91
+    1 PUSHINT	//  vote member shares _23
+    s3 s(-1) PUXC	//  vote member shares vote _23
+    EQUAL	//  vote member shares _24
+    IF:<{	//  vote member shares
+      ctx_proposal_voted_yes GETGLOB	//  vote member shares _25
+      SWAP	//  vote member _25 shares
+      ADD	//  vote member _26
+      ctx_proposal_voted_yes SETGLOB
+    }>ELSE<{	//  vote member shares
+      0 PUSHINT	//  vote member shares _27
+      s3 s(-1) PUXC	//  vote member shares vote _27
+      EQUAL	//  vote member shares _28
+      IF:<{	//  vote member shares
+        ctx_proposal_voted_no GETGLOB	//  vote member shares _29
+        SWAP	//  vote member _29 shares
+        ADD	//  vote member _30
+        ctx_proposal_voted_no SETGLOB
+      }>ELSE<{	//  vote member shares
+        2 PUSHINT	//  vote member shares _31
+        s3 s(-1) PUXC	//  vote member shares vote _31
+        EQUAL	//  vote member shares _32
+        IF:<{	//  vote member shares
+          ctx_proposal_voted_abstain GETGLOB	//  vote member shares _33
+          SWAP	//  vote member _33 shares
+          ADD	//  vote member _34
+          ctx_proposal_voted_abstain SETGLOB
+        }>ELSE<{	//  vote member shares
+          DROP	//  vote member
+          72 PUSHINT	//  vote member _35
           THROWANY
-          s0 s7 XCHG	//  proposalId member vote version state voted_yes voted_no members paramsCell votes proposal treshold_failure treshold_success shares_allocated voted_abstent
         }>
-        s0 s7 XCHG
-        s0 s8 XCHG	//  proposalId member vote version state voted_yes members voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated voted_no
       }>
-      s0 s8 XCHG
-      s0 s9 XCHG	//  proposalId member vote version state members voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated voted_yes
     }>
-    s0 s12 XCHG
-    NEWC	//  proposalId member voted_yes version state members voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated vote _94
-    2 STU	//  proposalId member voted_yes version state members voted_no voted_abstent paramsCell votes proposal treshold_failure treshold_success shares_allocated _96
-    s0 s13 s5 XCHG3
-    8 PUSHPOW2	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal treshold_failure _96 member votes _97=256
-    DICTUSETB	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal treshold_failure votes
-    s10 s3 PUSH2	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal treshold_failure votes voted_yes treshold_success
-    GEQ	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal treshold_failure votes _99
-    IF:<{	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal treshold_failure votes
-      s8 POP	//  proposalId shares_allocated voted_yes version votes members voted_no voted_abstent paramsCell treshold_success proposal treshold_failure
-      1 PUSHINT	//  proposalId shares_allocated voted_yes version votes members voted_no voted_abstent paramsCell treshold_success proposal treshold_failure state
-      s0 s8 XCHG	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal treshold_failure votes
-    }>	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal treshold_failure votes
-    s6 s1 PUXC	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal votes voted_no treshold_failure
-    GEQ	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal votes _101
-    IF:<{	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal votes
-      s7 POP	//  proposalId shares_allocated voted_yes version votes members voted_no voted_abstent paramsCell treshold_success proposal
-      2 PUSHINT	//  proposalId shares_allocated voted_yes version votes members voted_no voted_abstent paramsCell treshold_success proposal state
-      s0 s7 XCHG	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal votes
-    }>	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal votes
-    s5 s4 PUSH2	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal votes voted_no voted_abstent
-    ADD	//  proposalId shares_allocated voted_yes version state members voted_no voted_abstent paramsCell treshold_success proposal votes _103
-    s11 s3 XCHG2	//  proposalId votes voted_yes version state members voted_no voted_abstent paramsCell _103 proposal shares_allocated treshold_success
-    SUB	//  proposalId votes voted_yes version state members voted_no voted_abstent paramsCell _103 proposal _104
-    s1 s2 XCHG	//  proposalId votes voted_yes version state members voted_no voted_abstent paramsCell proposal _103 _104
-    GREATER	//  proposalId votes voted_yes version state members voted_no voted_abstent paramsCell proposal _105
-    IF:<{	//  proposalId votes voted_yes version state members voted_no voted_abstent paramsCell proposal
-      s5 POP	//  proposalId votes voted_yes version proposal members voted_no voted_abstent paramsCell
-      2 PUSHINT	//  proposalId votes voted_yes version proposal members voted_no voted_abstent paramsCell state
-      s0 s5 XCHG	//  proposalId votes voted_yes version state members voted_no voted_abstent paramsCell proposal
-    }>	//  proposalId votes voted_yes version state members voted_no voted_abstent paramsCell proposal
-    s0 s6 XCHG
-    NEWC	//  proposalId votes voted_yes proposal state members voted_no voted_abstent paramsCell version _108
-    1 STU	//  proposalId votes voted_yes proposal state members voted_no voted_abstent paramsCell _110
-    s1 s5 XCHG	//  proposalId votes voted_yes proposal paramsCell members voted_no voted_abstent state _110
-    4 STU	//  proposalId votes voted_yes proposal paramsCell members voted_no voted_abstent _112
-    s0 s6 XCHG2	//  proposalId votes voted_abstent proposal paramsCell members voted_no _112 voted_yes
-    STGRAMS	//  proposalId votes voted_abstent proposal paramsCell members voted_no _113
-    SWAP	//  proposalId votes voted_abstent proposal paramsCell members _113 voted_no
-    STGRAMS	//  proposalId votes voted_abstent proposal paramsCell members _114
-    s0 s4 XCHG2	//  proposalId votes members proposal paramsCell _114 voted_abstent
-    STGRAMS	//  proposalId votes members proposal paramsCell _115
-    STREF	//  proposalId votes members proposal _116
-    s1 s3 XCHG	//  proposalId proposal members votes _116
-    STREF	//  proposalId proposal members _117
-    s1 s2 XCHG	//  proposalId members proposal _117
-    STREF	//  proposalId members _118
-    STREF	//  proposalId container
-    ctx_proposals_dict GETGLOB	//  proposalId container _121
+    SWAP
+    NEWC	//  member vote _38
+    2 STU	//  member _40
+    ctx_proposal_votes GETGLOB	//  member _40 _41
     s1 s2 XCHG
-    32 PUSHINT	//  container proposalId _121 _122=32
+    8 PUSHPOW2	//  _40 member _41 _42=256
     DICTUSETB	//  changed
-    ctx_proposals_dict SETGLOB
+    ctx_proposal_votes SETGLOB
+    ctx_proposal_voted_yes GETGLOB	//  _44
+    ctx_proposal_treshold_success GETGLOB	//  _44 _45
+    GEQ	//  _46
+    IF:<{	// 
+      1 PUSHINT	//  _47
+      ctx_proposal_state SETGLOB
+    }>	// 
+    ctx_proposal_voted_no GETGLOB	//  _48
+    ctx_proposal_treshold_failure GETGLOB	//  _48 _49
+    GEQ	//  _50
+    IF:<{	// 
+      2 PUSHINT	//  _51
+      ctx_proposal_state SETGLOB
+    }>	// 
+    ctx_proposal_voted_no GETGLOB	//  _52
+    ctx_proposal_voted_abstain GETGLOB	//  _52 _53
+    ADD	//  _54
+    ctx_proposal_members_shares_allocated GETGLOB	//  _54 _55
+    ctx_proposal_treshold_success GETGLOB	//  _54 _55 _56
+    SUB	//  _54 _57
+    GREATER	//  _58
+    IF:<{	// 
+      2 PUSHINT	//  _59
+      ctx_proposal_state SETGLOB
+    }>	// 
+    store_proposal CALLDICT
     store_base_data CALLDICT
   }>
   get_version PROC:<{
@@ -494,38 +579,31 @@ PROGRAM{
   get_proposal PROC:<{
     //  id
     load_base_data CALLDICT
-    ctx_proposals_dict GETGLOB	//  id _4
-    32 PUSHINT	//  id _4 _5=32
-    DICTUGET
-    NULLSWAPIFNOT	//  cs found
-    72 PUSHINT	//  cs found _7
-    SWAP	//  cs _7 found
-    THROWANYIFNOT
-    1 LDU	//  version cs
-    4 LDU	//  version state cs
-    LDGRAMS	//  version state voted_yes cs
-    LDGRAMS	//  version state voted_yes voted_no cs
-    LDGRAMS	//  version state voted_yes voted_no voted_abstent cs
-    LDREF	//  version state voted_yes voted_no voted_abstent paramsCell cs
-    LDREF	//  version state voted_yes voted_no voted_abstent paramsCell _54 _53
-    NIP	//  version state voted_yes voted_no voted_abstent paramsCell cs
-    LDREF	//  version state voted_yes voted_no voted_abstent paramsCell proposal cs
-    LDREF	//  version state voted_yes voted_no voted_abstent paramsCell proposal _58 _57
-    NIP	//  version state voted_yes voted_no voted_abstent paramsCell proposal cs
-    ENDS
-    SWAP	//  version state voted_yes voted_no voted_abstent proposal paramsCell
+    load_proposal CALLDICT
+    0 PUSHINT	//  _3=0
+    ctx_proposal_state GETGLOB	//  _3=0 _4
+    ctx_proposal_voted_yes GETGLOB	//  _3=0 _4 _5
+    ctx_proposal_voted_no GETGLOB	//  _3=0 _4 _5 _6
+    ctx_proposal_voted_abstain GETGLOB	//  _3=0 _4 _5 _6 _7
+    ctx_proposal_body GETGLOB	//  _3=0 _4 _5 _6 _7 _8
+    ctx_proposal_author GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9
+    ctx_proposal_created GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9 _10
+    ctx_proposal_treshold_success GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9 _10 _11
+    ctx_proposal_treshold_failure GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9 _10 _11 _12
+    ctx_proposal_metadata GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13
   }>
   op_proposal PROC:<{
     //  member value in_msg
     NIP	//  member in_msg
     32 LDU	//  member seq in_msg
     LDREF	//  member seq proposal in_msg
+    LDREF	//  member seq proposal metadata in_msg
     ENDS
-    72 PUSHINT	//  member seq proposal _11
-    OVER	//  member seq proposal _11 proposal
-    check_proposal CALLDICT	//  member seq proposal _11 _12
+    72 PUSHINT	//  member seq proposal metadata _14
+    s2 PUSH	//  member seq proposal metadata _14 proposal
+    check_proposal CALLDICT	//  member seq proposal metadata _14 _15
     THROWANYIFNOT
-    ROT	//  seq proposal member
+    3 ROLL	//  seq proposal metadata member
     register_proposal CALLDICT
   }>
   op_vote PROC:<{

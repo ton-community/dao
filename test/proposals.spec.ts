@@ -29,6 +29,8 @@ describe("proposals", () => {
                         .storeBit(false) // No state init
                         .storeBit(false) // No payload
                         .endCell())
+                    .storeRef(beginCell()
+                        .endCell())
                     .endCell())
             })
         }));
@@ -37,5 +39,9 @@ describe("proposals", () => {
         // Loading all proposals
         let proposals = await exectutor.invokeGetMethod('get_last_proposal_id', []);
         console.warn(proposals);
+
+        // Proposal
+        let proposal = await exectutor.invokeGetMethod('get_proposal', [{ type: 'int', value: '0' }]);
+        console.warn(proposal);
     });
 });

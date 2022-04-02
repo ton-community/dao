@@ -3,11 +3,12 @@
     ;; Check input
     int seq = in_msg~load_uint(32);
     cell proposal = in_msg~load_ref();
+    cell metadata = in_msg~load_ref();
     in_msg.end_parse();
     throw_unless(error::invalid_message(), check_proposal(proposal));
 
     ;; Register input
-    register_proposal(seq, proposal, member);
+    register_proposal(seq, proposal, metadata, member);
 }
 
 () op_vote(int member, int value, slice in_msg) impure {

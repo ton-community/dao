@@ -9,20 +9,18 @@ _ get_last_proposal_id() method_id {
 
 _ get_proposal(int id) method_id {
     load_base_data();
-    var (cs, found) = ctx_proposals_dict.udict_get?(32, id);
-    throw_unless(error::invalid_message(), found);
-
-    ;; Parse basic
-    int version = cs~load_uint(1);
-    int state = cs~load_uint(4);
-    int voted_yes = cs~load_coins();
-    int voted_no = cs~load_coins();
-    int voted_abstent = cs~load_coins();
-    cell paramsCell = cs~load_ref();
-    cell votes = cs~load_ref();
-    cell proposal = cs~load_ref();
-    cell membersCell = cs~load_ref();
-    cs.end_parse();
-
-    return (version, state, voted_yes, voted_no, voted_abstent, proposal, paramsCell);
+    load_proposal(id);
+    
+    return (0, 
+        ctx_proposal_state, 
+        ctx_proposal_voted_yes, 
+        ctx_proposal_voted_no, 
+        ctx_proposal_voted_abstain, 
+        ctx_proposal_body, 
+        ctx_proposal_author,
+        ctx_proposal_created,
+        ctx_proposal_treshold_success,
+        ctx_proposal_treshold_failure,
+        ctx_proposal_metadata
+    );
 }
