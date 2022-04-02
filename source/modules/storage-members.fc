@@ -4,52 +4,28 @@
 ;;       since it is copied furing proposal creation
 ;;
 
-global int ctx_member;
-global int ctx_member_exist;
-global int ctx_member_shares;
 
-int get_shares(cell dict, int member) {
-    var (cs, found) = dict.udict_get?(256, member);
+int load_shares(cell dict, int member) {
+    var (cl, found) = ctx_members_dict.udict_get_ref?(256, member);
     if (found) {
-        return cs~load_coins();
+        slice cs = cl.begin_parse();
+        int coins = cs~load_coins();
+        cs.end_parse();
+        return coins;
     } else {
         return 0;
     }
 }
 
-slice load_member_slice(slice cs) impure {
-    ctx_member_shares = cs~load_coins();
-    return cs;
-}
-
-() load_member(int member) impure {
-    var (cs, found) = ctx_members.udict_get?(256, member);
-    ctx_member = member;
-    if (found) {
-        cs = load_member_slice(cs);
-        cs.end_parse();
-        ctx_member_exist = true;
-    } else {
-        ctx_member_shares = 0;
-        ctx_member_exist = false;
-    }
-}
-
-() store_member() impure {
-    var shouldExist = (ctx_member_shares > 0);
-    if ((~ shouldExist) & ctx_member_exist) {
-        
-        ;; Compiler crashes when single lined
-        var (changed, _) = udict_delete?(ctx_members, 256, ctx_member);
-        ctx_members = changed;
-
-    } elseif (shouldExist) {
-
+cell store_shares(cell dict, int member, int shares) {
+    if (shares > 0) {
         var data = begin_cell()
-            .store_coins(ctx_member_shares);
-        
-        ;; Compiler crashes when single lined
-        var changed = udict_set_builder(ctx_members, 256, ctx_member, data);
-        ctx_members = changed;
+            .store_ref(begin_cell()
+                .store_coins(shares)
+            .end_cell());
+        return udict_set_builder(dict, 256, member, data);
+    } else {
+        var (changed, _) = udict_delete?(dict, 256, member);
+        return changed;
     }
 }

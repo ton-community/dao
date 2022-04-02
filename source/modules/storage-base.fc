@@ -1,31 +1,52 @@
 global int ctx_version;
-global cell ctx_members;
-global cell ctx_proposals;
-global int ctx_total_shares;
-global int ctx_allocated_shares;
-global int ctx_total_members;
-global int ctx_seq_proposal;
+
+global int ctx_members_shares_total;
+global int ctx_members_shares_allocated;
+global int ctx_members_total;
+global cell ctx_members_dict;
+
+global int ctx_proposals_seq;
+global cell ctx_proposals_dict;
+global cell ctx_proposals_ids;
 
 () load_base_data() impure {
+
+    ;; Parse root
     var ds = get_data().begin_parse();
     ctx_version = ds~load_uint(16);
-    ctx_total_shares = ds~load_uint(32);
-    ctx_allocated_shares = ds~load_uint(32);
-    ctx_seq_proposal = ds~load_uint(64);
-    ctx_total_members = ds~load_uint(32);
-    ctx_members = ds~load_ref();
-    ctx_proposals = ds~load_ref();
+    cell membersRef = ds~load_ref();
+    cell proposalsRef = ds~load_ref();
+    ds.end_parse();
+
+    ;; Parse members
+    ds = membersRef.begin_parse();
+    ctx_members_shares_total = ds~load_uint(32);
+    ctx_members_shares_allocated = ds~load_uint(32);
+    ctx_members_total = ds~load_uint(32);
+    ctx_members_dict = ds~load_ref();
+    ds.end_parse();
+
+    ;; Parse proposals
+    ds = proposalsRef.begin_parse();
+    ctx_proposals_seq = ds~load_uint(32);
+    ctx_proposals_dict = ds~load_dict();
+    ctx_proposals_ids = ds~load_dict();
     ds.end_parse();
 }
 
 () store_base_data() impure {
     set_data(begin_cell()
         .store_uint(ctx_version, 16)
-        .store_uint(ctx_total_shares, 32)
-        .store_uint(ctx_allocated_shares, 32)
-        .store_uint(ctx_seq_proposal, 64)
-        .store_uint(ctx_total_members, 32)
-        .store_ref(ctx_members)
-        .store_ref(ctx_proposals)
+        .store_ref(begin_cell()
+            .store_uint(ctx_members_shares_total, 32)
+            .store_uint(ctx_members_shares_allocated, 32)
+            .store_uint(ctx_members_total, 32)
+            .store_ref(ctx_members_dict)
+        .end_cell())
+        .store_ref(begin_cell()
+            .store_uint(ctx_proposals_seq, 32)
+            .store_dict(ctx_proposals_dict)
+            .store_dict(ctx_proposals_ids)
+        .end_cell())
     .end_cell());
 }

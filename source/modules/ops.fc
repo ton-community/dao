@@ -1,7 +1,6 @@
 () op_proposal(int member, int value, slice in_msg) impure {
 
     ;; Check input
-    throw_unless(error::no_voting_power(), ctx_member_shares > 0);
     int seq = in_msg~load_uint(32);
     cell proposal = in_msg~load_ref();
     in_msg.end_parse();
@@ -14,7 +13,6 @@
 () op_vote(int member, int value, slice in_msg) impure {
     
     ;; Check input
-    throw_unless(error::no_voting_power(), ctx_member_shares > 0);
     int proposalId = in_msg~load_uint(32);
     int vote = in_msg~load_uint(2);
     in_msg.end_parse();
@@ -24,5 +22,5 @@
 }
 
 () op_execute(int member, int value, slice in_msg) impure {
-    throw_unless(error::no_voting_power(), ctx_member_shares > 0);
+    
 }

@@ -1,0 +1,29 @@
+{-
+cell load_proposals_dict(int id) {
+    var (cl, found) = ctx_proposals_ids.udict_get_ref?(8, id);
+    if (found) {
+        return cl;
+    } else {
+        return null();
+    }
+}
+
+cell store_proposals_dict(int id, cell dict) impure {
+
+}
+
+() remove_proposal_ref(int id, int proposal) impure {
+
+    ;; Load proposals collection
+    cell d = load_proposals_dict(id);
+    if (null?(d)) {
+        return ();
+    }
+
+    ;; Update dict
+    var (changed, ok) = udict_delete?(d, 32, proposal);
+    if (ok) {
+        store_proposals_dict(id, changed);
+    }
+}
+-}

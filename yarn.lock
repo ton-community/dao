@@ -3334,7 +3334,7 @@ ton-compiler@^1.0.0:
     arg "^5.0.1"
     tmp "^0.2.1"
 
-ton-contract-executor@^0.4.0:
+ton-contract-executor@0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/ton-contract-executor/-/ton-contract-executor-0.4.0.tgz#3ab1cf2469337744751f718c0fb7b7a9796bfaa7"
   integrity sha512-+VZp8BvHEMhWrxZVL0gH5+//yoClqMo7AnYreoIA+Xo3Nnmd3JlI+ghX6ZcrhtJjt6grAh6vlFUE1SgmBAh6wQ==
@@ -3359,10 +3359,10 @@ ton-crypto@2.1.0:
     ton-crypto-primitives "2.0.0"
     tweetnacl "1.0.3"
 
-ton@^9.1.0:
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/ton/-/ton-9.1.0.tgz#5554b81bfa9095b4f966b32756d9e2fdea8de80f"
-  integrity sha512-Lg2ydHYkXM2LEqV4157a4glBiWaUE23b6lBSTibYxanuNZOerxCIRAmN1Vserij5cFpPtC/0Pa++ay7SRDJAYQ==
+ton@9.3.0, ton@^9.1.0, ton@^9.3.0:
+  version "9.3.0"
+  resolved "https://registry.yarnpkg.com/ton/-/ton-9.3.0.tgz#29348f884b30e332a86b9f12370317fa2f52aec9"
+  integrity sha512-AwoZnisHnogf+6YTG4y1pfBpBIwZDpiyImD84xhhvasn7VCrjZ76rE3gr3pLA7jJ6G1WLbne/GZjW6uECILlrw==
   dependencies:
     axios "^0.25.0"
     bn.js "5.2.0"

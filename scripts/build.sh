@@ -25,6 +25,10 @@ echo $'\n' >> ./output/dao.fc
 cat ./source/modules/proposals.fc >> ./output/dao.fc
 echo $'\n' >> ./output/dao.fc
 
+# Get
+cat ./source/modules/get.fc >> ./output/dao.fc
+echo $'\n' >> ./output/dao.fc
+
 # Ops
 cat ./source/modules/ops.fc >> ./output/dao.fc
 echo $'\n' >> ./output/dao.fc

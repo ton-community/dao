@@ -1,0 +1,3 @@
+_ get_version() method_id {
+    return (0, 0, 1);
+}
