@@ -1,3 +1,8 @@
 _ get_version() method_id {
     return (0, 0, 1);
 }
+
+_ get_proposals() method_id {
+    load_base_data();
+    return (ctx_proposals_seq, ctx_proposals_dict, get_version());
+}

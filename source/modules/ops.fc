@@ -4,7 +4,7 @@
     int seq = in_msg~load_uint(32);
     cell proposal = in_msg~load_ref();
     in_msg.end_parse();
-    throw_unless(error::invalid_message(),check_proposal(proposal));
+    throw_unless(error::invalid_message(), check_proposal(proposal));
 
     ;; Register input
     register_proposal(seq, proposal, member);

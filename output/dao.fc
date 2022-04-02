@@ -180,6 +180,10 @@ cell store_proposals_dict(int id, cell dict) impure {
 int check_proposal(cell proposal) {
     slice cs = proposal.begin_parse();
     int kind = cs~load_uint(32);
+    int hasExtras = cs~load_int(1);
+    if (hasExtras) {
+        return false; ;; Not supported
+    }
     if (kind == proposal::transaction()) {
         cs~load_msg_addr(); ;; Load target
         cs~load_coins(); ;; Load coins
@@ -214,10 +218,10 @@ int get_fail_treshold(int total) {
 
     ;; Load shares
     int shares = load_shares(ctx_members_dict, member);
-    throw_unless(shares > 0, error::no_voting_power());
+    throw_unless(error::no_voting_power(), shares > 0);
 
     ;; Check seq
-    throw_unless(seq == ctx_proposals_seq, error::invalid_message());
+    throw_unless(error::invalid_message(), seq == ctx_proposals_seq);
 
     ;; Resolve state
     int state = state::pending();
@@ -229,7 +233,7 @@ int get_fail_treshold(int total) {
     
     ;; Default vote
     cell votes = null();
-    votes~udict_set_builder(member, 256, begin_cell().store_int(vote::yes(), 2));
+    votes~udict_set_builder(256, member, begin_cell().store_uint(vote::yes(), 2));
 
     ;; Create proposal container
     builder container = begin_cell()
@@ -255,6 +259,7 @@ int get_fail_treshold(int total) {
     ;; Register proposal
     cell changed = udict_set_builder(ctx_proposals_dict, 32, seq, container);
     ctx_proposals_dict = changed;
+    ctx_proposals_seq = seq + 1;
 
     ;; Persist
     store_base_data();
@@ -268,7 +273,7 @@ int get_fail_treshold(int total) {
 
     ;; Load proposal
     var (cs, found) = ctx_proposals_dict.udict_get?(32, proposalId);
-    throw_unless(found, error::invalid_message());
+    throw_unless(error::invalid_message(), found);
 
     ;; Load data
     int version = cs~load_uint(1);
@@ -298,7 +303,7 @@ int get_fail_treshold(int total) {
     cs.end_parse();
 
     ;; Check proposal state
-    throw_unless(state == state::pending(), error::invalid_message());
+    throw_unless(error::invalid_message(), state == state::pending());
 
     ;; Check if already voted
     var (vs, vfound) = votes.udict_get?(256, member);
@@ -306,7 +311,7 @@ int get_fail_treshold(int total) {
 
     ;; Check if had shares
     var shares = load_shares(members, member);
-    throw_unless(shares > 0, error::no_voting_power());
+    throw_unless(error::no_voting_power(), shares > 0);
 
     ;; Register vote
     if (vote == vote::yes()) {
@@ -318,7 +323,7 @@ int get_fail_treshold(int total) {
     } else {
         throw(error::invalid_message());
     }
-    votes~udict_set_builder(member, 256, begin_cell().store_int(vote, 2));
+    votes~udict_set_builder(256, member, begin_cell().store_uint(vote, 2));
 
     ;; Check if vote succeeded
     if (voted_yes >= treshold_success) {
@@ -359,13 +364,18 @@ _ get_version() method_id {
     return (0, 0, 1);
 }
 
+_ get_proposals() method_id {
+    load_base_data();
+    return (ctx_proposals_seq, ctx_proposals_dict, get_version());
+}
+
 () op_proposal(int member, int value, slice in_msg) impure {
 
     ;; Check input
     int seq = in_msg~load_uint(32);
     cell proposal = in_msg~load_ref();
     in_msg.end_parse();
-    throw_unless(error::invalid_message(),check_proposal(proposal));
+    throw_unless(error::invalid_message(), check_proposal(proposal));
 
     ;; Register input
     register_proposal(seq, proposal, member);
