@@ -1,0 +1,161 @@
+;;
+;; Tresholds
+;;
+
+int get_success_treshold(int total) {
+    return (total * 51) / 100;
+}
+
+int get_fail_treshold(int total) {
+    return (total * 25) / 100;
+}
+
+;;
+;; Register proposal
+;;
+
+() register_proposal(int seq, cell proposal, int member) impure {
+
+    ;; Load shares
+    int shares = load_shares(ctx_members_dict, member);
+    throw_unless(error::no_voting_power(), shares > 0);
+
+    ;; Check seq
+    throw_unless(error::invalid_message(), seq == ctx_proposals_seq);
+
+    ;; Resolve state
+    int state = state::pending();
+    int treshold_success = get_success_treshold(ctx_members_shares_allocated);
+    int treshold_failure = get_success_treshold(ctx_members_shares_total);
+    if (shares >= treshold_success) {
+        state = state::success();
+    }
+    
+    ;; Default vote
+    cell votes = null();
+    votes~udict_set_builder(256, member, begin_cell().store_uint(vote::yes(), 2));
+
+    ;; Create proposal container
+    builder container = begin_cell()
+        .store_uint(0, 1) ;; Version
+        .store_uint(state, 4) ;; State
+        .store_coins(shares) ;; Voted yes
+        .store_coins(0) ;; Voted no
+        .store_coins(0) ;; Voted abstent
+        .store_ref(begin_cell()
+            .store_uint(member, 256)
+            .store_coins(treshold_success)
+            .store_coins(treshold_failure)
+        .end_cell())
+        .store_ref(votes)
+        .store_ref(proposal)
+        .store_ref(begin_cell() ;; Shares and membership state on time of proposal
+            .store_coins(ctx_members_shares_total)
+            .store_coins(ctx_members_shares_allocated)
+            .store_coins(ctx_members_total)
+            .store_ref(ctx_members_dict)
+        .end_cell());
+
+    ;; Register proposal
+    cell changed = udict_set_builder(ctx_proposals_dict, 32, seq, container);
+    ctx_proposals_dict = changed;
+    ctx_proposals_seq = seq + 1;
+
+    ;; Persist
+    store_base_data();
+}
+
+;;
+;; Register vote
+;;
+
+() register_vote(int proposalId, int member, int vote) impure {
+
+    ;; Load proposal
+    var (cs, found) = ctx_proposals_dict.udict_get?(32, proposalId);
+    throw_unless(error::invalid_message(), found);
+
+    ;; Load data
+    int version = cs~load_uint(1);
+    int state = cs~load_uint(4);
+    int voted_yes = cs~load_coins();
+    int voted_no = cs~load_coins();
+    int voted_abstent = cs~load_coins();
+    cell paramsCell = cs~load_ref();
+    cell votes = cs~load_ref();
+    cell proposal = cs~load_ref();
+    cell membersCell = cs~load_ref();
+    cs.end_parse();
+    
+    ;; Params
+    cs = paramsCell.begin_parse();
+    int author = cs~load_uint(256);
+    int treshold_success = cs~load_coins();
+    int treshold_failure = cs~load_coins();
+    cs.end_parse();
+
+    ;; Members
+    cs = membersCell.begin_parse();
+    int shares_total = cs~load_coins();
+    int shares_allocated = cs~load_coins();
+    int members_total = cs~load_coins();
+    cell members = cs~load_ref();
+    cs.end_parse();
+
+    ;; Check proposal state
+    throw_unless(error::invalid_message(), state == state::pending());
+
+    ;; Check if already voted
+    var (vs, vfound) = votes.udict_get?(256, member);
+    throw_if(vfound, error::invalid_message());
+
+    ;; Check if had shares
+    var shares = load_shares(members, member);
+    throw_unless(error::no_voting_power(), shares > 0);
+
+    ;; Register vote
+    if (vote == vote::yes()) {
+        voted_yes = voted_yes + shares;
+    } elseif (vote == vote::no()) {
+        voted_no = voted_no + shares;
+    } elseif (vote == vote::abstent()) {
+        voted_abstent = voted_abstent + shares;
+    } else {
+        throw(error::invalid_message());
+    }
+    votes~udict_set_builder(256, member, begin_cell().store_uint(vote, 2));
+
+    ;; Check if vote succeeded
+    if (voted_yes >= treshold_success) {
+        state = state::success();
+    }
+
+    ;; Check if vote failed
+    if (voted_no >= treshold_failure) {
+        state = state::failure();
+    }
+
+    ;; Check if vote won't be able to succeed: too many votes against or abstent
+    if (voted_no + voted_abstent > shares_allocated - treshold_success) {
+        state = state::failure();
+    }
+
+    ;; Update proposal
+    builder container = begin_cell()
+        .store_uint(version, 1)
+        .store_uint(state, 4)
+        .store_coins(voted_yes)
+        .store_coins(voted_no)
+        .store_coins(voted_abstent)
+        .store_ref(paramsCell)
+        .store_ref(votes)
+        .store_ref(proposal)
+        .store_ref(members);
+
+    ;; Register proposal
+    cell changed = udict_set_builder(ctx_proposals_dict, 32, proposalId, container);
+    ctx_proposals_dict = changed;
+
+    ;; Persist
+    store_base_data();
+}

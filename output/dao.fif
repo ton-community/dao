@@ -6,12 +6,14 @@ PROGRAM{
   DECLPROC load_shares
   DECLPROC store_shares
   DECLPROC check_proposal
+  DECLPROC execute_proposal
   DECLPROC get_success_treshold
   DECLPROC get_fail_treshold
   DECLPROC register_proposal
   DECLPROC register_vote
   82320 DECLMETHOD get_version
-  113507 DECLMETHOD get_proposals
+  129834 DECLMETHOD get_last_proposal_id
+  94347 DECLMETHOD get_proposal
   DECLPROC op_proposal
   DECLPROC op_vote
   DECLPROC op_execute
@@ -184,6 +186,69 @@ PROGRAM{
     }>	//  cs
     DROP	// 
     FALSE	//  _30
+  }>
+  execute_proposal PROC:<{
+    //  proposal
+    CTOS	//  cs
+    32 LDU	//  kind cs
+    1 LDI	//  kind _7 cs
+    SWAP	//  kind cs _7
+    IF:<{	//  kind cs
+      LDREF	//  kind _72 _71
+      NIP	//  kind cs
+    }>	//  kind cs
+    1225918510 PUSHINT	//  kind cs _12
+    s1 s2 XCHG	//  cs kind _12
+    EQUAL	//  cs _13
+    IF:<{	//  cs
+      LDMSGADDR	//  to_addr cs
+      LDGRAMS	//  to_addr value cs
+      0 PUSHINT	//  to_addr value cs _21=0
+      16 PUSHINT	//  to_addr value cs _21=0 _22=16
+      NEWC	//  to_addr value cs _21=0 _22=16 _23
+      6 STU	//  to_addr value cs _21=0 _25
+      s0 s4 XCHG2	//  _21=0 value cs _25 to_addr
+      STSLICER	//  _21=0 value cs _26
+      ROT	//  _21=0 cs _26 value
+      STGRAMS	//  _21=0 cs _27
+      s1 s2 XCHG	//  cs _21=0 _27
+      105 STU	//  cs msg
+      SWAP	//  msg cs
+      1 LDI	//  msg _38 cs
+      SWAP	//  msg cs _38
+      IF:<{	//  msg cs
+        LDREF	//  msg stateInit cs
+        1 PUSHINT	//  msg stateInit cs _44=1
+        s0 s3 XCHG2	//  cs stateInit _44=1 msg
+        1 STU	//  cs stateInit msg
+        STREF	//  cs msg
+      }>ELSE<{	//  msg cs
+        0 PUSHINT
+        ROT	//  cs _48=0 msg
+        1 STU	//  cs msg
+      }>
+      SWAP	//  msg cs
+      1 LDI	//  msg _51 cs
+      SWAP	//  msg cs _51
+      IF:<{	//  msg cs
+        LDREF	//  msg _84 _83
+        DROP	//  msg payload
+        1 PUSHINT
+        ROT	//  payload _57=1 msg
+        1 STU	//  payload msg
+        STREF	//  msg
+      }>ELSE<{	//  msg cs
+        DROP	//  msg
+        0 PUSHINT	//  msg _61=0
+        SWAP	//  _61=0 msg
+        1 STU	//  msg
+      }>
+      ENDC	//  _64
+      2 PUSHINT	//  _64 _65=2
+      SENDRAWMSG
+    }>ELSE<{
+      DROP	// 
+    }>
   }>
   get_success_treshold PROC:<{
     //  total
@@ -420,12 +485,35 @@ PROGRAM{
     DUP	//  _0=0 _1=0
     1 PUSHINT	//  _0=0 _1=0 _2=1
   }>
-  get_proposals PROC:<{
+  get_last_proposal_id PROC:<{
     // 
     load_base_data CALLDICT
     ctx_proposals_seq GETGLOB	//  _1
-    ctx_proposals_dict GETGLOB	//  _1 _2
-    get_version CALLDICT	//  _1 _2 _4 _5 _6
+    DEC	//  _3
+  }>
+  get_proposal PROC:<{
+    //  id
+    load_base_data CALLDICT
+    ctx_proposals_dict GETGLOB	//  id _4
+    32 PUSHINT	//  id _4 _5=32
+    DICTUGET
+    NULLSWAPIFNOT	//  cs found
+    72 PUSHINT	//  cs found _7
+    SWAP	//  cs _7 found
+    THROWANYIFNOT
+    1 LDU	//  version cs
+    4 LDU	//  version state cs
+    LDGRAMS	//  version state voted_yes cs
+    LDGRAMS	//  version state voted_yes voted_no cs
+    LDGRAMS	//  version state voted_yes voted_no voted_abstent cs
+    LDREF	//  version state voted_yes voted_no voted_abstent paramsCell cs
+    LDREF	//  version state voted_yes voted_no voted_abstent paramsCell _54 _53
+    NIP	//  version state voted_yes voted_no voted_abstent paramsCell cs
+    LDREF	//  version state voted_yes voted_no voted_abstent paramsCell proposal cs
+    LDREF	//  version state voted_yes voted_no voted_abstent paramsCell proposal _58 _57
+    NIP	//  version state voted_yes voted_no voted_abstent paramsCell proposal cs
+    ENDS
+    SWAP	//  version state voted_yes voted_no voted_abstent proposal paramsCell
   }>
   op_proposal PROC:<{
     //  member value in_msg

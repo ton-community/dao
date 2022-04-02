@@ -173,8 +173,9 @@ cell store_proposals_dict(int id, cell dict) impure {
 }
 -}
 
+
 ;;
-;; Check proposal body
+;; Checks proposal body
 ;;
 
 int check_proposal(cell proposal) {
@@ -201,6 +202,60 @@ int check_proposal(cell proposal) {
         return false;
     }
 }
+
+;;
+;; Proposal execution
+;; NOTE: execution silently fails on invalid proposal to mark proposal as executed instead of crashing transactions
+;;       but execution fails if something is wrong
+;;
+
+() execute_proposal(cell proposal) impure {
+
+    ;; Begin parsing
+    slice cs = proposal.begin_parse();
+    int kind = cs~load_uint(32);
+    if (cs~load_int(1)) {
+        cs~load_ref();
+    }
+
+    ;; Tansaction
+    if (kind == proposal::transaction()) {
+
+        ;; Basic message
+        slice to_addr = cs~load_msg_addr();
+        int value = cs~load_coins();
+        var msg = begin_cell()
+            .store_uint(0x10, 6)
+            .store_slice(to_addr)
+            .store_coins(value)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32);
+
+        ;; State init
+        if (cs~load_int(1)) {
+            var stateInit = cs~load_ref();
+            msg = msg.store_uint(1, 1);
+            msg = msg.store_ref(stateInit);
+        } else {
+            msg = msg.store_uint(0, 1);
+        }
+
+        ;; Payload
+        if (cs~load_int(1)) {
+            var payload = cs~load_ref();
+            msg = msg.store_uint(1, 1);
+            msg = msg.store_ref(payload);
+        } else {
+            msg = msg.store_uint(0, 1);
+        }
+
+        ;; Send message
+        send_raw_message(msg.end_cell(), 2);
+    }
+}
+
+;;
+;; Tresholds
+;;
 
 int get_success_treshold(int total) {
     return (total * 51) / 100;
@@ -364,9 +419,29 @@ _ get_version() method_id {
     return (0, 0, 1);
 }
 
-_ get_proposals() method_id {
+_ get_last_proposal_id() method_id {
     load_base_data();
-    return (ctx_proposals_seq, ctx_proposals_dict, get_version());
+    return ctx_proposals_seq - 1;
+}
+
+_ get_proposal(int id) method_id {
+    load_base_data();
+    var (cs, found) = ctx_proposals_dict.udict_get?(32, id);
+    throw_unless(error::invalid_message(), found);
+
+    ;; Parse basic
+    int version = cs~load_uint(1);
+    int state = cs~load_uint(4);
+    int voted_yes = cs~load_coins();
+    int voted_no = cs~load_coins();
+    int voted_abstent = cs~load_coins();
+    cell paramsCell = cs~load_ref();
+    cell votes = cs~load_ref();
+    cell proposal = cs~load_ref();
+    cell membersCell = cs~load_ref();
+    cs.end_parse();
+
+    return (version, state, voted_yes, voted_no, voted_abstent, proposal, paramsCell);
 }
 
 () op_proposal(int member, int value, slice in_msg) impure {

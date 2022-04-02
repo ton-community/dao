@@ -35,7 +35,7 @@ describe("proposals", () => {
         expect(res.exit_code).toBe(0);
 
         // Loading all proposals
-        let proposals = await exectutor.invokeGetMethod('get_proposals', []);
+        let proposals = await exectutor.invokeGetMethod('get_last_proposal_id', []);
         console.warn(proposals);
     });
 });
