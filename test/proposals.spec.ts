@@ -1,47 +1,163 @@
-import { Address, beginCell, CellMessage, CommonMessageInfo, InternalMessage, toNano } from "ton";
+import { beginCell, toNano } from "ton";
 import { SmartContract } from "ton-contract-executor";
 import { createCode } from "./contract/createCode";
 import { createData } from "./contract/createData";
+import { createMetadata, createProposal, getLatestProposalId, getProposal } from "./contract/operations";
+import { sendMessage } from "./contract/sendMessage";
 import { randomAddress } from "./utils/randomAddress";
 
-const zero = new Address(0, Buffer.alloc(32, 0));
-const member1 = randomAddress(0, 'initial-1');
-const member2 = randomAddress(0, 'initial-2');
-const outsider = randomAddress(0, 'outsider-1');
+const member1 = randomAddress(0, "initial-1");
+const member2 = randomAddress(0, "initial-2");
+const outsider = randomAddress(0, "outsider-1");
 
 describe("proposals", () => {
     it("should create proposals", async () => {
-        const exectutor = await SmartContract.fromCell(createCode(), createData(5000, [{ address: member1, shares: 1000 }, { address: member2, shares: 1000 }]));
-        let res = await exectutor.sendInternalMessage(new InternalMessage({
-            from: member1,
-            to: zero,
-            value: toNano(1),
-            bounce: true,
-            body: new CommonMessageInfo({
-                body: new CellMessage(beginCell()
-                    .storeUint(3241702467, 32)
-                    .storeUint(0, 32)
-                    .storeRef(beginCell()
+        const executor = await SmartContract.fromCell(
+            createCode(),
+            createData(5000, [
+                { address: member1, shares: 1000 },
+                { address: member2, shares: 1000 },
+            ])
+        );
+
+        let res = await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createProposal(
+                0,
+                beginCell()
+                    .storeUint(1225918510, 32) // Transaction proposal
+                    .storeBit(false) // No extras
+                    .storeAddress(outsider) // Target
+                    .storeCoins(toNano(10)) // Value
+                    .storeBit(false) // No state init
+                    .storeBit(false) // No payload
+                    .endCell(),
+                createMetadata()
+            )
+        );
+        expect(res.length).toBe(0);
+
+        // Loading all proposals
+        let latestProposalId = await getLatestProposalId(executor);
+        expect(latestProposalId).toBe(0);
+
+        // Proposal
+        let proposal = await getProposal(executor, 0);
+        expect(proposal).toMatchObject({
+            state: 'pending',
+            votedYes: 1000,
+            votedNo: 0,
+            votedAbstain: 0,
+            author: member1.toFriendly({ testOnly: true }),
+            successTreshold: 1020, // 51%
+            failureTreshold: 500 // 25%
+        });
+    });
+
+    it("should auto accept proposal if have enought voting power", async () => {
+        const executor = await SmartContract.fromCell(
+            createCode(),
+            createData(5000, [
+                { address: member1, shares: 5000 },
+                { address: member2, shares: 1000 },
+            ])
+        );
+
+        let res = await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createProposal(
+                0,
+                beginCell()
+                    .storeUint(1225918510, 32) // Transaction proposal
+                    .storeBit(false) // No extras
+                    .storeAddress(outsider) // Target
+                    .storeCoins(toNano(10)) // Value
+                    .storeBit(false) // No state init
+                    .storeBit(false) // No payload
+                    .endCell(),
+                createMetadata()
+            )
+        );
+        expect(res.length).toBe(0);
+
+        // Loading all proposals
+        let latestProposalId = await getLatestProposalId(executor);
+        expect(latestProposalId).toBe(0);
+
+        // Proposal
+        let proposal = await getProposal(executor, 0);
+        expect(proposal).toMatchObject({
+            state: 'success',
+            votedYes: 5000,
+            votedNo: 0,
+            votedAbstain: 0,
+            author: member1.toFriendly({ testOnly: true }),
+            successTreshold: 3060, // 51%
+            failureTreshold: 1500 // 25%
+        });
+    });
+
+    it("should not create proposal if not member", async () => {
+        const exectutor = await SmartContract.fromCell(
+            createCode(),
+            createData(5000, [
+                { address: member1, shares: 1000 },
+                { address: member2, shares: 1000 },
+            ])
+        );
+
+        await expect(
+            sendMessage(
+                exectutor,
+                toNano(1),
+                outsider,
+                createProposal(
+                    0,
+                    beginCell()
                         .storeUint(1225918510, 32) // Transaction proposal
                         .storeBit(false) // No extras
                         .storeAddress(outsider) // Target
                         .storeCoins(toNano(10)) // Value
                         .storeBit(false) // No state init
                         .storeBit(false) // No payload
-                        .endCell())
-                    .storeRef(beginCell()
-                        .endCell())
-                    .endCell())
-            })
-        }));
-        expect(res.exit_code).toBe(0);
+                        .endCell(),
+                    createMetadata()
+                )
+            )
+        ).rejects.toThrowError("Error 77");
+    });
 
-        // Loading all proposals
-        let proposals = await exectutor.invokeGetMethod('get_last_proposal_id', []);
-        console.warn(proposals);
+    it("should bounce on invalid seq", async () => {
+        const exectutor = await SmartContract.fromCell(
+            createCode(),
+            createData(5000, [
+                { address: member1, shares: 1000 },
+                { address: member2, shares: 1000 },
+            ])
+        );
 
-        // Proposal
-        let proposal = await exectutor.invokeGetMethod('get_proposal', [{ type: 'int', value: '0' }]);
-        console.warn(proposal);
+        await expect(
+            sendMessage(
+                exectutor,
+                toNano(1),
+                member1,
+                createProposal(
+                    100,
+                    beginCell()
+                        .storeUint(1225918510, 32) // Transaction proposal
+                        .storeBit(false) // No extras
+                        .storeAddress(outsider) // Target
+                        .storeCoins(toNano(10)) // Value
+                        .storeBit(false) // No state init
+                        .storeBit(false) // No payload
+                        .endCell(),
+                    createMetadata()
+                )
+            )
+        ).rejects.toThrowError("Error 72");
     });
 });

@@ -10,7 +10,7 @@ PROGRAM{
   DECLPROC check_proposal
   DECLPROC execute_proposal
   DECLPROC get_success_treshold
-  DECLPROC get_fail_treshold
+  DECLPROC get_failure_treshold
   DECLPROC register_proposal
   DECLPROC register_vote
   82320 DECLMETHOD get_version
@@ -397,7 +397,7 @@ PROGRAM{
     100 PUSHINT	//  _2 _3=100
     DIV	//  _4
   }>
-  get_fail_treshold PROC:<{
+  get_failure_treshold PROC:<{
     //  total
     25 MULCONST	//  _2
     100 PUSHINT	//  _2 _3=100
@@ -421,7 +421,7 @@ PROGRAM{
     ctx_members_shares_allocated GETGLOB	//  seq proposal metadata member shares state _18
     get_success_treshold CALLDICT	//  seq proposal metadata member shares state treshold_success
     ctx_members_shares_allocated GETGLOB	//  seq proposal metadata member shares state treshold_success _21
-    get_success_treshold CALLDICT	//  seq proposal metadata member shares state treshold_success treshold_failure
+    get_failure_treshold CALLDICT	//  seq proposal metadata member shares state treshold_success treshold_failure
     s3 s1 PUSH2	//  seq proposal metadata member shares state treshold_success treshold_failure shares treshold_success
     GEQ	//  seq proposal metadata member shares state treshold_success treshold_failure _23
     IF:<{	//  seq proposal metadata member shares state treshold_success treshold_failure

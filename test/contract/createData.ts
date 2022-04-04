@@ -1,5 +1,4 @@
-import BN from "bn.js";
-import { Address, beginCell, beginDict, Cell } from "ton";
+import { Address, beginCell, beginDict } from "ton";
 
 // ctx_version = ds~load_uint(16);
 //     ctx_total_shares = ds~load_uint(32);
