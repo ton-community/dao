@@ -94,6 +94,148 @@ describe("voting", () => {
         )).rejects.toThrowError('Error 72');
     });
 
+    it("should be able to vote no for proposals and eventually fail proposal", async () => {
+
+        // Create contract
+        const executor = await SmartContract.fromCell(
+            createCode(),
+            createData(5000, [
+                { address: member1, shares: 1000 },
+                { address: member2, shares: 1000 },
+                { address: member3, shares: 1000 },
+                { address: member4, shares: 1000 },
+            ])
+        );
+
+        // Create proposal
+        await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createProposal(
+                0,
+                beginCell()
+                    .storeUint(1225918510, 32) // Transaction proposal
+                    .storeBit(false) // No extras
+                    .storeAddress(outsider) // Target
+                    .storeCoins(toNano(10)) // Value
+                    .storeBit(false) // No state init
+                    .storeBit(false) // No payload
+                    .endCell(),
+                createMetadata()
+            )
+        );
+
+        // Vote
+        await sendMessage(
+            executor,
+            toNano(1),
+            member2,
+            createVote(0, 'no')
+        );
+
+        // Check state
+        let proposal = await getProposal(executor, 0);
+        expect(proposal).toMatchObject({
+            state: 'failure',
+            votedYes: 1000,
+            votedNo: 1000, // Reached treshold
+            votedAbstain: 0,
+            author: member1.toFriendly({ testOnly: true }),
+            successTreshold: 2040, // 51%
+            failureTreshold: 1000 // 25%
+        });
+
+        // Last vote rejects since it is already successful
+        await expect(sendMessage(
+            executor,
+            toNano(1),
+            member4,
+            createVote(0, 'no')
+        )).rejects.toThrowError('Error 72');
+    });
+
+    it("should be able to vote abstain for proposals and eventually fail proposal", async () => {
+
+        // Create contract
+        const executor = await SmartContract.fromCell(
+            createCode(),
+            createData(5000, [
+                { address: member1, shares: 1000 },
+                { address: member2, shares: 1000 },
+                { address: member3, shares: 1000 },
+                { address: member4, shares: 1000 },
+            ])
+        );
+
+        // Create proposal
+        await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createProposal(
+                0,
+                beginCell()
+                    .storeUint(1225918510, 32) // Transaction proposal
+                    .storeBit(false) // No extras
+                    .storeAddress(outsider) // Target
+                    .storeCoins(toNano(10)) // Value
+                    .storeBit(false) // No state init
+                    .storeBit(false) // No payload
+                    .endCell(),
+                createMetadata()
+            )
+        );
+
+        // Vote
+        await sendMessage(
+            executor,
+            toNano(1),
+            member2,
+            createVote(0, 'abstain')
+        );
+
+        // Check state
+        let proposal = await getProposal(executor, 0);
+        expect(proposal).toMatchObject({
+            state: 'pending',
+            votedYes: 1000,
+            votedNo: 0,
+            votedAbstain: 1000,
+            author: member1.toFriendly({ testOnly: true }),
+            successTreshold: 2040, // 51%
+            failureTreshold: 1000 // 25%
+        });
+
+        // Vote
+        await sendMessage(
+            executor,
+            toNano(1),
+            member3,
+            createVote(0, 'abstain')
+        );
+
+        // Check state
+        proposal = await getProposal(executor, 0);
+        expect(proposal).toMatchObject({
+            state: 'failure',
+            votedYes: 1000,
+            votedNo: 0,
+            votedAbstain: 2000,
+            author: member1.toFriendly({ testOnly: true }),
+            successTreshold: 2040, // 51%
+            failureTreshold: 1000 // 25%
+        });
+
+        // Last vote rejects since it is already successful
+        await expect(sendMessage(
+            executor,
+            toNano(1),
+            member4,
+            createVote(0, 'abstain')
+        )).rejects.toThrowError('Error 72');
+    });
+
     it("should throw on author vote", async () => {
 
         // Create contract
