@@ -10,6 +10,8 @@ int check_proposal(cell proposal) {
     if (hasExtras) {
         return false; ;; Not supported
     }
+
+    ;; Transaction proposal
     if (kind == proposal::transaction()) {
         cs~load_msg_addr(); ;; Load target
         cs~load_coins(); ;; Load coins
@@ -23,9 +25,20 @@ int check_proposal(cell proposal) {
         }
         cs.end_parse();
         return true;
-    } else {
-        return false;
     }
+
+    ;; Resolution proposal
+    if (kind == proposal::resolution()) {
+        return true;
+    }
+
+    ;; Destroy proposal
+    if (kind == proposal::destroy()) {
+        cs~load_msg_addr(); ;; Load target
+        return true;
+    }
+
+    return false;
 }
 
 ;;
@@ -75,5 +88,20 @@ int check_proposal(cell proposal) {
 
         ;; Send message
         send_raw_message(msg.end_cell(), 2);
+    }
+
+    ;; Destroy contract
+    if (kind == proposal::destroy()) {
+
+        ;; Create destroy message
+        slice to_addr = cs~load_msg_addr();
+        var msg = begin_cell()
+            .store_uint(0x10, 6)
+            .store_slice(to_addr)
+            .store_coins(0)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1);
+
+        ;; Send message
+        send_raw_message(msg.end_cell(), 32 + 128);
     }
 }

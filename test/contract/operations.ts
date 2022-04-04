@@ -9,6 +9,7 @@ export function createProposal(seq: number,
 ) {
     return beginCell()
         .storeUint(3241702467, 32)
+        .storeUint(10000, 64)
         .storeUint(seq, 32)
         .storeRef(proposal)
         .storeRef(metadata)
@@ -28,6 +29,7 @@ export function createVote(id: number, type: 'yes' | 'no' | 'abstain') {
     }
     return beginCell()
         .storeUint(3047515073, 32)
+        .storeUint(10000, 64)
         .storeUint(id, 32)
         .storeUint(t, 2)
         .endCell();

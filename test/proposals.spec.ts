@@ -37,7 +37,11 @@ describe("proposals", () => {
                 createMetadata()
             )
         );
-        expect(res.length).toBe(0);
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
+            value: '0'
+        }]);
 
         // Loading all proposals
         let latestProposalId = await getLatestProposalId(executor);
@@ -82,7 +86,11 @@ describe("proposals", () => {
                 createMetadata()
             )
         );
-        expect(res.length).toBe(0);
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
+            value: '0'
+        }]);
 
         // Loading all proposals
         let latestProposalId = await getLatestProposalId(executor);

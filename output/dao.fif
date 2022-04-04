@@ -1,6 +1,10 @@
 PROGRAM{
   DECLPROC parse_work_addr
   DECLPROC serialize_work_addr
+  DECLPROC send_std_message
+  DECLPROC send_empty_std_message
+  DECLPROC send_receipt_message
+  DECLPROC send_empty_receipt_message
   DECLPROC load_base_data
   DECLPROC store_base_data
   DECLPROC load_shares
@@ -13,6 +17,7 @@ PROGRAM{
   DECLPROC get_failure_treshold
   DECLPROC register_proposal
   DECLPROC register_vote
+  DECLPROC prepare_execute
   82320 DECLMETHOD get_version
   129834 DECLMETHOD get_last_proposal_id
   94347 DECLMETHOD get_proposal
@@ -20,7 +25,6 @@ PROGRAM{
   DECLPROC op_vote
   DECLPROC op_execute
   DECLPROC recv_internal
-  DECLPROC recv_external
   DECLGLOBVAR ctx_version
   DECLGLOBVAR ctx_members_shares_total
   DECLGLOBVAR ctx_members_shares_allocated
@@ -68,6 +72,71 @@ PROGRAM{
     256 STU	//  _12
     ENDC	//  _13
     CTOS	//  _14
+  }>
+  send_std_message PROC:<{
+    //  to_addr value mode op query_id content
+    s0 s2 XCHG
+    NEWC	//  to_addr value mode content query_id op _7
+    32 STU	//  to_addr value mode content query_id _9
+    64 STU	//  to_addr value mode content _11
+    STB	//  to_addr value mode _12
+    ENDC	//  to_addr value mode body
+    1 PUSHINT	//  to_addr value mode body _15=1
+    16 PUSHINT	//  to_addr value mode body _15=1 _16=16
+    NEWC	//  to_addr value mode body _15=1 _16=16 _17
+    6 STU	//  to_addr value mode body _15=1 _19
+    s0 s5 XCHG2	//  _15=1 value mode body _19 to_addr
+    STSLICER	//  _15=1 value mode body _20
+    s0 s3 XCHG2	//  _15=1 body mode _20 value
+    STGRAMS	//  _15=1 body mode _21
+    s1 s3 XCHG	//  mode body _15=1 _21
+    107 STU	//  mode body _35
+    STREF	//  mode _36
+    ENDC	//  mode msg
+    SWAP	//  msg mode
+    SENDRAWMSG
+  }>
+  send_empty_std_message PROC:<{
+    //  to_addr value mode op query_id
+    SWAP
+    NEWC	//  to_addr value mode query_id op _6
+    32 STU	//  to_addr value mode query_id _8
+    64 STU	//  to_addr value mode _10
+    ENDC	//  to_addr value mode body
+    1 PUSHINT	//  to_addr value mode body _13=1
+    16 PUSHINT	//  to_addr value mode body _13=1 _14=16
+    NEWC	//  to_addr value mode body _13=1 _14=16 _15
+    6 STU	//  to_addr value mode body _13=1 _17
+    s0 s5 XCHG2	//  _13=1 value mode body _17 to_addr
+    STSLICER	//  _13=1 value mode body _18
+    s0 s3 XCHG2	//  _13=1 body mode _18 value
+    STGRAMS	//  _13=1 body mode _19
+    s1 s3 XCHG	//  mode body _13=1 _19
+    107 STU	//  mode body _33
+    STREF	//  mode _34
+    ENDC	//  mode msg
+    SWAP	//  msg mode
+    SENDRAWMSG
+  }>
+  send_receipt_message PROC:<{
+    //  to_addr op query_id content
+    s0 s3 XCHG	//  content op query_id to_addr
+    serialize_work_addr CALLDICT	//  content op query_id _4
+    0 PUSHINT	//  content op query_id _4 _5=0
+    s4 s3 XCHG2
+    64 PUSHINT
+    s1 s3 s3 XCHG3	//  _4 _5=0 _6=64 op query_id content
+    send_std_message CALLDICT
+  }>
+  send_empty_receipt_message PROC:<{
+    //  to_addr op query_id
+    s0 s2 XCHG	//  query_id op to_addr
+    serialize_work_addr CALLDICT	//  query_id op _3
+    0 PUSHINT	//  query_id op _3 _4=0
+    2SWAP
+    64 PUSHINT
+    s0 s2 XCHG	//  _3 _4=0 _5=64 op query_id
+    send_empty_std_message CALLDICT
   }>
   load_base_data PROC:<{
     // 
@@ -303,30 +372,43 @@ PROGRAM{
       FALSE	//  _11
     }>	//  kind cs
     1225918510 PUSHINT	//  kind cs _12
-    s1 s2 XCHG	//  cs kind _12
-    EQUAL	//  cs _13
-    IFJMP:<{	//  cs
-      LDMSGADDR	//  _36 _35
+    s2 s(-1) PUXC	//  kind cs kind _12
+    EQUAL	//  kind cs _13
+    IFJMP:<{	//  kind cs
       NIP	//  cs
-      LDGRAMS	//  _38 _37
+      LDMSGADDR	//  _44 _43
+      NIP	//  cs
+      LDGRAMS	//  _46 _45
       NIP	//  cs
       1 LDI	//  _18 cs
       SWAP	//  cs _18
       IF:<{	//  cs
-        LDREF	//  _42 _41
+        LDREF	//  _50 _49
         NIP	//  cs
       }>	//  cs
       1 LDI	//  _23 cs
       SWAP	//  cs _23
       IF:<{	//  cs
-        LDREF	//  _46 _45
+        LDREF	//  _54 _53
         NIP	//  cs
       }>	//  cs
       ENDS
       TRUE	//  _29
-    }>	//  cs
-    DROP	// 
-    FALSE	//  _30
+    }>	//  kind cs
+    DROP	//  kind
+    3070113962 PUSHINT	//  kind _30
+    s1 s(-1) PUXC	//  kind kind _30
+    EQUAL	//  kind _31
+    IFJMP:<{	//  kind
+      DROP	// 
+      TRUE	//  _32
+    }>	//  kind
+    1738944794 PUSHINT	//  kind _33
+    EQUAL	//  _34
+    IFJMP:<{	// 
+      TRUE	//  _37
+    }>	// 
+    FALSE	//  _38
   }>
   execute_proposal PROC:<{
     //  proposal
@@ -335,57 +417,74 @@ PROGRAM{
     1 LDI	//  kind _7 cs
     SWAP	//  kind cs _7
     IF:<{	//  kind cs
-      LDREF	//  kind _72 _71
+      LDREF	//  kind _105 _104
       NIP	//  kind cs
     }>	//  kind cs
     1225918510 PUSHINT	//  kind cs _12
-    s1 s2 XCHG	//  cs kind _12
-    EQUAL	//  cs _13
-    IF:<{	//  cs
-      LDMSGADDR	//  to_addr cs
-      LDGRAMS	//  to_addr value cs
-      0 PUSHINT	//  to_addr value cs _21=0
-      16 PUSHINT	//  to_addr value cs _21=0 _22=16
-      NEWC	//  to_addr value cs _21=0 _22=16 _23
-      6 STU	//  to_addr value cs _21=0 _25
-      s0 s4 XCHG2	//  _21=0 value cs _25 to_addr
-      STSLICER	//  _21=0 value cs _26
-      ROT	//  _21=0 cs _26 value
-      STGRAMS	//  _21=0 cs _27
-      s1 s2 XCHG	//  cs _21=0 _27
-      105 STU	//  cs msg
-      SWAP	//  msg cs
-      1 LDI	//  msg _38 cs
-      SWAP	//  msg cs _38
-      IF:<{	//  msg cs
-        LDREF	//  msg stateInit cs
-        1 PUSHINT	//  msg stateInit cs _44=1
-        s0 s3 XCHG2	//  cs stateInit _44=1 msg
-        1 STU	//  cs stateInit msg
-        STREF	//  cs msg
-      }>ELSE<{	//  msg cs
+    s2 s(-1) PUXC	//  kind cs kind _12
+    EQUAL	//  kind cs _13
+    IF:<{	//  kind cs
+      LDMSGADDR	//  kind to_addr cs
+      LDGRAMS	//  kind to_addr value cs
+      0 PUSHINT	//  kind to_addr value cs _21=0
+      16 PUSHINT	//  kind to_addr value cs _21=0 _22=16
+      NEWC	//  kind to_addr value cs _21=0 _22=16 _23
+      6 STU	//  kind to_addr value cs _21=0 _25
+      s0 s4 XCHG2	//  kind _21=0 value cs _25 to_addr
+      STSLICER	//  kind _21=0 value cs _26
+      ROT	//  kind _21=0 cs _26 value
+      STGRAMS	//  kind _21=0 cs _27
+      s1 s2 XCHG	//  kind cs _21=0 _27
+      105 STU	//  kind cs msg
+      SWAP	//  kind msg cs
+      1 LDI	//  kind msg _38 cs
+      SWAP	//  kind msg cs _38
+      IF:<{	//  kind msg cs
+        LDREF	//  kind msg stateInit cs
+        1 PUSHINT	//  kind msg stateInit cs _44=1
+        s0 s3 XCHG2	//  kind cs stateInit _44=1 msg
+        1 STU	//  kind cs stateInit msg
+        STREF	//  kind cs msg
+      }>ELSE<{	//  kind msg cs
         0 PUSHINT
-        ROT	//  cs _48=0 msg
-        1 STU	//  cs msg
+        ROT	//  kind cs _48=0 msg
+        1 STU	//  kind cs msg
       }>
-      SWAP	//  msg cs
-      1 LDI	//  msg _51 cs
-      SWAP	//  msg cs _51
-      IF:<{	//  msg cs
-        LDREF	//  msg _84 _83
-        DROP	//  msg payload
-        1 PUSHINT
-        ROT	//  payload _57=1 msg
-        1 STU	//  payload msg
-        STREF	//  msg
-      }>ELSE<{	//  msg cs
-        DROP	//  msg
-        0 PUSHINT	//  msg _61=0
-        SWAP	//  _61=0 msg
-        1 STU	//  msg
+      SWAP	//  kind msg cs
+      1 LDI	//  kind msg _51 cs
+      SWAP	//  kind msg cs _51
+      IF:<{	//  kind msg cs
+        LDREF	//  kind msg payload cs
+        1 PUSHINT	//  kind msg payload cs _57=1
+        s0 s3 XCHG2	//  kind cs payload _57=1 msg
+        1 STU	//  kind cs payload msg
+        STREF	//  kind cs msg
+      }>ELSE<{	//  kind msg cs
+        0 PUSHINT
+        ROT	//  kind cs _61=0 msg
+        1 STU	//  kind cs msg
       }>
-      ENDC	//  _64
-      2 PUSHINT	//  _64 _65=2
+      ENDC	//  kind cs _64
+      2 PUSHINT	//  kind cs _64 _65=2
+      SENDRAWMSG
+    }>	//  kind cs
+    1738944794 PUSHINT	//  kind cs _67
+    s1 s2 XCHG	//  cs kind _67
+    EQUAL	//  cs _68
+    IF:<{	//  cs
+      LDMSGADDR	//  _119 _118
+      DROP	//  to_addr
+      0 PUSHINT	//  to_addr _73=0
+      16 PUSHINT	//  to_addr _73=0 _74=16
+      NEWC	//  to_addr _73=0 _74=16 _75
+      6 STU	//  to_addr _73=0 _77
+      ROT	//  _73=0 _77 to_addr
+      STSLICER	//  _73=0 _78
+      OVER	//  _73=0 _78 _79=0
+      STGRAMS	//  _73=0 _80
+      107 STU	//  msg
+      ENDC	//  _95
+      160 PUSHINT	//  _95 _98
       SENDRAWMSG
     }>ELSE<{
       DROP	// 
@@ -564,6 +663,26 @@ PROGRAM{
     store_proposal CALLDICT
     store_base_data CALLDICT
   }>
+  prepare_execute PROC:<{
+    //  proposalId member
+    SWAP	//  member proposalId
+    load_proposal CALLDICT
+    72 PUSHINT	//  member _3
+    ctx_proposal_state GETGLOB	//  member _3 _4
+    1 PUSHINT	//  member _3 _4 _5
+    EQUAL	//  member _3 _6
+    THROWANYIFNOT
+    72 PUSHINT	//  member _8
+    ctx_proposal_author GETGLOB	//  member _8 _9
+    ROT	//  _8 _9 member
+    EQUAL	//  _8 _10
+    THROWANYIFNOT
+    3 PUSHINT	//  _12
+    ctx_proposal_state SETGLOB
+    ctx_proposal_body GETGLOB	//  res
+    store_proposal CALLDICT
+    store_base_data CALLDICT
+  }>
   get_version PROC:<{
     // 
     0 PUSHINT	//  _0=0
@@ -593,38 +712,52 @@ PROGRAM{
     ctx_proposal_metadata GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13
   }>
   op_proposal PROC:<{
-    //  member value in_msg
-    NIP	//  member in_msg
-    32 LDU	//  member seq in_msg
-    LDREF	//  member seq proposal in_msg
-    LDREF	//  member seq proposal metadata in_msg
+    //  member value in_msg query_id
+    s2 POP	//  member query_id in_msg
+    32 LDU	//  member query_id seq in_msg
+    LDREF	//  member query_id seq proposal in_msg
+    LDREF	//  member query_id seq proposal metadata in_msg
     ENDS
-    72 PUSHINT	//  member seq proposal metadata _14
-    s2 PUSH	//  member seq proposal metadata _14 proposal
-    check_proposal CALLDICT	//  member seq proposal metadata _14 _15
+    72 PUSHINT	//  member query_id seq proposal metadata _15
+    s2 PUSH	//  member query_id seq proposal metadata _15 proposal
+    check_proposal CALLDICT	//  member query_id seq proposal metadata _15 _16
     THROWANYIFNOT
-    3 ROLL	//  seq proposal metadata member
+    s4 PUSH	//  member query_id seq proposal metadata member
     register_proposal CALLDICT
+    2391675301 PUSHINT	//  member query_id _19
+    SWAP	//  member _19 query_id
+    send_empty_receipt_message CALLDICT
   }>
   op_vote PROC:<{
-    //  member value in_msg
-    NIP	//  member in_msg
-    32 LDU	//  member proposalId in_msg
-    2 LDU	//  member proposalId vote in_msg
+    //  member value in_msg query_id
+    s2 POP	//  member query_id in_msg
+    32 LDU	//  member query_id proposalId in_msg
+    2 LDU	//  member query_id proposalId vote in_msg
     ENDS
-    s1 s2 XCHG	//  proposalId member vote
+    s3 s(-1) PUXC	//  member query_id proposalId member vote
     register_vote CALLDICT
+    1127259026 PUSHINT	//  member query_id _14
+    SWAP	//  member _14 query_id
+    send_empty_receipt_message CALLDICT
   }>
   op_execute PROC:<{
-    //  member value in_msg
-    3 BLKDROP	// 
+    //  member value in_msg query_id
+    s2 POP	//  member query_id in_msg
+    32 LDU	//  member query_id proposalId in_msg
+    ENDS
+    s2 PUSH	//  member query_id proposalId member
+    prepare_execute CALLDICT	//  member query_id proposal
+    2514550856 PUSHINT	//  member query_id proposal _11
+    s3 s0 s3 XCHG3	//  proposal member _11 query_id
+    send_empty_receipt_message CALLDICT
+    execute_proposal CALLDICT
   }>
   recv_internal PROC:<{
     //  msg_value in_msg_cell in_msg
     SWAP	//  msg_value in_msg in_msg_cell
     CTOS	//  msg_value in_msg cs
     4 LDU	//  msg_value in_msg flags cs
-    LDMSGADDR	//  msg_value in_msg flags _43 _42
+    LDMSGADDR	//  msg_value in_msg flags _49 _48
     DROP	//  msg_value in_msg flags s_addr
     REWRITEVARADDR	//  msg_value in_msg flags sender_wc sender_addr
     s0 s2 XCHG
@@ -637,46 +770,41 @@ PROGRAM{
     IFJMP:<{	//  msg_value in_msg sender_addr
       3 BLKDROP	// 
     }>	//  msg_value in_msg sender_addr
-    256 LDU	//  msg_value in_msg _47 _46
+    256 LDU	//  msg_value in_msg _53 _52
     DROP	//  msg_value in_msg member
     load_base_data CALLDICT
     OVER	//  msg_value in_msg member in_msg
     SBITS	//  msg_value in_msg member _24
-    32 LESSINT	//  msg_value in_msg member _26
+    96 LESSINT	//  msg_value in_msg member _28
     IFJMP:<{	//  msg_value in_msg member
       3 BLKDROP	// 
     }>	//  msg_value in_msg member
     SWAP	//  msg_value member in_msg
     32 LDU	//  msg_value member op in_msg
-    3241702467 PUSHINT	//  msg_value member op in_msg _31
-    s2 s(-1) PUXC	//  msg_value member op in_msg op _31
-    EQUAL	//  msg_value member op in_msg _32
-    IFJMP:<{	//  msg_value member op in_msg
-      NIP	//  msg_value member in_msg
-      s1 s2 XCHG	//  member msg_value in_msg
+    64 LDU	//  msg_value member op query_id in_msg
+    3241702467 PUSHINT	//  msg_value member op query_id in_msg _37
+    s3 s(-1) PUXC	//  msg_value member op query_id in_msg op _37
+    EQUAL	//  msg_value member op query_id in_msg _38
+    IFJMP:<{	//  msg_value member op query_id in_msg
+      s2 POP	//  msg_value member in_msg query_id
+      s2 s3 XCHG	//  member msg_value in_msg query_id
       op_proposal CALLDICT
-    }>	//  msg_value member op in_msg
-    3047515073 PUSHINT	//  msg_value member op in_msg _34
-    s2 s(-1) PUXC	//  msg_value member op in_msg op _34
-    EQUAL	//  msg_value member op in_msg _35
-    IFJMP:<{	//  msg_value member op in_msg
-      NIP	//  msg_value member in_msg
-      s1 s2 XCHG	//  member msg_value in_msg
+    }>	//  msg_value member op query_id in_msg
+    3047515073 PUSHINT	//  msg_value member op query_id in_msg _40
+    s3 s(-1) PUXC	//  msg_value member op query_id in_msg op _40
+    EQUAL	//  msg_value member op query_id in_msg _41
+    IFJMP:<{	//  msg_value member op query_id in_msg
+      s2 POP	//  msg_value member in_msg query_id
+      s2 s3 XCHG	//  member msg_value in_msg query_id
       op_vote CALLDICT
-    }>	//  msg_value member op in_msg
-    2483002579 PUSHINT	//  msg_value member op in_msg _37
-    s1 s2 XCHG	//  msg_value member in_msg op _37
-    EQUAL	//  msg_value member in_msg _38
-    IFJMP:<{	//  msg_value member in_msg
-      s1 s2 XCHG	//  member msg_value in_msg
+    }>	//  msg_value member op query_id in_msg
+    2483002579 PUSHINT	//  msg_value member op query_id in_msg _43
+    s1 s3 XCHG	//  msg_value member in_msg query_id op _43
+    EQUAL	//  msg_value member in_msg query_id _44
+    IFJMP:<{	//  msg_value member in_msg query_id
+      s2 s3 XCHG	//  member msg_value in_msg query_id
       op_execute CALLDICT
-    }>	//  msg_value member in_msg
-    3 BLKDROP	// 
-  }>
-  recv_external PROC:<{
-    //  in_msg
-    DROP	// 
-    72 PUSHINT	//  _1
-    THROWANY
+    }>	//  msg_value member in_msg query_id
+    4 BLKDROP	// 
   }>
 }END>c

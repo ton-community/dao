@@ -1,4 +1,4 @@
-() op_proposal(int member, int value, slice in_msg) impure {
+() op_proposal(int member, int value, slice in_msg, int query_id) impure {
 
     ;; Check input
     int seq = in_msg~load_uint(32);
@@ -9,9 +9,10 @@
 
     ;; Register input
     register_proposal(seq, proposal, metadata, member);
+    send_empty_receipt_message(member, op::proposal::ok(), query_id);
 }
 
-() op_vote(int member, int value, slice in_msg) impure {
+() op_vote(int member, int value, slice in_msg, int query_id) impure {
     
     ;; Check input
     int proposalId = in_msg~load_uint(32);
@@ -20,8 +21,17 @@
 
     ;; Register vote
     register_vote(proposalId, member, vote);
+    send_empty_receipt_message(member, op::vote::ok(), query_id);
 }
 
-() op_execute(int member, int value, slice in_msg) impure {
+() op_execute(int member, int value, slice in_msg, int query_id) impure {
     
+    ;; Check input
+    int proposalId = in_msg~load_uint(32);
+    in_msg.end_parse();
+
+    ;; Prepare
+    var proposal = prepare_execute(proposalId, member);
+    send_empty_receipt_message(member, op::execute::ok(), query_id);
+    execute_proposal(proposal);
 }

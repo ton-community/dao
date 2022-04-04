@@ -23,30 +23,26 @@
     load_base_data();
 
     ;; Ignore invalid operations
-    if (in_msg.slice_bits() < 32) {
+    if (in_msg.slice_bits() < (32 + 64)) {
         return ();
     }
 
     ;; Parse operation
     int op = in_msg~load_uint(32);
+    int query_id = in_msg~load_uint(64);
     if (op == op::proposal()) {
-        op_proposal(member, msg_value, in_msg);
+        op_proposal(member, msg_value, in_msg, query_id);
         return ();
     }
     if (op == op::vote()) {
-        op_vote(member, msg_value, in_msg);
+        op_vote(member, msg_value, in_msg, query_id);
         return ();
     }
     if (op == op::execute()) {
-        op_execute(member, msg_value, in_msg);
+        op_execute(member, msg_value, in_msg, query_id);
         return ();
     }
 
     ;; Ignore all invalid operations since DAO could vote to return coins to sender
     return ();
-}
-
-() recv_external(slice in_msg) impure {
-    ;; Do not accept external messages
-    throw(error::invalid_message());
 }

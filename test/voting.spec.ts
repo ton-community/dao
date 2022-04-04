@@ -269,19 +269,19 @@ describe("voting", () => {
         );
 
         // Vote
-        expect(sendMessage(
+        await expect(sendMessage(
             executor,
             toNano(1),
             member1,
             createVote(0, 'yes')
         )).rejects.toThrowError('Error 72');
-        expect(sendMessage(
+        await expect(sendMessage(
             executor,
             toNano(1),
             member1,
             createVote(0, 'no')
         )).rejects.toThrowError('Error 72');
-        expect(sendMessage(
+        await expect(sendMessage(
             executor,
             toNano(1),
             member1,
@@ -330,19 +330,19 @@ describe("voting", () => {
         );
 
         // Double Vote
-        expect(sendMessage(
+        await expect(sendMessage(
             executor,
             toNano(1),
             member1,
             createVote(0, 'yes')
         )).rejects.toThrowError('Error 72');
-        expect(sendMessage(
+        await expect(sendMessage(
             executor,
             toNano(1),
             member1,
             createVote(0, 'no')
         )).rejects.toThrowError('Error 72');
-        expect(sendMessage(
+        await expect(sendMessage(
             executor,
             toNano(1),
             member1,

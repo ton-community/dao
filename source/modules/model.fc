@@ -19,7 +19,7 @@ int get_failure_treshold(int total) {
     ;; Load shares
     int shares = load_shares(ctx_members_dict, member);
     throw_unless(error::no_voting_power(), shares > 0);
-
+    
     ;; Check seq
     throw_unless(error::invalid_message(), seq == ctx_proposals_seq);
 
@@ -122,4 +122,32 @@ int get_failure_treshold(int total) {
     ;; Persist
     store_proposal();
     store_base_data();
+}
+
+;;
+;; Prepare execution
+;;
+
+cell prepare_execute(int proposalId, int member) impure {
+    
+    ;; Load proposal
+    load_proposal(proposalId);
+
+    ;; Check proposal state
+    throw_unless(error::invalid_message(), ctx_proposal_state == state::success());
+
+    ;; Check if can execute
+    throw_unless(error::invalid_message(), ctx_proposal_author == member);
+
+    ;; Update executed state
+    ctx_proposal_state = state::executed();
+
+    ;; Keep reference for proposal body
+    cell res = ctx_proposal_body;
+
+    ;; Persist
+    store_proposal();
+    store_base_data();
+
+    return res;
 }
