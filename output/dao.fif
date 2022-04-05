@@ -21,6 +21,7 @@ PROGRAM{
   82320 DECLMETHOD get_version
   129834 DECLMETHOD get_last_proposal_id
   94347 DECLMETHOD get_proposal
+  116485 DECLMETHOD get_membership
   DECLPROC op_proposal
   DECLPROC op_vote
   DECLPROC op_execute
@@ -427,8 +428,8 @@ PROGRAM{
       LDMSGADDR	//  kind to_addr cs
       LDGRAMS	//  kind to_addr value cs
       0 PUSHINT	//  kind to_addr value cs _21=0
-      16 PUSHINT	//  kind to_addr value cs _21=0 _22=16
-      NEWC	//  kind to_addr value cs _21=0 _22=16 _23
+      24 PUSHINT	//  kind to_addr value cs _21=0 _22=24
+      NEWC	//  kind to_addr value cs _21=0 _22=24 _23
       6 STU	//  kind to_addr value cs _21=0 _25
       s0 s4 XCHG2	//  kind _21=0 value cs _25 to_addr
       STSLICER	//  kind _21=0 value cs _26
@@ -710,6 +711,32 @@ PROGRAM{
     ctx_proposal_treshold_success GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9 _10 _11
     ctx_proposal_treshold_failure GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9 _10 _11 _12
     ctx_proposal_metadata GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13
+  }>
+  get_membership PROC:<{
+    //  addr
+    REWRITEVARADDR	//  sender_wc sender_addr
+    SWAP	//  sender_addr sender_wc
+    0 NEQINT	//  sender_addr _5
+    IFJMP:<{	//  sender_addr
+      DROP	// 
+      0 PUSHINT	//  _6=0
+      DUP	//  _6=0 _7=0
+    }>	//  sender_addr
+    256 LDU	//  _24 _23
+    DROP	//  member
+    load_base_data CALLDICT
+    ctx_members_dict GETGLOB	//  member _14
+    SWAP	//  _14 member
+    load_shares CALLDICT	//  shares
+    DUP	//  shares shares
+    0 GTINT	//  shares _17
+    IFJMP:<{	//  shares
+      1 PUSHINT	//  shares _18=1
+      SWAP	//  _18=1 shares
+    }>	//  shares
+    DROP	// 
+    0 PUSHINT	//  _19=0
+    DUP	//  _19=0 _20=0
   }>
   op_proposal PROC:<{
     //  member value in_msg query_id

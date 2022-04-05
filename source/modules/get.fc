@@ -24,3 +24,18 @@ _ get_proposal(int id) method_id {
         ctx_proposal_metadata
     );
 }
+
+_ get_membership(slice addr) method_id {
+    (int sender_wc, slice sender_addr) = parse_var_addr(addr);
+    if (sender_wc != 0) {
+        return (0, 0);
+    }
+    int member = sender_addr~load_uint(256);
+    load_base_data();
+    var shares = load_shares(ctx_members_dict, member);
+    if (shares > 0) {
+        return (1, shares);
+    } else {
+        return (0, 0);
+    }
+}

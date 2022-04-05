@@ -377,11 +377,13 @@ int check_proposal(cell proposal) {
     ;; Tansaction
     if (kind == proposal::transaction()) {
 
+        ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 011000 -> 0x18
+
         ;; Basic message
         slice to_addr = cs~load_msg_addr();
         int value = cs~load_coins();
         var msg = begin_cell()
-            .store_uint(0x10, 6)
+            .store_uint(0x18, 6)
             .store_slice(to_addr)
             .store_coins(value)
             .store_uint(0, 1 + 4 + 4 + 64 + 32);
@@ -412,6 +414,7 @@ int check_proposal(cell proposal) {
     if (kind == proposal::destroy()) {
 
         ;; Create destroy message
+        ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000 -> 0x10
         slice to_addr = cs~load_msg_addr();
         var msg = begin_cell()
             .store_uint(0x10, 6)
@@ -603,6 +606,21 @@ _ get_proposal(int id) method_id {
         ctx_proposal_treshold_failure,
         ctx_proposal_metadata
     );
+}
+
+_ get_membership(slice addr) method_id {
+    (int sender_wc, slice sender_addr) = parse_var_addr(addr);
+    if (sender_wc != 0) {
+        return (0, 0);
+    }
+    int member = sender_addr~load_uint(256);
+    load_base_data();
+    var shares = load_shares(ctx_members_dict, member);
+    if (shares > 0) {
+        return (1, shares);
+    } else {
+        return (0, 0);
+    }
 }
 
 () op_proposal(int member, int value, slice in_msg, int query_id) impure {
