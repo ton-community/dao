@@ -59,11 +59,13 @@ int check_proposal(cell proposal) {
     ;; Tansaction
     if (kind == proposal::transaction()) {
 
+        ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 011000 -> 0x18
+
         ;; Basic message
         slice to_addr = cs~load_msg_addr();
         int value = cs~load_coins();
         var msg = begin_cell()
-            .store_uint(0x10, 6)
+            .store_uint(0x18, 6)
             .store_slice(to_addr)
             .store_coins(value)
             .store_uint(0, 1 + 4 + 4 + 64 + 32);
@@ -94,6 +96,7 @@ int check_proposal(cell proposal) {
     if (kind == proposal::destroy()) {
 
         ;; Create destroy message
+        ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000 -> 0x10
         slice to_addr = cs~load_msg_addr();
         var msg = begin_cell()
             .store_uint(0x10, 6)

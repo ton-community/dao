@@ -16,7 +16,7 @@ export async function sendMessage(contract: SmartContract, value: BN, from: Addr
         })
     }));
     if (res.exit_code !== 0) {
-        console.warn(res.logs);
+        // console.warn(res.logs);
         throw Error('Error ' + res.exit_code);
     }
     if (res.type === 'success') {

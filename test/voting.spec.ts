@@ -27,7 +27,7 @@ describe("voting", () => {
         );
 
         // Create proposal
-        await sendMessage(
+        let res = await sendMessage(
             executor,
             toNano(1),
             member1,
@@ -44,14 +44,24 @@ describe("voting", () => {
                 createMetadata()
             )
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member1.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Vote
-        await sendMessage(
+        res = await sendMessage(
             executor,
             toNano(1),
             member2,
             createVote(0, 'yes')
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member2.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Check state
         let proposal = await getProposal(executor, 0);
@@ -66,12 +76,17 @@ describe("voting", () => {
         });
 
         // Vote
-        await sendMessage(
+        res = await sendMessage(
             executor,
             toNano(1),
             member3,
             createVote(0, 'yes')
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member3.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Check state
         proposal = await getProposal(executor, 0);
@@ -108,7 +123,7 @@ describe("voting", () => {
         );
 
         // Create proposal
-        await sendMessage(
+        let res = await sendMessage(
             executor,
             toNano(1),
             member1,
@@ -125,14 +140,24 @@ describe("voting", () => {
                 createMetadata()
             )
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member1.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Vote
-        await sendMessage(
+        res = await sendMessage(
             executor,
             toNano(1),
             member2,
             createVote(0, 'no')
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member2.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Check state
         let proposal = await getProposal(executor, 0);
@@ -169,7 +194,7 @@ describe("voting", () => {
         );
 
         // Create proposal
-        await sendMessage(
+        let res = await sendMessage(
             executor,
             toNano(1),
             member1,
@@ -186,14 +211,24 @@ describe("voting", () => {
                 createMetadata()
             )
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member1.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Vote
-        await sendMessage(
+        res = await sendMessage(
             executor,
             toNano(1),
             member2,
             createVote(0, 'abstain')
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member2.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Check state
         let proposal = await getProposal(executor, 0);
@@ -208,12 +243,17 @@ describe("voting", () => {
         });
 
         // Vote
-        await sendMessage(
+        res = await sendMessage(
             executor,
             toNano(1),
             member3,
             createVote(0, 'abstain')
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member3.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Check state
         proposal = await getProposal(executor, 0);
@@ -250,7 +290,7 @@ describe("voting", () => {
         );
 
         // Create proposal
-        await sendMessage(
+        let res = await sendMessage(
             executor,
             toNano(1),
             member1,
@@ -267,6 +307,11 @@ describe("voting", () => {
                 createMetadata()
             )
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member1.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Vote
         await expect(sendMessage(
@@ -303,7 +348,7 @@ describe("voting", () => {
         );
 
         // Create proposal
-        await sendMessage(
+        let res = await sendMessage(
             executor,
             toNano(1),
             member1,
@@ -320,14 +365,24 @@ describe("voting", () => {
                 createMetadata()
             )
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member1.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Vote
-        await sendMessage(
+        res = await sendMessage(
             executor,
             toNano(1),
             member2,
             createVote(0, 'abstain')
         );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member2.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
 
         // Double Vote
         await expect(sendMessage(
