@@ -16,6 +16,14 @@ export function createProposal(seq: number,
         .endCell();
 }
 
+export function executeProposal(id: number) {
+    return beginCell()
+        .storeUint(2483002579, 32)
+        .storeUint(10000, 64)
+        .storeUint(id, 32)
+        .endCell();
+}
+
 export function createVote(id: number, type: 'yes' | 'no' | 'abstain') {
     let t = 3;
     if (type === 'yes') {

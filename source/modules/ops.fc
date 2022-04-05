@@ -25,7 +25,7 @@
 }
 
 () op_execute(int member, int value, slice in_msg, int query_id) impure {
-    
+
     ;; Check input
     int proposalId = in_msg~load_uint(32);
     in_msg.end_parse();
