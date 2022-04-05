@@ -190,6 +190,10 @@ global cell ctx_proposals_ids;
     .end_cell());
 }
 
+() storage_upgrade() impure method_id(1666) {
+    ;; Nothing to do
+}
+
 ;;
 ;; Members storage
 ;; NOTE: this storage have to store ONLY voting shares, do not add anything else here
@@ -358,7 +362,13 @@ int check_proposal(cell proposal) {
 
     ;; Upgrade proposal
     if (kind == proposal::upgrade()) {
-        cs~load_ref(); ;; Load code ref
+        var expectedVersion = cs~load_uint(16); ;; Load code version
+        if (expectedVersion != ctx_code_version) {
+            return false;
+        } else {
+            cs~load_ref(); ;; Load code ref
+            return true;
+        }
     }
 
     return false;
@@ -430,8 +440,22 @@ int check_proposal(cell proposal) {
 
     ;; Upgrade contract
     if (kind == proposal::upgrade()) {
+        var expectedVersion = cs~load_uint(16);
         var newCode = cs~load_ref();
-        set_code(newCode);
+        if (ctx_code_version == expectedVersion) {
+
+            ;; Update code version
+            ctx_code_version = ctx_code_version + 1;
+            store_base_data();
+
+            ;; Update code
+            set_code(newCode);
+
+            ;; Upgrade code
+            set_c3(newCode.begin_parse().bless());
+            storage_upgrade();
+            throw(0);
+        }
     }
 }
 
@@ -593,6 +617,20 @@ _ get_version() method_id {
     return (0, 0, 2);
 }
 
+_ get_code_version() method_id {
+    load_base_data();
+    return ctx_code_version;
+}
+
+_ get_members_info() method_id {
+    load_base_data();
+    return (0, ctx_members_total, ctx_members_shares_allocated, ctx_members_shares_total);
+}
+
+;;
+;; Proposals
+;;
+
 _ get_last_proposal_id() method_id {
     load_base_data();
     return ctx_proposals_seq - 1;
@@ -616,13 +654,52 @@ _ get_proposal(int id) method_id {
     );
 }
 
-_ get_membership(slice addr) method_id {
+_ get_proposal_vote(int id, slice addr) method_id {
+
+    ;; Load address
     (int sender_wc, slice sender_addr) = parse_var_addr(addr);
-    if (sender_wc != 0) {
-        return (0, 0);
-    }
+    throw_unless(error::invalid_message(), sender_wc == 0);
     int member = sender_addr~load_uint(256);
+
+    ;; Load data
     load_base_data();
+    load_proposal(id);
+
+    ;; Load existing vote
+    int existingVote = -1;
+    var (vs, vfound) = ctx_proposal_votes.udict_get?(256, member);
+    if (vfound) {
+        existingVote = vs~load_uint(2);
+    }
+
+    ;; Load voting power
+    int votingPower = load_shares(ctx_proposal_members, member);
+
+    return (
+        0, 
+        existingVote, 
+        votingPower,
+        ctx_proposal_members_shares_allocated, 
+        ctx_proposal_members_shares_total,
+        ctx_proposal_members_total
+    );
+}
+
+;;
+;; Membership
+;;
+
+_ get_membership(slice addr) method_id {
+
+    ;; Load address
+    (int sender_wc, slice sender_addr) = parse_var_addr(addr);
+    throw_unless(error::invalid_message(), sender_wc == 0);
+    int member = sender_addr~load_uint(256);
+
+    ;; Load data
+    load_base_data();
+
+    ;; Load share
     var shares = load_shares(ctx_members_dict, member);
     if (shares > 0) {
         return (1, shares);

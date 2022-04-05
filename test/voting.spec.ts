@@ -1,4 +1,5 @@
-import { beginCell, toNano } from "ton";
+import BN from "bn.js";
+import { beginCell, Cell, toNano } from "ton";
 import { SmartContract } from "ton-contract-executor";
 import { createCode } from "./contract/createCode";
 import { createData } from "./contract/createData";
@@ -398,5 +399,59 @@ describe("voting", () => {
             member1,
             createVote(0, 'abstain')
         )).rejects.toThrowError('Error 72');
+    });
+
+    it("should return correct member vote info", async () => {
+
+        // Create contract
+        const executor = await SmartContract.fromCell(
+            createCode(),
+            createData(5000, [
+                { address: member1, shares: 1000 },
+                { address: member2, shares: 1000 },
+                { address: member3, shares: 1000 },
+                { address: member4, shares: 1000 },
+            ])
+        );
+
+        // Create proposal
+        await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createProposal(
+                0,
+                beginCell()
+                    .storeUint(1225918510, 32) // Transaction proposal
+                    .storeAddress(outsider) // Target
+                    .storeCoins(toNano(10)) // Value
+                    .storeBit(false) // No state init
+                    .storeBit(false) // No payload
+                    .endCell(),
+                createMetadata()
+            )
+        );
+
+        let vote = await executor.invokeGetMethod('get_proposal_vote', [{
+            type: 'int',
+            value: '0'
+        }, {
+            type: 'cell_slice',
+            value: beginCell().storeAddress(member1).endCell().toBoc({ idx: false }).toString('base64')
+        }]);
+
+        
+        // Version
+        expect((vote.result[0] as BN).toString(10)).toBe('0');
+        // Vote YES
+        expect((vote.result[1] as BN).toString(10)).toBe('1');
+        // Voting power
+        expect((vote.result[2] as BN).toString(10)).toBe('1000');
+        // Shares allocated
+        expect((vote.result[3] as BN).toString(10)).toBe('4000');
+        // Shares total
+        expect((vote.result[4] as BN).toString(10)).toBe('5000');
+        // Members total
+        expect((vote.result[5] as BN).toString(10)).toBe('4');
     });
 });

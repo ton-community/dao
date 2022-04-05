@@ -53,3 +53,7 @@ global cell ctx_proposals_ids;
         .end_cell())
     .end_cell());
 }
+
+() storage_upgrade() impure method_id(1666) {
+    ;; Nothing to do
+}

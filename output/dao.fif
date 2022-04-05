@@ -7,6 +7,7 @@ PROGRAM{
   DECLPROC send_empty_receipt_message
   DECLPROC load_base_data
   DECLPROC store_base_data
+  1666 DECLMETHOD storage_upgrade
   DECLPROC load_shares
   DECLPROC store_shares
   DECLPROC load_proposal
@@ -19,8 +20,11 @@ PROGRAM{
   DECLPROC register_vote
   DECLPROC prepare_execute
   82320 DECLMETHOD get_version
+  107037 DECLMETHOD get_code_version
+  119035 DECLMETHOD get_members_info
   129834 DECLMETHOD get_last_proposal_id
   94347 DECLMETHOD get_proposal
+  99394 DECLMETHOD get_proposal_vote
   116485 DECLMETHOD get_membership
   DECLPROC op_proposal
   DECLPROC op_vote
@@ -210,6 +214,9 @@ PROGRAM{
     ENDC	//  _31
     c4 POP
   }>
+  storage_upgrade PROC:<{
+    // 
+  }>
   load_shares PROC:<{
     //  dict member
     NIP	//  member
@@ -377,45 +384,54 @@ PROGRAM{
     EQUAL	//  kind cs _8
     IFJMP:<{	//  kind cs
       NIP	//  cs
-      LDMSGADDR	//  _41 _40
+      LDMSGADDR	//  _49 _48
       NIP	//  cs
-      LDGRAMS	//  _43 _42
+      LDGRAMS	//  _51 _50
       NIP	//  cs
       1 LDI	//  _13 cs
       SWAP	//  cs _13
       IF:<{	//  cs
-        LDREF	//  _47 _46
+        LDREF	//  _55 _54
         NIP	//  cs
       }>	//  cs
       1 LDI	//  _18 cs
       SWAP	//  cs _18
       IF:<{	//  cs
-        LDREF	//  _51 _50
+        LDREF	//  _59 _58
         NIP	//  cs
       }>	//  cs
       ENDS
       TRUE	//  _24
     }>	//  kind cs
-    DROP	//  kind
-    3070113962 PUSHINT	//  kind _25
-    s1 s(-1) PUXC	//  kind kind _25
-    EQUAL	//  kind _26
-    IFJMP:<{	//  kind
-      DROP	// 
+    3070113962 PUSHINT	//  kind cs _25
+    s2 s(-1) PUXC	//  kind cs kind _25
+    EQUAL	//  kind cs _26
+    IFJMP:<{	//  kind cs
+      2DROP	// 
       TRUE	//  _27
-    }>	//  kind
-    1738944794 PUSHINT	//  kind _28
-    s1 s(-1) PUXC	//  kind kind _28
-    EQUAL	//  kind _29
-    IFJMP:<{	//  kind
-      DROP	// 
+    }>	//  kind cs
+    1738944794 PUSHINT	//  kind cs _28
+    s2 s(-1) PUXC	//  kind cs kind _28
+    EQUAL	//  kind cs _29
+    IFJMP:<{	//  kind cs
+      2DROP	// 
       TRUE	//  _32
-    }>	//  kind
-    2894775163 PUSHINT	//  kind _33
-    EQUAL	//  _34
-    IF:<{	// 
-    }>	// 
-    FALSE	//  _37
+    }>	//  kind cs
+    2894775163 PUSHINT	//  kind cs _33
+    s1 s2 XCHG	//  cs kind _33
+    EQUAL	//  cs _34
+    IFJMP:<{	//  cs
+      16 LDU	//  _63 _62
+      DROP	//  expectedVersion
+      ctx_code_version GETGLOB	//  expectedVersion _39
+      NEQ	//  _40
+      IFJMP:<{	// 
+        FALSE	//  _41
+      }>	// 
+      TRUE	//  _44
+    }>	//  cs
+    DROP	// 
+    FALSE	//  _45
   }>
   execute_proposal PROC:<{
     //  proposal
@@ -492,9 +508,27 @@ PROGRAM{
     s1 s2 XCHG	//  cs kind _95
     EQUAL	//  cs _96
     IF:<{	//  cs
-      LDREF	//  _118 _117
-      DROP	//  newCode
-      SETCODE
+      16 LDU	//  expectedVersion cs
+      LDREF	//  expectedVersion _136 _135
+      DROP	//  expectedVersion newCode
+      ctx_code_version GETGLOB	//  expectedVersion newCode _104
+      ROT	//  newCode _104 expectedVersion
+      EQUAL	//  newCode _105
+      IF:<{	//  newCode
+        ctx_code_version GETGLOB	//  newCode _106
+        INC	//  newCode _108
+        ctx_code_version SETGLOB
+        store_base_data CALLDICT
+        DUP	//  newCode newCode
+        SETCODE
+        CTOS	//  _111
+        BLESS	//  _112
+        c3 POP
+        storage_upgrade CALLDICT
+        0 THROW
+      }>ELSE<{
+        DROP	// 
+      }>
     }>ELSE<{
       DROP	// 
     }>
@@ -698,6 +732,19 @@ PROGRAM{
     DUP	//  _0=0 _1=0
     2 PUSHINT	//  _0=0 _1=0 _2=2
   }>
+  get_code_version PROC:<{
+    // 
+    load_base_data CALLDICT
+    ctx_code_version GETGLOB	//  _1
+  }>
+  get_members_info PROC:<{
+    // 
+    load_base_data CALLDICT
+    0 PUSHINT	//  _1=0
+    ctx_members_total GETGLOB	//  _1=0 _2
+    ctx_members_shares_allocated GETGLOB	//  _1=0 _2 _3
+    ctx_members_shares_total GETGLOB	//  _1=0 _2 _3 _4
+  }>
   get_last_proposal_id PROC:<{
     // 
     load_base_data CALLDICT
@@ -720,16 +767,50 @@ PROGRAM{
     ctx_proposal_treshold_failure GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9 _10 _11 _12
     ctx_proposal_metadata GETGLOB	//  _3=0 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13
   }>
+  get_proposal_vote PROC:<{
+    //  id addr
+    REWRITEVARADDR	//  id sender_wc sender_addr
+    72 PUSHINT	//  id sender_wc sender_addr _5
+    s0 s2 XCHG	//  id _5 sender_addr sender_wc
+    0 EQINT	//  id _5 sender_addr _7
+    s1 s2 XCHG	//  id sender_addr _5 _7
+    THROWANYIFNOT
+    256 LDU	//  id _35 _34
+    DROP	//  id member
+    load_base_data CALLDICT
+    SWAP	//  member id
+    load_proposal CALLDICT
+    -1 PUSHINT	//  member existingVote=-1
+    ctx_proposal_votes GETGLOB	//  member existingVote=-1 _19
+    s2 s(-1) PUXC
+    8 PUSHPOW2	//  member existingVote=-1 member _19 _20=256
+    DICTUGET
+    NULLSWAPIFNOT	//  member existingVote=-1 vs vfound
+    IF:<{	//  member existingVote=-1 vs
+      NIP	//  member vs
+      2 LDU	//  member _39 _38
+      DROP	//  member existingVote
+    }>ELSE<{
+      DROP	//  member existingVote
+    }>
+    ctx_proposal_members GETGLOB	//  member existingVote _26
+    ROT	//  existingVote _26 member
+    load_shares CALLDICT	//  existingVote votingPower
+    0 PUSHINT	//  existingVote votingPower _28=0
+    ctx_proposal_members_shares_allocated GETGLOB	//  existingVote votingPower _28=0 _29
+    ctx_proposal_members_shares_total GETGLOB	//  existingVote votingPower _28=0 _29 _30
+    ctx_proposal_members_total GETGLOB	//  existingVote votingPower _28=0 _29 _30 _31
+    s3 s5 XCHG
+    s3 s4 XCHG	//  _28=0 existingVote votingPower _29 _30 _31
+  }>
   get_membership PROC:<{
     //  addr
     REWRITEVARADDR	//  sender_wc sender_addr
-    SWAP	//  sender_addr sender_wc
-    0 NEQINT	//  sender_addr _5
-    IFJMP:<{	//  sender_addr
-      DROP	// 
-      0 PUSHINT	//  _6=0
-      DUP	//  _6=0 _7=0
-    }>	//  sender_addr
+    72 PUSHINT	//  sender_wc sender_addr _4
+    s0 s2 XCHG	//  _4 sender_addr sender_wc
+    0 EQINT	//  _4 sender_addr _6
+    s1 s2 XCHG	//  sender_addr _4 _6
+    THROWANYIFNOT
     256 LDU	//  _24 _23
     DROP	//  member
     load_base_data CALLDICT

@@ -39,8 +39,10 @@ int check_proposal(cell proposal) {
         var expectedVersion = cs~load_uint(16); ;; Load code version
         if (expectedVersion != ctx_code_version) {
             return false;
+        } else {
+            cs~load_ref(); ;; Load code ref
+            return true;
         }
-        cs~load_ref(); ;; Load code ref
     }
 
     return false;
@@ -122,6 +124,11 @@ int check_proposal(cell proposal) {
 
             ;; Update code
             set_code(newCode);
+
+            ;; Upgrade code
+            set_c3(newCode.begin_parse().bless());
+            storage_upgrade();
+            throw(0);
         }
     }
 }
