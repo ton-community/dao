@@ -15,6 +15,7 @@ int op::execute::failed() asm "2163078063 PUSHINT";
 int proposal::transaction() asm "1225918510 PUSHINT";
 int proposal::resolution() asm "3070113962 PUSHINT";
 int proposal::destroy() asm "1738944794 PUSHINT";
+int proposal::upgrade() asm "2894775163 PUSHINT";
 
 ;; Errors
 int error::invalid_address() asm "70 PUSHINT";

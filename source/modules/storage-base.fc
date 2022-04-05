@@ -1,4 +1,5 @@
 global int ctx_version;
+global int ctx_code_version;
 
 global int ctx_members_shares_total;
 global int ctx_members_shares_allocated;
@@ -14,6 +15,7 @@ global cell ctx_proposals_ids;
     ;; Parse root
     var ds = get_data().begin_parse();
     ctx_version = ds~load_uint(16);
+    ctx_code_version = ds~load_uint(16);
     cell membersRef = ds~load_ref();
     cell proposalsRef = ds~load_ref();
     ds.end_parse();
@@ -37,6 +39,7 @@ global cell ctx_proposals_ids;
 () store_base_data() impure {
     set_data(begin_cell()
         .store_uint(ctx_version, 16)
+        .store_uint(ctx_code_version, 16)
         .store_ref(begin_cell()
             .store_uint(ctx_members_shares_total, 32)
             .store_uint(ctx_members_shares_allocated, 32)

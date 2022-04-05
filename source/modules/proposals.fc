@@ -6,10 +6,6 @@
 int check_proposal(cell proposal) {
     slice cs = proposal.begin_parse();
     int kind = cs~load_uint(32);
-    int hasExtras = cs~load_int(1);
-    if (hasExtras) {
-        return false; ;; Not supported
-    }
 
     ;; Transaction proposal
     if (kind == proposal::transaction()) {
@@ -38,6 +34,15 @@ int check_proposal(cell proposal) {
         return true;
     }
 
+    ;; Upgrade proposal
+    if (kind == proposal::upgrade()) {
+        var expectedVersion = cs~load_uint(16); ;; Load code version
+        if (expectedVersion != ctx_code_version) {
+            return false;
+        }
+        cs~load_ref(); ;; Load code ref
+    }
+
     return false;
 }
 
@@ -52,9 +57,6 @@ int check_proposal(cell proposal) {
     ;; Begin parsing
     slice cs = proposal.begin_parse();
     int kind = cs~load_uint(32);
-    if (cs~load_int(1)) {
-        cs~load_ref();
-    }
 
     ;; Tansaction
     if (kind == proposal::transaction()) {
@@ -106,5 +108,20 @@ int check_proposal(cell proposal) {
 
         ;; Send message
         send_raw_message(msg.end_cell(), 32 + 128);
+    }
+
+    ;; Upgrade contract
+    if (kind == proposal::upgrade()) {
+        var expectedVersion = cs~load_uint(16);
+        var newCode = cs~load_ref();
+        if (ctx_code_version == expectedVersion) {
+
+            ;; Update code version
+            ctx_code_version = ctx_code_version + 1;
+            store_base_data();
+
+            ;; Update code
+            set_code(newCode);
+        }
     }
 }

@@ -35,7 +35,6 @@ describe("voting", () => {
                 0,
                 beginCell()
                     .storeUint(1225918510, 32) // Transaction proposal
-                    .storeBit(false) // No extras
                     .storeAddress(outsider) // Target
                     .storeCoins(toNano(10)) // Value
                     .storeBit(false) // No state init
@@ -131,7 +130,6 @@ describe("voting", () => {
                 0,
                 beginCell()
                     .storeUint(1225918510, 32) // Transaction proposal
-                    .storeBit(false) // No extras
                     .storeAddress(outsider) // Target
                     .storeCoins(toNano(10)) // Value
                     .storeBit(false) // No state init
@@ -202,7 +200,6 @@ describe("voting", () => {
                 0,
                 beginCell()
                     .storeUint(1225918510, 32) // Transaction proposal
-                    .storeBit(false) // No extras
                     .storeAddress(outsider) // Target
                     .storeCoins(toNano(10)) // Value
                     .storeBit(false) // No state init
@@ -298,7 +295,6 @@ describe("voting", () => {
                 0,
                 beginCell()
                     .storeUint(1225918510, 32) // Transaction proposal
-                    .storeBit(false) // No extras
                     .storeAddress(outsider) // Target
                     .storeCoins(toNano(10)) // Value
                     .storeBit(false) // No state init
@@ -356,7 +352,6 @@ describe("voting", () => {
                 0,
                 beginCell()
                     .storeUint(1225918510, 32) // Transaction proposal
-                    .storeBit(false) // No extras
                     .storeAddress(outsider) // Target
                     .storeCoins(toNano(10)) // Value
                     .storeBit(false) // No state init

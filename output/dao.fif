@@ -27,6 +27,7 @@ PROGRAM{
   DECLPROC op_execute
   DECLPROC recv_internal
   DECLGLOBVAR ctx_version
+  DECLGLOBVAR ctx_code_version
   DECLGLOBVAR ctx_members_shares_total
   DECLGLOBVAR ctx_members_shares_allocated
   DECLGLOBVAR ctx_members_total
@@ -146,33 +147,36 @@ PROGRAM{
     16 LDU	//  _3 ds
     SWAP	//  ds _3
     ctx_version SETGLOB
+    16 LDU	//  _6 ds
+    SWAP	//  ds _6
+    ctx_code_version SETGLOB
     LDREF	//  membersRef ds
     LDREF	//  membersRef proposalsRef ds
     ENDS
     SWAP	//  proposalsRef membersRef
     CTOS	//  proposalsRef ds
-    32 LDU	//  proposalsRef _14 ds
-    SWAP	//  proposalsRef ds _14
-    ctx_members_shares_total SETGLOB
     32 LDU	//  proposalsRef _17 ds
     SWAP	//  proposalsRef ds _17
-    ctx_members_shares_allocated SETGLOB
+    ctx_members_shares_total SETGLOB
     32 LDU	//  proposalsRef _20 ds
     SWAP	//  proposalsRef ds _20
-    ctx_members_total SETGLOB
-    LDREF	//  proposalsRef _23 ds
+    ctx_members_shares_allocated SETGLOB
+    32 LDU	//  proposalsRef _23 ds
     SWAP	//  proposalsRef ds _23
+    ctx_members_total SETGLOB
+    LDREF	//  proposalsRef _26 ds
+    SWAP	//  proposalsRef ds _26
     ctx_members_dict SETGLOB
     ENDS
     CTOS	//  ds
-    32 LDU	//  _27 ds
-    SWAP	//  ds _27
-    ctx_proposals_seq SETGLOB
-    LDDICT	//  _30 ds
+    32 LDU	//  _30 ds
     SWAP	//  ds _30
+    ctx_proposals_seq SETGLOB
+    LDDICT	//  _33 ds
+    SWAP	//  ds _33
     ctx_proposals_dict SETGLOB
-    LDDICT	//  _32 ds
-    SWAP	//  ds _32
+    LDDICT	//  _35 ds
+    SWAP	//  ds _35
     ctx_proposals_ids SETGLOB
     ENDS
   }>
@@ -196,12 +200,14 @@ PROGRAM{
     32 STU	//  _8 _9 _19
     STREF	//  _8 _20
     ENDC	//  _8 _21
-    ctx_version GETGLOB	//  _8 _21 _22
-    NEWC	//  _8 _21 _22 _23
-    16 STU	//  _8 _21 _25
-    STREF	//  _8 _26
-    STREF	//  _27
-    ENDC	//  _28
+    ctx_code_version GETGLOB	//  _8 _21 _22
+    ctx_version GETGLOB	//  _8 _21 _22 _23
+    NEWC	//  _8 _21 _22 _23 _24
+    16 STU	//  _8 _21 _22 _26
+    16 STU	//  _8 _21 _28
+    STREF	//  _8 _29
+    STREF	//  _30
+    ENDC	//  _31
     c4 POP
   }>
   load_shares PROC:<{
@@ -366,127 +372,129 @@ PROGRAM{
     //  proposal
     CTOS	//  cs
     32 LDU	//  kind cs
-    1 LDI	//  kind hasExtras cs
-    SWAP	//  kind cs hasExtras
-    IFJMP:<{	//  kind cs
-      2DROP	// 
-      FALSE	//  _11
-    }>	//  kind cs
-    1225918510 PUSHINT	//  kind cs _12
-    s2 s(-1) PUXC	//  kind cs kind _12
-    EQUAL	//  kind cs _13
+    1225918510 PUSHINT	//  kind cs _7
+    s2 s(-1) PUXC	//  kind cs kind _7
+    EQUAL	//  kind cs _8
     IFJMP:<{	//  kind cs
       NIP	//  cs
-      LDMSGADDR	//  _44 _43
+      LDMSGADDR	//  _41 _40
       NIP	//  cs
-      LDGRAMS	//  _46 _45
+      LDGRAMS	//  _43 _42
       NIP	//  cs
+      1 LDI	//  _13 cs
+      SWAP	//  cs _13
+      IF:<{	//  cs
+        LDREF	//  _47 _46
+        NIP	//  cs
+      }>	//  cs
       1 LDI	//  _18 cs
       SWAP	//  cs _18
       IF:<{	//  cs
-        LDREF	//  _50 _49
-        NIP	//  cs
-      }>	//  cs
-      1 LDI	//  _23 cs
-      SWAP	//  cs _23
-      IF:<{	//  cs
-        LDREF	//  _54 _53
+        LDREF	//  _51 _50
         NIP	//  cs
       }>	//  cs
       ENDS
-      TRUE	//  _29
+      TRUE	//  _24
     }>	//  kind cs
     DROP	//  kind
-    3070113962 PUSHINT	//  kind _30
-    s1 s(-1) PUXC	//  kind kind _30
-    EQUAL	//  kind _31
+    3070113962 PUSHINT	//  kind _25
+    s1 s(-1) PUXC	//  kind kind _25
+    EQUAL	//  kind _26
+    IFJMP:<{	//  kind
+      DROP	// 
+      TRUE	//  _27
+    }>	//  kind
+    1738944794 PUSHINT	//  kind _28
+    s1 s(-1) PUXC	//  kind kind _28
+    EQUAL	//  kind _29
     IFJMP:<{	//  kind
       DROP	// 
       TRUE	//  _32
     }>	//  kind
-    1738944794 PUSHINT	//  kind _33
+    2894775163 PUSHINT	//  kind _33
     EQUAL	//  _34
-    IFJMP:<{	// 
-      TRUE	//  _37
+    IF:<{	// 
     }>	// 
-    FALSE	//  _38
+    FALSE	//  _37
   }>
   execute_proposal PROC:<{
     //  proposal
     CTOS	//  cs
     32 LDU	//  kind cs
-    1 LDI	//  kind _7 cs
-    SWAP	//  kind cs _7
-    IF:<{	//  kind cs
-      LDREF	//  kind _105 _104
-      NIP	//  kind cs
-    }>	//  kind cs
-    1225918510 PUSHINT	//  kind cs _12
-    s2 s(-1) PUXC	//  kind cs kind _12
-    EQUAL	//  kind cs _13
+    1225918510 PUSHINT	//  kind cs _7
+    s2 s(-1) PUXC	//  kind cs kind _7
+    EQUAL	//  kind cs _8
     IF:<{	//  kind cs
       LDMSGADDR	//  kind to_addr cs
       LDGRAMS	//  kind to_addr value cs
-      0 PUSHINT	//  kind to_addr value cs _21=0
-      24 PUSHINT	//  kind to_addr value cs _21=0 _22=24
-      NEWC	//  kind to_addr value cs _21=0 _22=24 _23
-      6 STU	//  kind to_addr value cs _21=0 _25
-      s0 s4 XCHG2	//  kind _21=0 value cs _25 to_addr
-      STSLICER	//  kind _21=0 value cs _26
-      ROT	//  kind _21=0 cs _26 value
-      STGRAMS	//  kind _21=0 cs _27
-      s1 s2 XCHG	//  kind cs _21=0 _27
+      0 PUSHINT	//  kind to_addr value cs _16=0
+      24 PUSHINT	//  kind to_addr value cs _16=0 _17=24
+      NEWC	//  kind to_addr value cs _16=0 _17=24 _18
+      6 STU	//  kind to_addr value cs _16=0 _20
+      s0 s4 XCHG2	//  kind _16=0 value cs _20 to_addr
+      STSLICER	//  kind _16=0 value cs _21
+      ROT	//  kind _16=0 cs _21 value
+      STGRAMS	//  kind _16=0 cs _22
+      s1 s2 XCHG	//  kind cs _16=0 _22
       105 STU	//  kind cs msg
       SWAP	//  kind msg cs
-      1 LDI	//  kind msg _38 cs
-      SWAP	//  kind msg cs _38
+      1 LDI	//  kind msg _33 cs
+      SWAP	//  kind msg cs _33
       IF:<{	//  kind msg cs
         LDREF	//  kind msg stateInit cs
-        1 PUSHINT	//  kind msg stateInit cs _44=1
-        s0 s3 XCHG2	//  kind cs stateInit _44=1 msg
+        1 PUSHINT	//  kind msg stateInit cs _39=1
+        s0 s3 XCHG2	//  kind cs stateInit _39=1 msg
         1 STU	//  kind cs stateInit msg
         STREF	//  kind cs msg
       }>ELSE<{	//  kind msg cs
         0 PUSHINT
-        ROT	//  kind cs _48=0 msg
+        ROT	//  kind cs _43=0 msg
         1 STU	//  kind cs msg
       }>
       SWAP	//  kind msg cs
-      1 LDI	//  kind msg _51 cs
-      SWAP	//  kind msg cs _51
+      1 LDI	//  kind msg _46 cs
+      SWAP	//  kind msg cs _46
       IF:<{	//  kind msg cs
         LDREF	//  kind msg payload cs
-        1 PUSHINT	//  kind msg payload cs _57=1
-        s0 s3 XCHG2	//  kind cs payload _57=1 msg
+        1 PUSHINT	//  kind msg payload cs _52=1
+        s0 s3 XCHG2	//  kind cs payload _52=1 msg
         1 STU	//  kind cs payload msg
         STREF	//  kind cs msg
       }>ELSE<{	//  kind msg cs
         0 PUSHINT
-        ROT	//  kind cs _61=0 msg
+        ROT	//  kind cs _56=0 msg
         1 STU	//  kind cs msg
       }>
-      ENDC	//  kind cs _64
-      2 PUSHINT	//  kind cs _64 _65=2
+      ENDC	//  kind cs _59
+      2 PUSHINT	//  kind cs _59 _60=2
       SENDRAWMSG
     }>	//  kind cs
-    1738944794 PUSHINT	//  kind cs _67
-    s1 s2 XCHG	//  cs kind _67
-    EQUAL	//  cs _68
-    IF:<{	//  cs
-      LDMSGADDR	//  _119 _118
-      DROP	//  to_addr
-      0 PUSHINT	//  to_addr _73=0
-      16 PUSHINT	//  to_addr _73=0 _74=16
-      NEWC	//  to_addr _73=0 _74=16 _75
-      6 STU	//  to_addr _73=0 _77
-      ROT	//  _73=0 _77 to_addr
-      STSLICER	//  _73=0 _78
-      OVER	//  _73=0 _78 _79=0
-      STGRAMS	//  _73=0 _80
-      107 STU	//  msg
-      ENDC	//  _95
-      160 PUSHINT	//  _95 _98
+    1738944794 PUSHINT	//  kind cs _62
+    s2 s(-1) PUXC	//  kind cs kind _62
+    EQUAL	//  kind cs _63
+    IF:<{	//  kind cs
+      LDMSGADDR	//  kind to_addr cs
+      0 PUSHINT	//  kind to_addr cs _68=0
+      16 PUSHINT	//  kind to_addr cs _68=0 _69=16
+      NEWC	//  kind to_addr cs _68=0 _69=16 _70
+      6 STU	//  kind to_addr cs _68=0 _72
+      s0 s3 XCHG2	//  kind _68=0 cs _72 to_addr
+      STSLICER	//  kind _68=0 cs _73
+      s2 PUSH	//  kind _68=0 cs _73 _74=0
+      STGRAMS	//  kind _68=0 cs _75
+      s1 s2 XCHG	//  kind cs _68=0 _75
+      107 STU	//  kind cs msg
+      ENDC	//  kind cs _90
+      160 PUSHINT	//  kind cs _90 _93
       SENDRAWMSG
+    }>	//  kind cs
+    2894775163 PUSHINT	//  kind cs _95
+    s1 s2 XCHG	//  cs kind _95
+    EQUAL	//  cs _96
+    IF:<{	//  cs
+      LDREF	//  _118 _117
+      DROP	//  newCode
+      SETCODE
     }>ELSE<{
       DROP	// 
     }>
@@ -688,7 +696,7 @@ PROGRAM{
     // 
     0 PUSHINT	//  _0=0
     DUP	//  _0=0 _1=0
-    1 PUSHINT	//  _0=0 _1=0 _2=1
+    2 PUSHINT	//  _0=0 _1=0 _2=2
   }>
   get_last_proposal_id PROC:<{
     // 

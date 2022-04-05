@@ -15,6 +15,7 @@ int op::execute::failed() asm "2163078063 PUSHINT";
 int proposal::transaction() asm "1225918510 PUSHINT";
 int proposal::resolution() asm "3070113962 PUSHINT";
 int proposal::destroy() asm "1738944794 PUSHINT";
+int proposal::upgrade() asm "2894775163 PUSHINT";
 
 ;; Errors
 int error::invalid_address() asm "70 PUSHINT";
@@ -134,6 +135,7 @@ builder store_builder_ref(builder to, builder what) asm(what to) "STBREFR";
 }
 
 global int ctx_version;
+global int ctx_code_version;
 
 global int ctx_members_shares_total;
 global int ctx_members_shares_allocated;
@@ -149,6 +151,7 @@ global cell ctx_proposals_ids;
     ;; Parse root
     var ds = get_data().begin_parse();
     ctx_version = ds~load_uint(16);
+    ctx_code_version = ds~load_uint(16);
     cell membersRef = ds~load_ref();
     cell proposalsRef = ds~load_ref();
     ds.end_parse();
@@ -172,6 +175,7 @@ global cell ctx_proposals_ids;
 () store_base_data() impure {
     set_data(begin_cell()
         .store_uint(ctx_version, 16)
+        .store_uint(ctx_code_version, 16)
         .store_ref(begin_cell()
             .store_uint(ctx_members_shares_total, 32)
             .store_uint(ctx_members_shares_allocated, 32)
@@ -324,10 +328,6 @@ global int ctx_proposal_members_shares_allocated;
 int check_proposal(cell proposal) {
     slice cs = proposal.begin_parse();
     int kind = cs~load_uint(32);
-    int hasExtras = cs~load_int(1);
-    if (hasExtras) {
-        return false; ;; Not supported
-    }
 
     ;; Transaction proposal
     if (kind == proposal::transaction()) {
@@ -356,6 +356,11 @@ int check_proposal(cell proposal) {
         return true;
     }
 
+    ;; Upgrade proposal
+    if (kind == proposal::upgrade()) {
+        cs~load_ref(); ;; Load code ref
+    }
+
     return false;
 }
 
@@ -370,9 +375,6 @@ int check_proposal(cell proposal) {
     ;; Begin parsing
     slice cs = proposal.begin_parse();
     int kind = cs~load_uint(32);
-    if (cs~load_int(1)) {
-        cs~load_ref();
-    }
 
     ;; Tansaction
     if (kind == proposal::transaction()) {
@@ -424,6 +426,12 @@ int check_proposal(cell proposal) {
 
         ;; Send message
         send_raw_message(msg.end_cell(), 32 + 128);
+    }
+
+    ;; Upgrade contract
+    if (kind == proposal::upgrade()) {
+        var newCode = cs~load_ref();
+        set_code(newCode);
     }
 }
 
@@ -582,7 +590,7 @@ cell prepare_execute(int proposalId, int member) impure {
 }
 
 _ get_version() method_id {
-    return (0, 0, 1);
+    return (0, 0, 2);
 }
 
 _ get_last_proposal_id() method_id {

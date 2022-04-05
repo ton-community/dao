@@ -1,5 +1,5 @@
 _ get_version() method_id {
-    return (0, 0, 1);
+    return (0, 0, 2);
 }
 
 _ get_last_proposal_id() method_id {
