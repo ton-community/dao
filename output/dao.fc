@@ -839,6 +839,16 @@ _ get_membership(slice addr) method_id {
     }
 }
 
+;;
+;; Contract
+;;
+
+_ get_contract_type() method_id {
+    return begin_cell()
+        .store_uint(9524005758522720271279095783560236212427390214770535987, 184) ;; com.tonwhales.dao:0.0.3
+    .end_cell();
+}
+
 () op_proposal(int member, int value, slice in_msg, int query_id) impure {
 
     ;; Check input

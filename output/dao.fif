@@ -31,6 +31,7 @@ PROGRAM{
   94347 DECLMETHOD get_proposal
   99394 DECLMETHOD get_proposal_vote
   116485 DECLMETHOD get_membership
+  70371 DECLMETHOD get_contract_type
   DECLPROC op_proposal
   DECLPROC op_vote
   DECLPROC op_execute
@@ -1004,6 +1005,13 @@ PROGRAM{
     DROP	// 
     0 PUSHINT	//  _19=0
     DUP	//  _19=0 _20=0
+  }>
+  get_contract_type PROC:<{
+    // 
+    9524005758522720271279095783560236212427390214770535987 PUSHINT	//  _0=9524005758522720271279095783560236212427390214770535987
+    NEWC	//  _0=9524005758522720271279095783560236212427390214770535987 _1
+    184 STU	//  _3
+    ENDC	//  _4
   }>
   op_proposal PROC:<{
     //  member value in_msg query_id
