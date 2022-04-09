@@ -42,6 +42,10 @@
         op_execute(member, msg_value, in_msg, query_id);
         return ();
     }
+    if (op == op::cancel()) {
+        op_cancel(member, msg_value, in_msg, query_id);
+        return ();
+    }
 
     ;; Ignore all invalid operations since DAO could vote to return coins to sender
     return ();

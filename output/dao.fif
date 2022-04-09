@@ -22,6 +22,7 @@ PROGRAM{
   DECLPROC register_proposal
   DECLPROC register_vote
   DECLPROC prepare_execute
+  DECLPROC cancel_proposal
   82320 DECLMETHOD get_version
   107037 DECLMETHOD get_code_version
   119035 DECLMETHOD get_members_info
@@ -33,6 +34,7 @@ PROGRAM{
   DECLPROC op_proposal
   DECLPROC op_vote
   DECLPROC op_execute
+  DECLPROC op_cancel
   DECLPROC recv_internal
   DECLGLOBVAR ctx_version
   DECLGLOBVAR ctx_code_version
@@ -870,6 +872,25 @@ PROGRAM{
     store_proposal CALLDICT
     store_base_data CALLDICT
   }>
+  cancel_proposal PROC:<{
+    //  proposalId member
+    SWAP	//  member proposalId
+    load_proposal CALLDICT
+    72 PUSHINT	//  member _3
+    ctx_proposal_state GETGLOB	//  member _3 _4
+    1 PUSHINT	//  member _3 _4 _5
+    EQUAL	//  member _3 _6
+    THROWANYIFNOT
+    72 PUSHINT	//  member _8
+    ctx_proposal_author GETGLOB	//  member _8 _9
+    ROT	//  _8 _9 member
+    EQUAL	//  _8 _10
+    THROWANYIFNOT
+    4 PUSHINT	//  _12
+    ctx_proposal_state SETGLOB
+    store_proposal CALLDICT
+    store_base_data CALLDICT
+  }>
   get_version PROC:<{
     // 
     0 PUSHINT	//  _0=0
@@ -1025,12 +1046,23 @@ PROGRAM{
     send_empty_receipt_message CALLDICT
     execute_proposal CALLDICT
   }>
+  op_cancel PROC:<{
+    //  member value in_msg query_id
+    s2 POP	//  member query_id in_msg
+    32 LDU	//  member query_id proposalId in_msg
+    ENDS
+    s2 PUSH	//  member query_id proposalId member
+    cancel_proposal CALLDICT
+    29265562 PUSHINT	//  member query_id _10
+    SWAP	//  member _10 query_id
+    send_empty_receipt_message CALLDICT
+  }>
   recv_internal PROC:<{
     //  msg_value in_msg_cell in_msg
     SWAP	//  msg_value in_msg in_msg_cell
     CTOS	//  msg_value in_msg cs
     4 LDU	//  msg_value in_msg flags cs
-    LDMSGADDR	//  msg_value in_msg flags _49 _48
+    LDMSGADDR	//  msg_value in_msg flags _52 _51
     DROP	//  msg_value in_msg flags s_addr
     REWRITEVARADDR	//  msg_value in_msg flags sender_wc sender_addr
     s0 s2 XCHG
@@ -1043,7 +1075,7 @@ PROGRAM{
     IFJMP:<{	//  msg_value in_msg sender_addr
       3 BLKDROP	// 
     }>	//  msg_value in_msg sender_addr
-    256 LDU	//  msg_value in_msg _53 _52
+    256 LDU	//  msg_value in_msg _56 _55
     DROP	//  msg_value in_msg member
     load_base_data CALLDICT
     OVER	//  msg_value in_msg member in_msg
@@ -1072,11 +1104,19 @@ PROGRAM{
       op_vote CALLDICT
     }>	//  msg_value member op query_id in_msg
     2483002579 PUSHINT	//  msg_value member op query_id in_msg _43
-    s1 s3 XCHG	//  msg_value member in_msg query_id op _43
-    EQUAL	//  msg_value member in_msg query_id _44
-    IFJMP:<{	//  msg_value member in_msg query_id
+    s3 s(-1) PUXC	//  msg_value member op query_id in_msg op _43
+    EQUAL	//  msg_value member op query_id in_msg _44
+    IFJMP:<{	//  msg_value member op query_id in_msg
+      s2 POP	//  msg_value member in_msg query_id
       s2 s3 XCHG	//  member msg_value in_msg query_id
       op_execute CALLDICT
+    }>	//  msg_value member op query_id in_msg
+    3423544614 PUSHINT	//  msg_value member op query_id in_msg _46
+    s1 s3 XCHG	//  msg_value member in_msg query_id op _46
+    EQUAL	//  msg_value member in_msg query_id _47
+    IFJMP:<{	//  msg_value member in_msg query_id
+      s2 s3 XCHG	//  member msg_value in_msg query_id
+      op_cancel CALLDICT
     }>	//  msg_value member in_msg query_id
     4 BLKDROP	// 
   }>

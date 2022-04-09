@@ -138,3 +138,26 @@ cell prepare_execute(int proposalId, int member) impure {
 
     return res;
 }
+
+;;
+;; Prepare execution
+;;
+
+() cancel_proposal(int proposalId, int member) impure {
+    
+    ;; Load proposal
+    load_proposal(proposalId);
+
+    ;; Check proposal state
+    throw_unless(error::invalid_message(), ctx_proposal_state == state::success());
+
+    ;; Check if can execute
+    throw_unless(error::invalid_message(), ctx_proposal_author == member);
+
+    ;; Update executed state
+    ctx_proposal_state = state::cancelled();
+
+    ;; Persist
+    store_proposal();
+    store_base_data();
+}

@@ -11,6 +11,10 @@ int op::execute() asm "2483002579 PUSHINT";
 int op::execute::ok() asm "2514550856 PUSHINT";
 int op::execute::failed() asm "2163078063 PUSHINT";
 
+int op::cancel() asm "3423544614 PUSHINT";
+int op::cancel::ok() asm "29265562 PUSHINT";
+int op::cancel::failed() asm "760914673 PUSHINT";
+
 ;; Proposals
 int proposal::transaction() asm "1225918510 PUSHINT";
 int proposal::resolution() asm "3070113962 PUSHINT";
@@ -35,6 +39,7 @@ int state::pending() asm "0 PUSHINT";
 int state::success() asm "1 PUSHINT";
 int state::failure() asm "2 PUSHINT";
 int state::executed() asm "3 PUSHINT";
+int state::cancelled() asm "4 PUSHINT";
 
 ;; uint64 max value
 int params::max_shares() inline {
@@ -710,6 +715,29 @@ cell prepare_execute(int proposalId, int member) impure {
     return res;
 }
 
+;;
+;; Prepare execution
+;;
+
+() cancel_proposal(int proposalId, int member) impure {
+    
+    ;; Load proposal
+    load_proposal(proposalId);
+
+    ;; Check proposal state
+    throw_unless(error::invalid_message(), ctx_proposal_state == state::success());
+
+    ;; Check if can execute
+    throw_unless(error::invalid_message(), ctx_proposal_author == member);
+
+    ;; Update executed state
+    ctx_proposal_state = state::cancelled();
+
+    ;; Persist
+    store_proposal();
+    store_base_data();
+}
+
 _ get_version() method_id {
     return (0, 0, 3);
 }
@@ -851,6 +879,19 @@ _ get_membership(slice addr) method_id {
     execute_proposal(proposal);
 }
 
+() op_cancel(int member, int value, slice in_msg, int query_id) impure {
+
+    ;; Load proposal ID
+    int proposalId = in_msg~load_uint(32);
+    
+    ;; End and validate
+    in_msg.end_parse();
+
+    ;; Cancel proposal
+    cancel_proposal(proposalId, member);
+    send_empty_receipt_message(member, op::cancel::ok(), query_id);
+}
+
 () recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
 
     ;; Prepare message context
@@ -893,6 +934,10 @@ _ get_membership(slice addr) method_id {
     }
     if (op == op::execute()) {
         op_execute(member, msg_value, in_msg, query_id);
+        return ();
+    }
+    if (op == op::cancel()) {
+        op_cancel(member, msg_value, in_msg, query_id);
         return ();
     }
 

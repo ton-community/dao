@@ -11,6 +11,10 @@ int op::execute() asm "2483002579 PUSHINT";
 int op::execute::ok() asm "2514550856 PUSHINT";
 int op::execute::failed() asm "2163078063 PUSHINT";
 
+int op::cancel() asm "3423544614 PUSHINT";
+int op::cancel::ok() asm "29265562 PUSHINT";
+int op::cancel::failed() asm "760914673 PUSHINT";
+
 ;; Proposals
 int proposal::transaction() asm "1225918510 PUSHINT";
 int proposal::resolution() asm "3070113962 PUSHINT";
@@ -35,6 +39,7 @@ int state::pending() asm "0 PUSHINT";
 int state::success() asm "1 PUSHINT";
 int state::failure() asm "2 PUSHINT";
 int state::executed() asm "3 PUSHINT";
+int state::cancelled() asm "4 PUSHINT";
 
 ;; uint64 max value
 int params::max_shares() inline {

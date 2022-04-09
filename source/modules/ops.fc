@@ -37,3 +37,16 @@
     send_empty_receipt_message(member, op::execute::ok(), query_id);
     execute_proposal(proposal);
 }
+
+() op_cancel(int member, int value, slice in_msg, int query_id) impure {
+
+    ;; Load proposal ID
+    int proposalId = in_msg~load_uint(32);
+    
+    ;; End and validate
+    in_msg.end_parse();
+
+    ;; Cancel proposal
+    cancel_proposal(proposalId, member);
+    send_empty_receipt_message(member, op::cancel::ok(), query_id);
+}
