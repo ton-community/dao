@@ -19,12 +19,17 @@ describe("voting", () => {
         // Create contract
         const executor = await SmartContract.fromCell(
             createCode(),
-            createData(5000, [
-                { address: member1, shares: 1000 },
-                { address: member2, shares: 1000 },
-                { address: member3, shares: 1000 },
-                { address: member4, shares: 1000 },
-            ])
+            createData({
+                totalShares: 5000,
+                failureTreshold: 1000,
+                successTreshold: 2040,
+                members: [
+                    { address: member1, shares: 1000 },
+                    { address: member2, shares: 1000 },
+                    { address: member3, shares: 1000 },
+                    { address: member4, shares: 1000 },
+                ]
+            })
         );
 
         // Create proposal
@@ -114,12 +119,17 @@ describe("voting", () => {
         // Create contract
         const executor = await SmartContract.fromCell(
             createCode(),
-            createData(5000, [
-                { address: member1, shares: 1000 },
-                { address: member2, shares: 1000 },
-                { address: member3, shares: 1000 },
-                { address: member4, shares: 1000 },
-            ])
+            createData({
+                totalShares: 5000,
+                failureTreshold: 1000,
+                successTreshold: 2040,
+                members: [
+                    { address: member1, shares: 1000 },
+                    { address: member2, shares: 1000 },
+                    { address: member3, shares: 1000 },
+                    { address: member4, shares: 1000 },
+                ]
+            })
         );
 
         // Create proposal
@@ -184,12 +194,17 @@ describe("voting", () => {
         // Create contract
         const executor = await SmartContract.fromCell(
             createCode(),
-            createData(5000, [
-                { address: member1, shares: 1000 },
-                { address: member2, shares: 1000 },
-                { address: member3, shares: 1000 },
-                { address: member4, shares: 1000 },
-            ])
+            createData({
+                totalShares: 5000,
+                failureTreshold: 1000,
+                successTreshold: 2040,
+                members: [
+                    { address: member1, shares: 1000 },
+                    { address: member2, shares: 1000 },
+                    { address: member3, shares: 1000 },
+                    { address: member4, shares: 1000 },
+                ]
+            })
         );
 
         // Create proposal
@@ -279,12 +294,17 @@ describe("voting", () => {
         // Create contract
         const executor = await SmartContract.fromCell(
             createCode(),
-            createData(5000, [
-                { address: member1, shares: 1000 },
-                { address: member2, shares: 1000 },
-                { address: member3, shares: 1000 },
-                { address: member4, shares: 1000 },
-            ])
+            createData({
+                totalShares: 5000,
+                failureTreshold: 1000,
+                successTreshold: 2040,
+                members: [
+                    { address: member1, shares: 1000 },
+                    { address: member2, shares: 1000 },
+                    { address: member3, shares: 1000 },
+                    { address: member4, shares: 1000 },
+                ]
+            })
         );
 
         // Create proposal
@@ -336,12 +356,17 @@ describe("voting", () => {
         // Create contract
         const executor = await SmartContract.fromCell(
             createCode(),
-            createData(5000, [
-                { address: member1, shares: 1000 },
-                { address: member2, shares: 1000 },
-                { address: member3, shares: 1000 },
-                { address: member4, shares: 1000 },
-            ])
+            createData({
+                totalShares: 5000,
+                failureTreshold: 1000,
+                successTreshold: 2040,
+                members: [
+                    { address: member1, shares: 1000 },
+                    { address: member2, shares: 1000 },
+                    { address: member3, shares: 1000 },
+                    { address: member4, shares: 1000 },
+                ]
+            })
         );
 
         // Create proposal
@@ -406,12 +431,17 @@ describe("voting", () => {
         // Create contract
         const executor = await SmartContract.fromCell(
             createCode(),
-            createData(5000, [
-                { address: member1, shares: 1000 },
-                { address: member2, shares: 1000 },
-                { address: member3, shares: 1000 },
-                { address: member4, shares: 1000 },
-            ])
+            createData({
+                totalShares: 5000,
+                failureTreshold: 1000,
+                successTreshold: 2040,
+                members: [
+                    { address: member1, shares: 1000 },
+                    { address: member2, shares: 1000 },
+                    { address: member3, shares: 1000 },
+                    { address: member4, shares: 1000 },
+                ]
+            })
         );
 
         // Create proposal

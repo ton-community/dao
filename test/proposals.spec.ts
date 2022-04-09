@@ -14,10 +14,15 @@ describe("proposals", () => {
     it("should create proposals", async () => {
         const executor = await SmartContract.fromCell(
             createCode(),
-            createData(5000, [
-                { address: member1, shares: 1000 },
-                { address: member2, shares: 1000 },
-            ])
+            createData({
+                totalShares: 5000,
+                failureTreshold: 500,
+                successTreshold: 1020,
+                members: [
+                    { address: member1, shares: 1000 },
+                    { address: member2, shares: 1000 },
+                ]
+            })
         );
 
         let res = await sendMessage(
@@ -62,10 +67,15 @@ describe("proposals", () => {
     it("should auto accept proposal if have enought voting power", async () => {
         const executor = await SmartContract.fromCell(
             createCode(),
-            createData(5000, [
-                { address: member1, shares: 5000 },
-                { address: member2, shares: 1000 },
-            ])
+            createData({
+                totalShares: 5000,
+                failureTreshold: 1500,
+                successTreshold: 3060,
+                members: [
+                    { address: member1, shares: 5000 },
+                    { address: member2, shares: 1000 },
+                ]
+            })
         );
 
         let res = await sendMessage(
@@ -110,10 +120,15 @@ describe("proposals", () => {
     it("should not create proposal if not member", async () => {
         const exectutor = await SmartContract.fromCell(
             createCode(),
-            createData(5000, [
-                { address: member1, shares: 1000 },
-                { address: member2, shares: 1000 },
-            ])
+            createData({
+                totalShares: 5000,
+                failureTreshold: 500,
+                successTreshold: 1020,
+                members: [
+                    { address: member1, shares: 1000 },
+                    { address: member2, shares: 1000 },
+                ]
+            })
         );
 
         await expect(
@@ -139,10 +154,15 @@ describe("proposals", () => {
     it("should bounce on invalid seq", async () => {
         const exectutor = await SmartContract.fromCell(
             createCode(),
-            createData(5000, [
-                { address: member1, shares: 1000 },
-                { address: member2, shares: 1000 },
-            ])
+            createData({
+                totalShares: 5000,
+                failureTreshold: 500,
+                successTreshold: 1020,
+                members: [
+                    { address: member1, shares: 1000 },
+                    { address: member2, shares: 1000 },
+                ]
+            })
         );
 
         await expect(

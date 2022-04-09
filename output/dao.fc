@@ -16,6 +16,7 @@ int proposal::transaction() asm "1225918510 PUSHINT";
 int proposal::resolution() asm "3070113962 PUSHINT";
 int proposal::destroy() asm "1738944794 PUSHINT";
 int proposal::upgrade() asm "2894775163 PUSHINT";
+int proposal::params() asm "1658590374 PUSHINT";
 
 ;; Errors
 int error::invalid_address() asm "70 PUSHINT";
@@ -34,6 +35,11 @@ int state::pending() asm "0 PUSHINT";
 int state::success() asm "1 PUSHINT";
 int state::failure() asm "2 PUSHINT";
 int state::executed() asm "3 PUSHINT";
+
+;; uint64 max value
+int params::max_shares() inline {
+    return 2 << 128;
+}
 
 ;;
 ;; Basic workchain addresses
@@ -136,6 +142,7 @@ builder store_builder_ref(builder to, builder what) asm(what to) "STBREFR";
 
 global int ctx_version;
 global int ctx_code_version;
+global int ctx_params_version;
 
 global int ctx_members_shares;
 global int ctx_members_total;
@@ -153,6 +160,7 @@ global cell ctx_params;
     var ds = get_data().begin_parse();
     ctx_version = ds~load_uint(16);
     ctx_code_version = ds~load_uint(16);
+    ctx_params_version = ds~load_uint(16);
     cell membersRef = ds~load_ref();
     cell proposalsRef = ds~load_ref();
     ctx_params = ds~load_ref();
@@ -160,7 +168,7 @@ global cell ctx_params;
 
     ;; Parse members
     ds = membersRef.begin_parse();
-    ctx_members_shares = ds~load_uint(32);
+    ctx_members_shares = ds~load_coins();
     ctx_members_total = ds~load_uint(32);
     ctx_members_dict = ds~load_ref();
     ds.end_parse();
@@ -177,8 +185,9 @@ global cell ctx_params;
     set_data(begin_cell()
         .store_uint(ctx_version, 16)
         .store_uint(ctx_code_version, 16)
+        .store_uint(ctx_params_version, 16)
         .store_ref(begin_cell()
-            .store_uint(ctx_members_shares, 32)
+            .store_coins(ctx_members_shares)
             .store_uint(ctx_members_total, 32)
             .store_ref(ctx_members_dict)
         .end_cell())
@@ -325,6 +334,59 @@ global cell ctx_proposal_params;
     ctx_proposals_dict = udict_set_builder(ctx_proposals_dict, 32, ctx_proposal_id, data);
 }
 
+_ check_params(cell src) {
+    var cs = src.begin_parse();
+
+    ;; Serialization version
+    var version = cs~load_uint(1);
+    throw_unless(error::internal_error(), version == 0);
+
+    ;; Shares and voting
+    var allocated = cs~load_coins(); ;; Check allocated
+    throw_unless(error::internal_error(), params::max_shares() >= allocated);
+    var success = cs~load_coins(); ;; Check success
+    var failure = cs~load_coins(); ;; Check failure
+    throw_unless(error::internal_error(), allocated > success);
+    throw_unless(error::internal_error(), allocated > failure);
+
+    ;; Check metadata
+    if (cs~load_int(1)) {
+        cs~load_ref();
+    }
+
+    cs.end_parse();
+    return true;
+}
+
+_ load_allocated_shares(cell src) {
+    var cs = src.begin_parse();
+
+    ;; Serialization version
+    var version = cs~load_uint(1);
+    throw_unless(error::internal_error(), version == 0);
+
+    var allocated = cs~load_coins(); ;; Check allocated
+    throw_unless(error::internal_error(), params::max_shares() >= allocated);
+
+    return allocated;
+}
+
+_ load_voting_params(cell src) {
+     var cs = src.begin_parse();
+
+    ;; Serialization version
+    var version = cs~load_uint(1);
+    throw_unless(error::internal_error(), version == 0);
+
+    ;; Allocated
+    cs~load_coins();
+
+    ;; Params
+    var success = cs~load_coins();
+    var failure = cs~load_coins();
+    return (success, failure);
+}
+
 
 ;;
 ;; Checks proposal body
@@ -368,6 +430,20 @@ int check_proposal(cell proposal) {
             return false;
         } else {
             cs~load_ref(); ;; Load code ref
+            return true;
+        }
+    }
+
+    ;; Params proposal
+    if (kind == proposal::params()) {
+        var expectedVersion = cs~load_uint(16);
+        if (expectedVersion != ctx_params_version) {
+            return false;
+        } else {
+            var params = cs~load_ref();
+            if (~ check_params(params)) {
+                return false;
+            }
             return true;
         }
     }
@@ -458,18 +534,19 @@ int check_proposal(cell proposal) {
             throw(0);
         }
     }
-}
 
-;;
-;; Tresholds
-;;
-
-int get_success_treshold(int total) {
-    return (total * 51) / 100;
-}
-
-int get_failure_treshold(int total) {
-    return (total * 25) / 100;
+    ;; Update metadata
+    if (kind == proposal::params()) {
+        var version = cs~load_uint(16);
+        cell new_params = cs~load_ref();
+        if (ctx_params_version == version) {
+            if (check_params(new_params)) {
+                ctx_params_version = ctx_params_version + 1;
+                ctx_params = new_params;
+                store_base_data();   
+            }
+        }
+    }
 }
 
 ;;
@@ -487,8 +564,7 @@ int get_failure_treshold(int total) {
 
     ;; Resolve state
     int state = state::pending();
-    int treshold_success = get_success_treshold(ctx_members_shares);
-    int treshold_failure = get_failure_treshold(ctx_members_shares);
+    var (treshold_success, treshold_failure) = load_voting_params(ctx_params);
     if (shares >= treshold_success) {
         state = state::success();
     }

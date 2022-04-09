@@ -1,0 +1,52 @@
+_ check_params(cell src) {
+    var cs = src.begin_parse();
+
+    ;; Serialization version
+    var version = cs~load_uint(1);
+    throw_unless(error::internal_error(), version == 0);
+
+    ;; Shares and voting
+    var allocated = cs~load_coins(); ;; Check allocated
+    throw_unless(error::internal_error(), params::max_shares() >= allocated);
+    var success = cs~load_coins(); ;; Check success
+    var failure = cs~load_coins(); ;; Check failure
+    throw_unless(error::internal_error(), allocated > success);
+    throw_unless(error::internal_error(), allocated > failure);
+
+    ;; Check metadata
+    if (cs~load_int(1)) {
+        cs~load_ref();
+    }
+
+    cs.end_parse();
+    return true;
+}
+
+_ load_allocated_shares(cell src) {
+    var cs = src.begin_parse();
+
+    ;; Serialization version
+    var version = cs~load_uint(1);
+    throw_unless(error::internal_error(), version == 0);
+
+    var allocated = cs~load_coins(); ;; Check allocated
+    throw_unless(error::internal_error(), params::max_shares() >= allocated);
+
+    return allocated;
+}
+
+_ load_voting_params(cell src) {
+     var cs = src.begin_parse();
+
+    ;; Serialization version
+    var version = cs~load_uint(1);
+    throw_unless(error::internal_error(), version == 0);
+
+    ;; Allocated
+    cs~load_coins();
+
+    ;; Params
+    var success = cs~load_coins();
+    var failure = cs~load_coins();
+    return (success, failure);
+}

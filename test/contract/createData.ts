@@ -8,14 +8,21 @@ import { Address, beginCell, beginDict } from "ton";
 //     ctx_members = ds~load_ref();
 //     ctx_proposals = ds~load_ref();
 
-export function createData(totalShares: number, members: { address: Address, shares: number }[]) {
+export function createData(
+    params: {
+        totalShares: number,
+        successTreshold: number,
+        failureTreshold: number,
+        members: { address: Address, shares: number }[]
+    }
+) {
     let allocatedShares = 0;
-    for (let m of members) {
+    for (let m of params.members) {
         allocatedShares += m.shares;
     }
 
     let membersCell = beginDict(256);
-    for (let m of members) {
+    for (let m of params.members) {
         membersCell.storeRef(m.address.hash,
             beginCell()
                 .storeCoins(m.shares)
@@ -25,9 +32,10 @@ export function createData(totalShares: number, members: { address: Address, sha
     return beginCell()
         .storeUint(1, 16)
         .storeUint(1, 16)
+        .storeUint(1, 16)
         .storeRef(beginCell()
-            .storeUint(allocatedShares, 32)
-            .storeUint(members.length, 32)
+            .storeCoins(allocatedShares)
+            .storeUint(params.members.length, 32)
             .storeRef(membersCell.endCell())
             .endCell())
         .storeRef(beginCell()
@@ -36,7 +44,12 @@ export function createData(totalShares: number, members: { address: Address, sha
             .storeDict(null)
             .endCell())
         .storeRef(beginCell()
-
-        .endCell())
+            .storeUint(0, 1)
+            .storeCoins(params.totalShares)
+            .storeCoins(params.successTreshold)
+            .storeCoins(params.failureTreshold)
+            .storeRef(beginCell()
+                .endCell())
+            .endCell())
         .endCell();
 }

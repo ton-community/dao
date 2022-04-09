@@ -45,6 +45,20 @@ int check_proposal(cell proposal) {
         }
     }
 
+    ;; Params proposal
+    if (kind == proposal::params()) {
+        var expectedVersion = cs~load_uint(16);
+        if (expectedVersion != ctx_params_version) {
+            return false;
+        } else {
+            var params = cs~load_ref();
+            if (~ check_params(params)) {
+                return false;
+            }
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -129,6 +143,19 @@ int check_proposal(cell proposal) {
             set_c3(newCode.begin_parse().bless());
             storage_upgrade();
             throw(0);
+        }
+    }
+
+    ;; Update metadata
+    if (kind == proposal::params()) {
+        var version = cs~load_uint(16);
+        cell new_params = cs~load_ref();
+        if (ctx_params_version == version) {
+            if (check_params(new_params)) {
+                ctx_params_version = ctx_params_version + 1;
+                ctx_params = new_params;
+                store_base_data();   
+            }
         }
     }
 }

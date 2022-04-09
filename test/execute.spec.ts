@@ -18,9 +18,12 @@ describe("execute", () => {
         // Create contract
         const executor = await SmartContract.fromCell(
             createCode(),
-            createData(1000, [
-                { address: member1, shares: 1000 }
-            ])
+            createData({
+                totalShares: 1000,
+                failureTreshold: 250,
+                successTreshold: 1000,
+                members: [{ address: member1, shares: 1000 }]
+            })
         );
 
         // Create proposal

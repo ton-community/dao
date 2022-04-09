@@ -20,6 +20,8 @@ cat ./source/modules/storage-members.fc >> ./output/dao.fc
 echo $'\n' >> ./output/dao.fc
 cat ./source/modules/storage-proposals.fc >> ./output/dao.fc
 echo $'\n' >> ./output/dao.fc
+cat ./source/modules/storage-params.fc >> ./output/dao.fc
+echo $'\n' >> ./output/dao.fc
 
 # Model
 cat ./source/modules/proposals.fc >> ./output/dao.fc

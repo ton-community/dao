@@ -1,4 +1,5 @@
 PROGRAM{
+  DECLPROC params::max_shares
   DECLPROC parse_work_addr
   DECLPROC serialize_work_addr
   DECLPROC send_std_message
@@ -12,10 +13,11 @@ PROGRAM{
   DECLPROC store_shares
   DECLPROC load_proposal
   DECLPROC store_proposal
+  DECLPROC check_params
+  DECLPROC load_allocated_shares
+  DECLPROC load_voting_params
   DECLPROC check_proposal
   DECLPROC execute_proposal
-  DECLPROC get_success_treshold
-  DECLPROC get_failure_treshold
   DECLPROC register_proposal
   DECLPROC register_vote
   DECLPROC prepare_execute
@@ -32,6 +34,7 @@ PROGRAM{
   DECLPROC recv_internal
   DECLGLOBVAR ctx_version
   DECLGLOBVAR ctx_code_version
+  DECLGLOBVAR ctx_params_version
   DECLGLOBVAR ctx_members_shares
   DECLGLOBVAR ctx_members_total
   DECLGLOBVAR ctx_members_dict
@@ -55,6 +58,10 @@ PROGRAM{
   DECLGLOBVAR ctx_proposal_members_total
   DECLGLOBVAR ctx_proposal_members_shares
   DECLGLOBVAR ctx_proposal_params
+  params::max_shares PROC:<{
+    // 
+    129 PUSHPOW2	//  _2
+  }>
   parse_work_addr PROC:<{
     //  cs
     REWRITEVARADDR	//  sender_wc sender_addr
@@ -154,33 +161,36 @@ PROGRAM{
     16 LDU	//  _6 ds
     SWAP	//  ds _6
     ctx_code_version SETGLOB
+    16 LDU	//  _9 ds
+    SWAP	//  ds _9
+    ctx_params_version SETGLOB
     LDREF	//  membersRef ds
     LDREF	//  membersRef proposalsRef ds
-    LDREF	//  membersRef proposalsRef _15 ds
-    SWAP	//  membersRef proposalsRef ds _15
+    LDREF	//  membersRef proposalsRef _18 ds
+    SWAP	//  membersRef proposalsRef ds _18
     ctx_params SETGLOB
     ENDS
     SWAP	//  proposalsRef membersRef
     CTOS	//  proposalsRef ds
-    32 LDU	//  proposalsRef _19 ds
-    SWAP	//  proposalsRef ds _19
-    ctx_members_shares SETGLOB
-    32 LDU	//  proposalsRef _22 ds
+    LDGRAMS	//  proposalsRef _22 ds
     SWAP	//  proposalsRef ds _22
+    ctx_members_shares SETGLOB
+    32 LDU	//  proposalsRef _24 ds
+    SWAP	//  proposalsRef ds _24
     ctx_members_total SETGLOB
-    LDREF	//  proposalsRef _25 ds
-    SWAP	//  proposalsRef ds _25
+    LDREF	//  proposalsRef _27 ds
+    SWAP	//  proposalsRef ds _27
     ctx_members_dict SETGLOB
     ENDS
     CTOS	//  ds
-    32 LDU	//  _29 ds
-    SWAP	//  ds _29
+    32 LDU	//  _31 ds
+    SWAP	//  ds _31
     ctx_proposals_seq SETGLOB
-    LDDICT	//  _32 ds
-    SWAP	//  ds _32
-    ctx_proposals_dict SETGLOB
     LDDICT	//  _34 ds
     SWAP	//  ds _34
+    ctx_proposals_dict SETGLOB
+    LDDICT	//  _36 ds
+    SWAP	//  ds _36
     ctx_proposals_ids SETGLOB
     ENDS
   }>
@@ -197,21 +207,23 @@ PROGRAM{
     ENDC	//  _0 _9
     ctx_members_dict GETGLOB	//  _0 _9 _10
     ctx_members_total GETGLOB	//  _0 _9 _10 _11
-    ctx_members_shares GETGLOB	//  _0 _9 _10 _11 _12
-    NEWC	//  _0 _9 _10 _11 _12 _13
-    32 STU	//  _0 _9 _10 _11 _15
-    32 STU	//  _0 _9 _10 _17
-    STREF	//  _0 _9 _18
-    ENDC	//  _0 _9 _19
-    ctx_code_version GETGLOB	//  _0 _9 _19 _20
-    ctx_version GETGLOB	//  _0 _9 _19 _20 _21
-    NEWC	//  _0 _9 _19 _20 _21 _22
-    16 STU	//  _0 _9 _19 _20 _24
-    16 STU	//  _0 _9 _19 _26
-    STREF	//  _0 _9 _27
-    STREF	//  _0 _28
-    STREF	//  _29
-    ENDC	//  _30
+    NEWC	//  _0 _9 _10 _11 _12
+    ctx_members_shares GETGLOB	//  _0 _9 _10 _11 _12 _13
+    STGRAMS	//  _0 _9 _10 _11 _14
+    32 STU	//  _0 _9 _10 _16
+    STREF	//  _0 _9 _17
+    ENDC	//  _0 _9 _18
+    ctx_params_version GETGLOB	//  _0 _9 _18 _19
+    ctx_code_version GETGLOB	//  _0 _9 _18 _19 _20
+    ctx_version GETGLOB	//  _0 _9 _18 _19 _20 _21
+    NEWC	//  _0 _9 _18 _19 _20 _21 _22
+    16 STU	//  _0 _9 _18 _19 _20 _24
+    16 STU	//  _0 _9 _18 _19 _26
+    16 STU	//  _0 _9 _18 _28
+    STREF	//  _0 _9 _29
+    STREF	//  _0 _30
+    STREF	//  _31
+    ENDC	//  _32
     c4 POP
   }>
   storage_upgrade PROC:<{
@@ -375,6 +387,74 @@ PROGRAM{
     DICTUSETB	//  _51
     ctx_proposals_dict SETGLOB
   }>
+  check_params PROC:<{
+    //  src
+    CTOS	//  cs
+    1 LDU	//  version cs
+    74 PUSHINT	//  version cs _7
+    s0 s2 XCHG	//  _7 cs version
+    0 EQINT	//  _7 cs _9
+    s1 s2 XCHG	//  cs _7 _9
+    THROWANYIFNOT
+    LDGRAMS	//  allocated cs
+    74 PUSHINT	//  allocated cs _14
+    params::max_shares INLINECALLDICT	//  allocated cs _14 _15
+    s3 PUSH	//  allocated cs _14 _15 allocated
+    GEQ	//  allocated cs _14 _16
+    THROWANYIFNOT
+    LDGRAMS	//  allocated success cs
+    LDGRAMS	//  allocated success failure cs
+    74 PUSHINT	//  allocated success failure cs _24
+    s4 s3 PUXC	//  allocated _24 failure cs allocated success
+    GREATER	//  allocated _24 failure cs _25
+    s1 s3 XCHG	//  allocated cs failure _24 _25
+    THROWANYIFNOT
+    74 PUSHINT	//  allocated cs failure _27
+    s3 s3 XCHG2	//  _27 cs allocated failure
+    GREATER	//  _27 cs _28
+    s1 s2 XCHG	//  cs _27 _28
+    THROWANYIFNOT
+    1 LDI	//  _30 cs
+    SWAP	//  cs _30
+    IF:<{	//  cs
+      LDREF	//  _48 _47
+      NIP	//  cs
+    }>	//  cs
+    ENDS
+    TRUE	//  _36
+  }>
+  load_allocated_shares PROC:<{
+    //  src
+    CTOS	//  cs
+    1 LDU	//  version cs
+    74 PUSHINT	//  version cs _7
+    s0 s2 XCHG	//  _7 cs version
+    0 EQINT	//  _7 cs _9
+    s1 s2 XCHG	//  cs _7 _9
+    THROWANYIFNOT
+    LDGRAMS	//  _21 _20
+    DROP	//  allocated
+    74 PUSHINT	//  allocated _14
+    params::max_shares INLINECALLDICT	//  allocated _14 _15
+    s2 PUSH	//  allocated _14 _15 allocated
+    GEQ	//  allocated _14 _16
+    THROWANYIFNOT
+  }>
+  load_voting_params PROC:<{
+    //  src
+    CTOS	//  cs
+    1 LDU	//  version cs
+    74 PUSHINT	//  version cs _7
+    s0 s2 XCHG	//  _7 cs version
+    0 EQINT	//  _7 cs _9
+    s1 s2 XCHG	//  cs _7 _9
+    THROWANYIFNOT
+    LDGRAMS	//  _22 _21
+    NIP	//  cs
+    LDGRAMS	//  success cs
+    LDGRAMS	//  success _26 _25
+    DROP	//  success failure
+  }>
   check_proposal PROC:<{
     //  proposal
     CTOS	//  cs
@@ -384,20 +464,20 @@ PROGRAM{
     EQUAL	//  kind cs _8
     IFJMP:<{	//  kind cs
       NIP	//  cs
-      LDMSGADDR	//  _49 _48
+      LDMSGADDR	//  _65 _64
       NIP	//  cs
-      LDGRAMS	//  _51 _50
+      LDGRAMS	//  _67 _66
       NIP	//  cs
       1 LDI	//  _13 cs
       SWAP	//  cs _13
       IF:<{	//  cs
-        LDREF	//  _55 _54
+        LDREF	//  _71 _70
         NIP	//  cs
       }>	//  cs
       1 LDI	//  _18 cs
       SWAP	//  cs _18
       IF:<{	//  cs
-        LDREF	//  _59 _58
+        LDREF	//  _75 _74
         NIP	//  cs
       }>	//  cs
       ENDS
@@ -418,10 +498,11 @@ PROGRAM{
       TRUE	//  _32
     }>	//  kind cs
     2894775163 PUSHINT	//  kind cs _33
-    s1 s2 XCHG	//  cs kind _33
-    EQUAL	//  cs _34
-    IFJMP:<{	//  cs
-      16 LDU	//  _63 _62
+    s2 s(-1) PUXC	//  kind cs kind _33
+    EQUAL	//  kind cs _34
+    IFJMP:<{	//  kind cs
+      NIP	//  cs
+      16 LDU	//  _79 _78
       DROP	//  expectedVersion
       ctx_code_version GETGLOB	//  expectedVersion _39
       NEQ	//  _40
@@ -429,9 +510,30 @@ PROGRAM{
         FALSE	//  _41
       }>	// 
       TRUE	//  _44
+    }>	//  kind cs
+    1658590374 PUSHINT	//  kind cs _45
+    s1 s2 XCHG	//  cs kind _45
+    EQUAL	//  cs _46
+    IFJMP:<{	//  cs
+      16 LDU	//  expectedVersion cs
+      ctx_params_version GETGLOB	//  expectedVersion cs _51
+      s1 s2 XCHG	//  cs expectedVersion _51
+      NEQ	//  cs _52
+      IFJMP:<{	//  cs
+        DROP	// 
+        FALSE	//  _53
+      }>	//  cs
+      LDREF	//  _85 _84
+      DROP	//  params
+      check_params CALLDICT	//  _57
+      NOT	//  _58
+      IFJMP:<{	// 
+        FALSE	//  _59
+      }>	// 
+      TRUE	//  _60
     }>	//  cs
     DROP	// 
-    FALSE	//  _45
+    FALSE	//  _61
   }>
   execute_proposal PROC:<{
     //  proposal
@@ -505,45 +607,58 @@ PROGRAM{
       SENDRAWMSG
     }>	//  kind cs
     2894775163 PUSHINT	//  kind cs _95
-    s1 s2 XCHG	//  cs kind _95
-    EQUAL	//  cs _96
-    IF:<{	//  cs
-      16 LDU	//  expectedVersion cs
-      LDREF	//  expectedVersion _136 _135
-      DROP	//  expectedVersion newCode
-      ctx_code_version GETGLOB	//  expectedVersion newCode _104
-      ROT	//  newCode _104 expectedVersion
-      EQUAL	//  newCode _105
-      IF:<{	//  newCode
-        ctx_code_version GETGLOB	//  newCode _106
-        INC	//  newCode _108
+    s2 s(-1) PUXC	//  kind cs kind _95
+    EQUAL	//  kind cs _96
+    IF:<{	//  kind cs
+      16 LDU	//  kind expectedVersion cs
+      LDREF	//  kind expectedVersion newCode cs
+      ctx_code_version GETGLOB	//  kind expectedVersion newCode cs _104
+      s0 s3 XCHG2	//  kind cs newCode _104 expectedVersion
+      EQUAL	//  kind cs newCode _105
+      IF:<{	//  kind cs newCode
+        ctx_code_version GETGLOB	//  kind cs newCode _106
+        INC	//  kind cs newCode _108
         ctx_code_version SETGLOB
         store_base_data CALLDICT
-        DUP	//  newCode newCode
+        DUP	//  kind cs newCode newCode
         SETCODE
-        CTOS	//  _111
-        BLESS	//  _112
+        CTOS	//  kind cs _111
+        BLESS	//  kind cs _112
         c3 POP
         storage_upgrade CALLDICT
         0 THROW
+      }>ELSE<{
+        DROP	//  kind cs
+      }>
+    }>	//  kind cs
+    1658590374 PUSHINT	//  kind cs _117
+    s1 s2 XCHG	//  cs kind _117
+    EQUAL	//  cs _118
+    IF:<{	//  cs
+      16 LDU	//  version cs
+      LDREF	//  version _156 _155
+      DROP	//  version new_params
+      ctx_params_version GETGLOB	//  version new_params _126
+      ROT	//  new_params _126 version
+      EQUAL	//  new_params _127
+      IF:<{	//  new_params
+        DUP	//  new_params new_params
+        check_params CALLDICT	//  new_params _128
+        IF:<{	//  new_params
+          ctx_params_version GETGLOB	//  new_params _129
+          INC	//  new_params _131
+          ctx_params_version SETGLOB
+          ctx_params SETGLOB
+          store_base_data CALLDICT
+        }>ELSE<{
+          DROP	// 
+        }>
       }>ELSE<{
         DROP	// 
       }>
     }>ELSE<{
       DROP	// 
     }>
-  }>
-  get_success_treshold PROC:<{
-    //  total
-    51 MULCONST	//  _2
-    100 PUSHINT	//  _2 _3=100
-    DIV	//  _4
-  }>
-  get_failure_treshold PROC:<{
-    //  total
-    25 MULCONST	//  _2
-    100 PUSHINT	//  _2 _3=100
-    DIV	//  _4
   }>
   register_proposal PROC:<{
     //  seq proposal metadata member
@@ -560,12 +675,10 @@ PROGRAM{
     EQUAL	//  seq proposal metadata member shares _11 _13
     THROWANYIFNOT
     0 PUSHINT	//  seq proposal metadata member shares state
-    ctx_members_shares GETGLOB	//  seq proposal metadata member shares state _18
-    get_success_treshold CALLDICT	//  seq proposal metadata member shares state treshold_success
-    ctx_members_shares GETGLOB	//  seq proposal metadata member shares state treshold_success _21
-    get_failure_treshold CALLDICT	//  seq proposal metadata member shares state treshold_success treshold_failure
+    ctx_params GETGLOB	//  seq proposal metadata member shares state _19
+    load_voting_params CALLDICT	//  seq proposal metadata member shares state treshold_success treshold_failure
     s3 s1 PUSH2	//  seq proposal metadata member shares state treshold_success treshold_failure shares treshold_success
-    GEQ	//  seq proposal metadata member shares state treshold_success treshold_failure _23
+    GEQ	//  seq proposal metadata member shares state treshold_success treshold_failure _21
     IF:<{	//  seq proposal metadata member shares state treshold_success treshold_failure
       s2 POP	//  seq proposal metadata member shares treshold_failure treshold_success
       1 PUSHINT	//  seq proposal metadata member shares treshold_failure treshold_success state
@@ -577,13 +690,13 @@ PROGRAM{
     ctx_proposal_state SETGLOB
     s0 s2 XCHG	//  seq proposal metadata member treshold_success treshold_failure shares
     ctx_proposal_voted_yes SETGLOB
-    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _25=0
+    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _23=0
     ctx_proposal_voted_no SETGLOB
-    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _26=0
+    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _24=0
     ctx_proposal_voted_abstain SETGLOB
     s2 PUSH	//  seq proposal metadata member treshold_success treshold_failure member
     ctx_proposal_author SETGLOB
-    NOW	//  seq proposal metadata member treshold_success treshold_failure _27
+    NOW	//  seq proposal metadata member treshold_success treshold_failure _25
     ctx_proposal_created SETGLOB
     SWAP	//  seq proposal metadata member treshold_failure treshold_success
     ctx_proposal_treshold_success SETGLOB
@@ -591,23 +704,23 @@ PROGRAM{
     SWAP	//  seq proposal member metadata
     ctx_proposal_metadata SETGLOB
     PUSHNULL	//  seq proposal member votes
-    1 PUSHINT	//  seq proposal member votes _31
-    NEWC	//  seq proposal member votes _31 _32
-    2 STU	//  seq proposal member votes _34
+    1 PUSHINT	//  seq proposal member votes _29
+    NEWC	//  seq proposal member votes _29 _30
+    2 STU	//  seq proposal member votes _32
     -ROT
-    8 PUSHPOW2	//  seq proposal _34 member votes _35=256
+    8 PUSHPOW2	//  seq proposal _32 member votes _33=256
     DICTUSETB	//  seq proposal votes
     ctx_proposal_votes SETGLOB
     ctx_proposal_body SETGLOB
-    ctx_members_dict GETGLOB	//  seq _37
+    ctx_members_dict GETGLOB	//  seq _35
     ctx_proposal_members SETGLOB
-    ctx_members_total GETGLOB	//  seq _38
+    ctx_members_total GETGLOB	//  seq _36
     ctx_proposal_members_total SETGLOB
-    ctx_members_shares GETGLOB	//  seq _39
+    ctx_members_shares GETGLOB	//  seq _37
     ctx_proposal_members_shares SETGLOB
-    ctx_params GETGLOB	//  seq _40
+    ctx_params GETGLOB	//  seq _38
     ctx_proposal_params SETGLOB
-    INC	//  _42
+    INC	//  _40
     ctx_proposals_seq SETGLOB
     store_proposal CALLDICT
     store_base_data CALLDICT

@@ -1,16 +1,4 @@
 ;;
-;; Tresholds
-;;
-
-int get_success_treshold(int total) {
-    return (total * 51) / 100;
-}
-
-int get_failure_treshold(int total) {
-    return (total * 25) / 100;
-}
-
-;;
 ;; Register proposal
 ;;
 
@@ -25,8 +13,7 @@ int get_failure_treshold(int total) {
 
     ;; Resolve state
     int state = state::pending();
-    int treshold_success = get_success_treshold(ctx_members_shares);
-    int treshold_failure = get_failure_treshold(ctx_members_shares);
+    var (treshold_success, treshold_failure) = load_voting_params(ctx_params);
     if (shares >= treshold_success) {
         state = state::success();
     }

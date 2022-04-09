@@ -16,6 +16,7 @@ int proposal::transaction() asm "1225918510 PUSHINT";
 int proposal::resolution() asm "3070113962 PUSHINT";
 int proposal::destroy() asm "1738944794 PUSHINT";
 int proposal::upgrade() asm "2894775163 PUSHINT";
+int proposal::params() asm "1658590374 PUSHINT";
 
 ;; Errors
 int error::invalid_address() asm "70 PUSHINT";
@@ -34,3 +35,8 @@ int state::pending() asm "0 PUSHINT";
 int state::success() asm "1 PUSHINT";
 int state::failure() asm "2 PUSHINT";
 int state::executed() asm "3 PUSHINT";
+
+;; uint64 max value
+int params::max_shares() inline {
+    return 2 << 128;
+}

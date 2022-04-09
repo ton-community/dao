@@ -1,5 +1,6 @@
 global int ctx_version;
 global int ctx_code_version;
+global int ctx_params_version;
 
 global int ctx_members_shares;
 global int ctx_members_total;
@@ -17,6 +18,7 @@ global cell ctx_params;
     var ds = get_data().begin_parse();
     ctx_version = ds~load_uint(16);
     ctx_code_version = ds~load_uint(16);
+    ctx_params_version = ds~load_uint(16);
     cell membersRef = ds~load_ref();
     cell proposalsRef = ds~load_ref();
     ctx_params = ds~load_ref();
@@ -24,7 +26,7 @@ global cell ctx_params;
 
     ;; Parse members
     ds = membersRef.begin_parse();
-    ctx_members_shares = ds~load_uint(32);
+    ctx_members_shares = ds~load_coins();
     ctx_members_total = ds~load_uint(32);
     ctx_members_dict = ds~load_ref();
     ds.end_parse();
@@ -41,8 +43,9 @@ global cell ctx_params;
     set_data(begin_cell()
         .store_uint(ctx_version, 16)
         .store_uint(ctx_code_version, 16)
+        .store_uint(ctx_params_version, 16)
         .store_ref(begin_cell()
-            .store_uint(ctx_members_shares, 32)
+            .store_coins(ctx_members_shares)
             .store_uint(ctx_members_total, 32)
             .store_ref(ctx_members_dict)
         .end_cell())
