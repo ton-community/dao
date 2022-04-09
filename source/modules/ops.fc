@@ -26,8 +26,10 @@
 
 () op_execute(int member, int value, slice in_msg, int query_id) impure {
 
-    ;; Check input
+    ;; Load proposal ID
     int proposalId = in_msg~load_uint(32);
+    
+    ;; End and validate
     in_msg.end_parse();
 
     ;; Prepare

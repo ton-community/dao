@@ -358,7 +358,7 @@ _ check_params(cell src) {
     return true;
 }
 
-_ load_allocated_shares(cell src) {
+_ load_total_shares_number(cell src) {
     var cs = src.begin_parse();
 
     ;; Serialization version
@@ -385,6 +385,23 @@ _ load_voting_params(cell src) {
     var success = cs~load_coins();
     var failure = cs~load_coins();
     return (success, failure);
+}
+
+_ load_metadata(cell src) {
+    var cs = src.begin_parse();
+    
+    var version = cs~load_uint(1);
+    throw_unless(error::internal_error(), version == 0);
+    cs~load_coins();
+    cs~load_coins();
+    cs~load_coins();
+
+    ;; Check metadata
+    if (cs~load_int(1)) {
+        return cs~load_ref();
+    } else {
+        return null();
+    }
 }
 
 
@@ -691,7 +708,7 @@ cell prepare_execute(int proposalId, int member) impure {
 }
 
 _ get_version() method_id {
-    return (0, 0, 2);
+    return (0, 0, 3);
 }
 
 _ get_code_version() method_id {
@@ -702,6 +719,13 @@ _ get_code_version() method_id {
 _ get_members_info() method_id {
     load_base_data();
     return (0, ctx_members_total, ctx_members_shares);
+}
+_ get_params() method_id {
+    load_base_data();
+    var total_shares = load_total_shares_number(ctx_params);
+    var (successTreshold, failureTreshold) = load_voting_params(ctx_params);
+    var metadata = load_metadata(ctx_params);
+    return (0, total_shares, ctx_members_shares, successTreshold, failureTreshold, metadata);
 }
 
 ;;
@@ -812,8 +836,10 @@ _ get_membership(slice addr) method_id {
 
 () op_execute(int member, int value, slice in_msg, int query_id) impure {
 
-    ;; Check input
+    ;; Load proposal ID
     int proposalId = in_msg~load_uint(32);
+    
+    ;; End and validate
     in_msg.end_parse();
 
     ;; Prepare

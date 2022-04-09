@@ -14,8 +14,9 @@ PROGRAM{
   DECLPROC load_proposal
   DECLPROC store_proposal
   DECLPROC check_params
-  DECLPROC load_allocated_shares
+  DECLPROC load_total_shares_number
   DECLPROC load_voting_params
+  DECLPROC load_metadata
   DECLPROC check_proposal
   DECLPROC execute_proposal
   DECLPROC register_proposal
@@ -24,6 +25,7 @@ PROGRAM{
   82320 DECLMETHOD get_version
   107037 DECLMETHOD get_code_version
   119035 DECLMETHOD get_members_info
+  115150 DECLMETHOD get_params
   129834 DECLMETHOD get_last_proposal_id
   94347 DECLMETHOD get_proposal
   99394 DECLMETHOD get_proposal_vote
@@ -423,7 +425,7 @@ PROGRAM{
     ENDS
     TRUE	//  _36
   }>
-  load_allocated_shares PROC:<{
+  load_total_shares_number PROC:<{
     //  src
     CTOS	//  cs
     1 LDU	//  version cs
@@ -454,6 +456,30 @@ PROGRAM{
     LDGRAMS	//  success cs
     LDGRAMS	//  success _26 _25
     DROP	//  success failure
+  }>
+  load_metadata PROC:<{
+    //  src
+    CTOS	//  cs
+    1 LDU	//  version cs
+    74 PUSHINT	//  version cs _7
+    s0 s2 XCHG	//  _7 cs version
+    0 EQINT	//  _7 cs _9
+    s1 s2 XCHG	//  cs _7 _9
+    THROWANYIFNOT
+    LDGRAMS	//  _26 _25
+    NIP	//  cs
+    LDGRAMS	//  _28 _27
+    NIP	//  cs
+    LDGRAMS	//  _30 _29
+    NIP	//  cs
+    1 LDI	//  _17 cs
+    SWAP	//  cs _17
+    IFJMP:<{	//  cs
+      LDREF	//  _34 _33
+      DROP	//  _20
+    }>	//  cs
+    DROP	// 
+    PUSHNULL	//  _22
   }>
   check_proposal PROC:<{
     //  proposal
@@ -843,7 +869,7 @@ PROGRAM{
     // 
     0 PUSHINT	//  _0=0
     DUP	//  _0=0 _1=0
-    2 PUSHINT	//  _0=0 _1=0 _2=2
+    3 PUSHINT	//  _0=0 _1=0 _2=3
   }>
   get_code_version PROC:<{
     // 
@@ -856,6 +882,21 @@ PROGRAM{
     0 PUSHINT	//  _1=0
     ctx_members_total GETGLOB	//  _1=0 _2
     ctx_members_shares GETGLOB	//  _1=0 _2 _3
+  }>
+  get_params PROC:<{
+    // 
+    load_base_data CALLDICT
+    ctx_params GETGLOB	//  _2
+    load_total_shares_number CALLDICT	//  total_shares
+    ctx_params GETGLOB	//  total_shares _6
+    load_voting_params CALLDICT	//  total_shares successTreshold failureTreshold
+    ctx_params GETGLOB	//  total_shares successTreshold failureTreshold _9
+    load_metadata CALLDICT	//  total_shares successTreshold failureTreshold metadata
+    0 PUSHINT	//  total_shares successTreshold failureTreshold metadata _11=0
+    ctx_members_shares GETGLOB	//  total_shares successTreshold failureTreshold metadata _11=0 _12
+    s3 s3 XCHG2
+    s0 s5 XCHG
+    s4 s1 s4 XCHG3	//  _11=0 total_shares _12 successTreshold failureTreshold metadata
   }>
   get_last_proposal_id PROC:<{
     // 

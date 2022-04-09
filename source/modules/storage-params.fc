@@ -22,7 +22,7 @@ _ check_params(cell src) {
     return true;
 }
 
-_ load_allocated_shares(cell src) {
+_ load_total_shares_number(cell src) {
     var cs = src.begin_parse();
 
     ;; Serialization version
@@ -49,4 +49,21 @@ _ load_voting_params(cell src) {
     var success = cs~load_coins();
     var failure = cs~load_coins();
     return (success, failure);
+}
+
+_ load_metadata(cell src) {
+    var cs = src.begin_parse();
+    
+    var version = cs~load_uint(1);
+    throw_unless(error::internal_error(), version == 0);
+    cs~load_coins();
+    cs~load_coins();
+    cs~load_coins();
+
+    ;; Check metadata
+    if (cs~load_int(1)) {
+        return cs~load_ref();
+    } else {
+        return null();
+    }
 }

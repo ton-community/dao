@@ -1,5 +1,5 @@
 _ get_version() method_id {
-    return (0, 0, 2);
+    return (0, 0, 3);
 }
 
 _ get_code_version() method_id {
@@ -10,6 +10,13 @@ _ get_code_version() method_id {
 _ get_members_info() method_id {
     load_base_data();
     return (0, ctx_members_total, ctx_members_shares);
+}
+_ get_params() method_id {
+    load_base_data();
+    var total_shares = load_total_shares_number(ctx_params);
+    var (successTreshold, failureTreshold) = load_voting_params(ctx_params);
+    var metadata = load_metadata(ctx_params);
+    return (0, total_shares, ctx_members_shares, successTreshold, failureTreshold, metadata);
 }
 
 ;;
