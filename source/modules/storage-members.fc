@@ -6,15 +6,18 @@
 
 
 int load_shares(cell dict, int member) {
-    var (cl, found) = ctx_members_dict.udict_get_ref?(256, member);
+    var (cs, found) = dict.udict_get?(256, member);
+    int coins = 0;
     if (found) {
-        slice cs = cl.begin_parse();
-        int coins = cs~load_coins();
-        cs.end_parse();
-        return coins;
-    } else {
-        return 0;
+        slice cs2 = cs;
+        cell rf = cs2~load_ref();
+        cs2.end_parse();
+
+        cs2 = rf.begin_parse();
+        coins = cs2~load_coins();
+        cs2.end_parse();
     }
+    return coins;
 }
 
 cell store_shares(cell dict, int member, int shares) {

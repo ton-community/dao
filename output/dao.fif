@@ -233,17 +233,22 @@ PROGRAM{
   }>
   load_shares PROC:<{
     //  dict member
-    NIP	//  member
-    ctx_members_dict GETGLOB	//  member _4
-    8 PUSHPOW2	//  member _4 _5=256
-    DICTUGETREF	//  cl found
-    IFJMP:<{	//  cl
-      CTOS	//  cs
-      LDGRAMS	//  coins cs
+    SWAP
+    8 PUSHPOW2	//  member dict _4=256
+    DICTUGET
+    NULLSWAPIFNOT	//  cs found
+    0 PUSHINT	//  cs found coins=0
+    SWAP	//  cs coins=0 found
+    IF:<{	//  cs coins=0
+      DROP	//  cs2
+      LDREF	//  rf cs2
       ENDS
-    }>	//  cl
-    DROP	// 
-    0 PUSHINT	//  _13=0
+      CTOS	//  cs2
+      LDGRAMS	//  coins cs2
+      ENDS
+    }>ELSE<{
+      NIP	//  coins
+    }>
   }>
   store_shares PROC:<{
     //  dict member shares

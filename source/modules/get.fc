@@ -91,7 +91,7 @@ _ get_membership(slice addr) method_id {
     load_base_data();
 
     ;; Load share
-    var shares = load_shares(ctx_members_dict, member);
+    int shares = load_shares(ctx_members_dict, member);
     if (shares > 0) {
         return (1, shares);
     } else {
