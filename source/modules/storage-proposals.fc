@@ -20,8 +20,8 @@ global cell ctx_proposal_body;
 ;; Members
 global cell ctx_proposal_members;
 global int ctx_proposal_members_total;
-global int ctx_proposal_members_shares_total;
-global int ctx_proposal_members_shares_allocated;
+global int ctx_proposal_members_shares;
+global cell ctx_proposal_params;
 
 ;;
 ;; Loading proposal
@@ -53,13 +53,13 @@ global int ctx_proposal_members_shares_allocated;
     ctx_proposal_created = cs~load_uint(32);
     ctx_proposal_treshold_success = cs~load_coins();
     ctx_proposal_treshold_failure = cs~load_coins();
+    ctx_proposal_params = cs~load_ref();
     ctx_proposal_metadata = cs~load_ref();
     cs.end_parse();
 
     ;; Members
     cs = members_cell.begin_parse();
-    ctx_proposal_members_shares_total = cs~load_coins();
-    ctx_proposal_members_shares_allocated = cs~load_coins();
+    ctx_proposal_members_shares = cs~load_coins();
     ctx_proposal_members_total = cs~load_coins();
     ctx_proposal_members = cs~load_ref();
     cs.end_parse();
@@ -79,13 +79,13 @@ global int ctx_proposal_members_shares_allocated;
             .store_uint(ctx_proposal_created, 32)
             .store_coins(ctx_proposal_treshold_success)
             .store_coins(ctx_proposal_treshold_failure)
+            .store_ref(ctx_proposal_params)
             .store_ref(ctx_proposal_metadata)
         .end_cell())
         .store_ref(ctx_proposal_votes)
         .store_ref(ctx_proposal_body)
         .store_ref(begin_cell()
-            .store_coins(ctx_proposal_members_shares_total)
-            .store_coins(ctx_proposal_members_shares_allocated)
+            .store_coins(ctx_proposal_members_shares)
             .store_coins(ctx_proposal_members_total)
             .store_ref(ctx_proposal_members)
         .end_cell())

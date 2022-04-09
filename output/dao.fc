@@ -137,14 +137,15 @@ builder store_builder_ref(builder to, builder what) asm(what to) "STBREFR";
 global int ctx_version;
 global int ctx_code_version;
 
-global int ctx_members_shares_total;
-global int ctx_members_shares_allocated;
+global int ctx_members_shares;
 global int ctx_members_total;
 global cell ctx_members_dict;
 
 global int ctx_proposals_seq;
 global cell ctx_proposals_dict;
 global cell ctx_proposals_ids;
+
+global cell ctx_params;
 
 () load_base_data() impure {
 
@@ -154,12 +155,12 @@ global cell ctx_proposals_ids;
     ctx_code_version = ds~load_uint(16);
     cell membersRef = ds~load_ref();
     cell proposalsRef = ds~load_ref();
+    ctx_params = ds~load_ref();
     ds.end_parse();
 
     ;; Parse members
     ds = membersRef.begin_parse();
-    ctx_members_shares_total = ds~load_uint(32);
-    ctx_members_shares_allocated = ds~load_uint(32);
+    ctx_members_shares = ds~load_uint(32);
     ctx_members_total = ds~load_uint(32);
     ctx_members_dict = ds~load_ref();
     ds.end_parse();
@@ -177,8 +178,7 @@ global cell ctx_proposals_ids;
         .store_uint(ctx_version, 16)
         .store_uint(ctx_code_version, 16)
         .store_ref(begin_cell()
-            .store_uint(ctx_members_shares_total, 32)
-            .store_uint(ctx_members_shares_allocated, 32)
+            .store_uint(ctx_members_shares, 32)
             .store_uint(ctx_members_total, 32)
             .store_ref(ctx_members_dict)
         .end_cell())
@@ -187,6 +187,7 @@ global cell ctx_proposals_ids;
             .store_dict(ctx_proposals_dict)
             .store_dict(ctx_proposals_ids)
         .end_cell())
+        .store_ref(ctx_params)
     .end_cell());
 }
 
@@ -248,8 +249,8 @@ global cell ctx_proposal_body;
 ;; Members
 global cell ctx_proposal_members;
 global int ctx_proposal_members_total;
-global int ctx_proposal_members_shares_total;
-global int ctx_proposal_members_shares_allocated;
+global int ctx_proposal_members_shares;
+global cell ctx_proposal_params;
 
 ;;
 ;; Loading proposal
@@ -281,13 +282,13 @@ global int ctx_proposal_members_shares_allocated;
     ctx_proposal_created = cs~load_uint(32);
     ctx_proposal_treshold_success = cs~load_coins();
     ctx_proposal_treshold_failure = cs~load_coins();
+    ctx_proposal_params = cs~load_ref();
     ctx_proposal_metadata = cs~load_ref();
     cs.end_parse();
 
     ;; Members
     cs = members_cell.begin_parse();
-    ctx_proposal_members_shares_total = cs~load_coins();
-    ctx_proposal_members_shares_allocated = cs~load_coins();
+    ctx_proposal_members_shares = cs~load_coins();
     ctx_proposal_members_total = cs~load_coins();
     ctx_proposal_members = cs~load_ref();
     cs.end_parse();
@@ -307,13 +308,13 @@ global int ctx_proposal_members_shares_allocated;
             .store_uint(ctx_proposal_created, 32)
             .store_coins(ctx_proposal_treshold_success)
             .store_coins(ctx_proposal_treshold_failure)
+            .store_ref(ctx_proposal_params)
             .store_ref(ctx_proposal_metadata)
         .end_cell())
         .store_ref(ctx_proposal_votes)
         .store_ref(ctx_proposal_body)
         .store_ref(begin_cell()
-            .store_coins(ctx_proposal_members_shares_total)
-            .store_coins(ctx_proposal_members_shares_allocated)
+            .store_coins(ctx_proposal_members_shares)
             .store_coins(ctx_proposal_members_total)
             .store_ref(ctx_proposal_members)
         .end_cell())
@@ -486,8 +487,8 @@ int get_failure_treshold(int total) {
 
     ;; Resolve state
     int state = state::pending();
-    int treshold_success = get_success_treshold(ctx_members_shares_allocated);
-    int treshold_failure = get_failure_treshold(ctx_members_shares_allocated);
+    int treshold_success = get_success_treshold(ctx_members_shares);
+    int treshold_failure = get_failure_treshold(ctx_members_shares);
     if (shares >= treshold_success) {
         state = state::success();
     }
@@ -515,8 +516,8 @@ int get_failure_treshold(int total) {
 
     ctx_proposal_members = ctx_members_dict;
     ctx_proposal_members_total = ctx_members_total;
-    ctx_proposal_members_shares_total = ctx_members_shares_total;
-    ctx_proposal_members_shares_allocated = ctx_members_shares_allocated;
+    ctx_proposal_members_shares = ctx_members_shares;
+    ctx_proposal_params = ctx_params;
 
     ;;
     ;; Increment counter
@@ -576,7 +577,7 @@ int get_failure_treshold(int total) {
     }
 
     ;; Check if vote won't be able to succeed: too many votes against or abstent
-    if (ctx_proposal_voted_no + ctx_proposal_voted_abstain > ctx_proposal_members_shares_allocated - ctx_proposal_treshold_success) {
+    if (ctx_proposal_voted_no + ctx_proposal_voted_abstain > ctx_proposal_members_shares - ctx_proposal_treshold_success) {
         ctx_proposal_state = state::failure();
     }
 
@@ -624,7 +625,7 @@ _ get_code_version() method_id {
 
 _ get_members_info() method_id {
     load_base_data();
-    return (0, ctx_members_total, ctx_members_shares_allocated, ctx_members_shares_total);
+    return (0, ctx_members_total, ctx_members_shares);
 }
 
 ;;
@@ -679,8 +680,7 @@ _ get_proposal_vote(int id, slice addr) method_id {
         0, 
         existingVote, 
         votingPower,
-        ctx_proposal_members_shares_allocated, 
-        ctx_proposal_members_shares_total,
+        ctx_proposal_members_shares,
         ctx_proposal_members_total
     );
 }

@@ -449,9 +449,7 @@ describe("voting", () => {
         expect((vote.result[2] as BN).toString(10)).toBe('1000');
         // Shares allocated
         expect((vote.result[3] as BN).toString(10)).toBe('4000');
-        // Shares total
-        expect((vote.result[4] as BN).toString(10)).toBe('5000');
         // Members total
-        expect((vote.result[5] as BN).toString(10)).toBe('4');
+        expect((vote.result[4] as BN).toString(10)).toBe('4');
     });
 });

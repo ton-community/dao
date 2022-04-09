@@ -25,8 +25,8 @@ int get_failure_treshold(int total) {
 
     ;; Resolve state
     int state = state::pending();
-    int treshold_success = get_success_treshold(ctx_members_shares_allocated);
-    int treshold_failure = get_failure_treshold(ctx_members_shares_allocated);
+    int treshold_success = get_success_treshold(ctx_members_shares);
+    int treshold_failure = get_failure_treshold(ctx_members_shares);
     if (shares >= treshold_success) {
         state = state::success();
     }
@@ -54,8 +54,8 @@ int get_failure_treshold(int total) {
 
     ctx_proposal_members = ctx_members_dict;
     ctx_proposal_members_total = ctx_members_total;
-    ctx_proposal_members_shares_total = ctx_members_shares_total;
-    ctx_proposal_members_shares_allocated = ctx_members_shares_allocated;
+    ctx_proposal_members_shares = ctx_members_shares;
+    ctx_proposal_params = ctx_params;
 
     ;;
     ;; Increment counter
@@ -115,7 +115,7 @@ int get_failure_treshold(int total) {
     }
 
     ;; Check if vote won't be able to succeed: too many votes against or abstent
-    if (ctx_proposal_voted_no + ctx_proposal_voted_abstain > ctx_proposal_members_shares_allocated - ctx_proposal_treshold_success) {
+    if (ctx_proposal_voted_no + ctx_proposal_voted_abstain > ctx_proposal_members_shares - ctx_proposal_treshold_success) {
         ctx_proposal_state = state::failure();
     }
 

@@ -26,7 +26,6 @@ export function createData(totalShares: number, members: { address: Address, sha
         .storeUint(1, 16)
         .storeUint(1, 16)
         .storeRef(beginCell()
-            .storeUint(totalShares, 32)
             .storeUint(allocatedShares, 32)
             .storeUint(members.length, 32)
             .storeRef(membersCell.endCell())
@@ -36,5 +35,8 @@ export function createData(totalShares: number, members: { address: Address, sha
             .storeDict(null)
             .storeDict(null)
             .endCell())
+        .storeRef(beginCell()
+
+        .endCell())
         .endCell();
 }

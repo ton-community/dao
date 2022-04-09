@@ -9,7 +9,7 @@ _ get_code_version() method_id {
 
 _ get_members_info() method_id {
     load_base_data();
-    return (0, ctx_members_total, ctx_members_shares_allocated, ctx_members_shares_total);
+    return (0, ctx_members_total, ctx_members_shares);
 }
 
 ;;
@@ -64,8 +64,7 @@ _ get_proposal_vote(int id, slice addr) method_id {
         0, 
         existingVote, 
         votingPower,
-        ctx_proposal_members_shares_allocated, 
-        ctx_proposal_members_shares_total,
+        ctx_proposal_members_shares,
         ctx_proposal_members_total
     );
 }
