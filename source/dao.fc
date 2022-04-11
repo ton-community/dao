@@ -42,8 +42,8 @@
         op_execute(member, msg_value, in_msg, query_id);
         return ();
     }
-    if (op == op::cancel()) {
-        op_cancel(member, msg_value, in_msg, query_id);
+    if (op == op::abort()) {
+        op_abort(member, msg_value, in_msg, query_id);
         return ();
     }
 

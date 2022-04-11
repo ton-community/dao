@@ -140,10 +140,10 @@ cell prepare_execute(int proposalId, int member) impure {
 }
 
 ;;
-;; Prepare execution
+;; Abort execution
 ;;
 
-() cancel_proposal(int proposalId, int member) impure {
+() abort_proposal(int proposalId, int member) impure {
     
     ;; Load proposal
     load_proposal(proposalId);
@@ -155,9 +155,82 @@ cell prepare_execute(int proposalId, int member) impure {
     throw_unless(error::invalid_message(), ctx_proposal_author == member);
 
     ;; Update executed state
+    ctx_proposal_state = state::aborted();
+
+    ;; Persist
+    store_proposal();
+    store_base_data();
+}
+
+;;
+;; Cancel proposal
+;;
+
+() cancel_proposal(int proposalId) impure {
+    
+    ;; Load proposal
+    load_proposal(proposalId);
+
+    ;; Check proposal state
+    throw_unless(error::invalid_message(), 
+        (ctx_proposal_state == state::executed()) | (ctx_proposal_state == state::cancelled()) | (ctx_proposal_state == state::aborted())
+    );
+
+    ;; Update executed state
     ctx_proposal_state = state::cancelled();
 
     ;; Persist
     store_proposal();
+    store_base_data();
+}
+
+;;
+;; Allocate voting power
+;;
+
+() allocate_voting_power(int member, int shares) impure {
+
+    ;; Check input
+    throw_unless(error::internal_error(), shares > 0);
+
+    ;; Check if shares available
+    var totalShares = load_total_shares_number(ctx_params);
+    var allocatedShares = ctx_members_total;
+    throw_unless(error::internal_error(), totalShares >= allocatedShares + shares);
+
+    ;; Update membership
+    int existingShares = load_shares(ctx_members_dict, member);
+    if (existingShares == 0) {
+        ctx_members_total = ctx_members_total + 1;
+    }
+    ctx_members_shares = ctx_members_shares + shares;
+    ctx_members_dict = store_shares(ctx_members_dict, member, existingShares + shares);
+
+    ;; Persist
+    store_base_data();
+}
+
+;;
+;; Deallocate voting power
+;;
+
+() deallocate_voting_power(int member, int shares) impure {
+
+    ;; Check input
+    throw_unless(error::internal_error(), shares > 0);
+
+    ;; Load existing
+    int existingShares = load_shares(ctx_members_dict, member);
+    throw_unless(error::internal_error(), existingShares >= shares);
+
+    ;; Update membership
+    if (existingShares == shares) {
+        throw_unless(error::internal_error(), ctx_members_total > 0);
+        ctx_members_total = ctx_members_total - 1;
+    }
+    ctx_members_shares = ctx_members_shares - shares;
+    ctx_members_dict = store_shares(ctx_members_dict, member, existingShares - shares);
+
+    ;; Persist
     store_base_data();
 }

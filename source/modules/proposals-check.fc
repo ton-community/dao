@@ -1,0 +1,90 @@
+
+;;
+;; Checks proposal body
+;;
+
+int check_proposal(cell proposal) {
+    slice cs = proposal.begin_parse();
+    int kind = cs~load_uint(32);
+
+    ;; Transaction proposal
+    if (kind == proposal::transaction()) {
+        cs~load_msg_addr(); ;; Load target
+        cs~load_coins(); ;; Load coins
+        ;; Load maybe stateinit
+        if (cs~load_int(1)) {
+            cs~load_ref();
+        }
+        ;; Load maybe payload
+        if (cs~load_int(1)) {
+            cs~load_ref();
+        }
+        cs.end_parse();
+        return true;
+    }
+
+    ;; Resolution proposal
+    if (kind == proposal::resolution()) {
+        cs.end_parse();
+        return true;
+    }
+
+    ;; Destroy proposal
+    if (kind == proposal::destroy()) {
+        cs~load_msg_addr(); ;; Load target
+        cs.end_parse();
+        return true;
+    }
+
+    ;; Upgrade proposal
+    if (kind == proposal::upgrade()) {
+        var expectedVersion = cs~load_uint(16); ;; Load code version
+        if (expectedVersion != ctx_code_version) {
+            return false;
+        } else {
+            cs~load_ref(); ;; Load code ref
+            cs.end_parse();
+            return true;
+        }
+    }
+
+    ;; Params proposal
+    if (kind == proposal::params()) {
+        var expectedVersion = cs~load_uint(16);
+        if (expectedVersion != ctx_params_version) {
+            return false;
+        } else {
+            var params = cs~load_ref();
+            if (~ check_params(params)) {
+                return false;
+            }
+            cs.end_parse();
+            return true;
+        }
+    }
+
+    ;; Cancel proposal
+    if (kind == proposal::cancel()) {
+        cs~load_uint(32);
+        cs.end_parse();
+        return true;
+    }
+
+    ;; Allocate proposal
+    if (kind == proposal::allocate()) {
+        cs~load_uint(256);
+        cs~load_coins();
+        cs.end_parse();
+        return true;
+    }
+
+    ;; Deallocate proposal
+    if (kind == proposal::deallocate()) {
+        cs~load_uint(256);
+        cs~load_coins();
+        cs.end_parse();
+        return true;
+    }
+
+    return false;
+}

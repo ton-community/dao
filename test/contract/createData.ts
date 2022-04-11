@@ -48,6 +48,7 @@ export function createData(
             .storeCoins(params.totalShares)
             .storeCoins(params.successTreshold)
             .storeCoins(params.failureTreshold)
+            .storeBit(true)
             .storeRef(beginCell()
                 .endCell())
             .endCell())

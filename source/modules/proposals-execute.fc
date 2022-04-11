@@ -1,67 +1,3 @@
-
-;;
-;; Checks proposal body
-;;
-
-int check_proposal(cell proposal) {
-    slice cs = proposal.begin_parse();
-    int kind = cs~load_uint(32);
-
-    ;; Transaction proposal
-    if (kind == proposal::transaction()) {
-        cs~load_msg_addr(); ;; Load target
-        cs~load_coins(); ;; Load coins
-        ;; Load maybe stateinit
-        if (cs~load_int(1)) {
-            cs~load_ref();
-        }
-        ;; Load maybe payload
-        if (cs~load_int(1)) {
-            cs~load_ref();
-        }
-        cs.end_parse();
-        return true;
-    }
-
-    ;; Resolution proposal
-    if (kind == proposal::resolution()) {
-        return true;
-    }
-
-    ;; Destroy proposal
-    if (kind == proposal::destroy()) {
-        cs~load_msg_addr(); ;; Load target
-        return true;
-    }
-
-    ;; Upgrade proposal
-    if (kind == proposal::upgrade()) {
-        var expectedVersion = cs~load_uint(16); ;; Load code version
-        if (expectedVersion != ctx_code_version) {
-            return false;
-        } else {
-            cs~load_ref(); ;; Load code ref
-            return true;
-        }
-    }
-
-    ;; Params proposal
-    if (kind == proposal::params()) {
-        var expectedVersion = cs~load_uint(16);
-        if (expectedVersion != ctx_params_version) {
-            return false;
-        } else {
-            var params = cs~load_ref();
-            if (~ check_params(params)) {
-                return false;
-            }
-            return true;
-        }
-    }
-
-    return false;
-}
-
 ;;
 ;; Proposal execution
 ;; NOTE: execution silently fails on invalid proposal to mark proposal as executed instead of crashing transactions
@@ -157,5 +93,25 @@ int check_proposal(cell proposal) {
                 store_base_data();   
             }
         }
+    }
+
+    ;; Cancel proposal
+    if (kind == proposal::cancel()) {
+        var id = cs~load_uint(32);
+        cancel_proposal(id);
+    }
+
+    ;; Allocate proposal
+    if (kind == proposal::allocate()) {
+        var member = cs~load_uint(256);
+        var shares = cs~load_coins();
+        allocate_voting_power(member, shares);
+    }
+
+    ;; Deallocate proposal
+    if (kind == proposal::deallocate()) {
+        var member = cs~load_uint(256);
+        var shares = cs~load_coins();
+        deallocate_voting_power(member, shares);
     }
 }

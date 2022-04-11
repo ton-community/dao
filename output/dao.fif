@@ -18,11 +18,14 @@ PROGRAM{
   DECLPROC load_voting_params
   DECLPROC load_metadata
   DECLPROC check_proposal
-  DECLPROC execute_proposal
   DECLPROC register_proposal
   DECLPROC register_vote
   DECLPROC prepare_execute
+  DECLPROC abort_proposal
   DECLPROC cancel_proposal
+  DECLPROC allocate_voting_power
+  DECLPROC deallocate_voting_power
+  DECLPROC execute_proposal
   82320 DECLMETHOD get_version
   107037 DECLMETHOD get_code_version
   119035 DECLMETHOD get_members_info
@@ -35,7 +38,7 @@ PROGRAM{
   DECLPROC op_proposal
   DECLPROC op_vote
   DECLPROC op_execute
-  DECLPROC op_cancel
+  DECLPROC op_abort
   DECLPROC recv_internal
   DECLGLOBVAR ctx_version
   DECLGLOBVAR ctx_code_version
@@ -498,20 +501,20 @@ PROGRAM{
     EQUAL	//  kind cs _8
     IFJMP:<{	//  kind cs
       NIP	//  cs
-      LDMSGADDR	//  _65 _64
+      LDMSGADDR	//  _94 _93
       NIP	//  cs
-      LDGRAMS	//  _67 _66
+      LDGRAMS	//  _96 _95
       NIP	//  cs
       1 LDI	//  _13 cs
       SWAP	//  cs _13
       IF:<{	//  cs
-        LDREF	//  _71 _70
+        LDREF	//  _100 _99
         NIP	//  cs
       }>	//  cs
       1 LDI	//  _18 cs
       SWAP	//  cs _18
       IF:<{	//  cs
-        LDREF	//  _75 _74
+        LDREF	//  _104 _103
         NIP	//  cs
       }>	//  cs
       ENDS
@@ -521,178 +524,97 @@ PROGRAM{
     s2 s(-1) PUXC	//  kind cs kind _25
     EQUAL	//  kind cs _26
     IFJMP:<{	//  kind cs
-      2DROP	// 
-      TRUE	//  _27
+      NIP	//  cs
+      ENDS
+      TRUE	//  _28
     }>	//  kind cs
-    1738944794 PUSHINT	//  kind cs _28
-    s2 s(-1) PUXC	//  kind cs kind _28
-    EQUAL	//  kind cs _29
-    IFJMP:<{	//  kind cs
-      2DROP	// 
-      TRUE	//  _32
-    }>	//  kind cs
-    2894775163 PUSHINT	//  kind cs _33
-    s2 s(-1) PUXC	//  kind cs kind _33
-    EQUAL	//  kind cs _34
+    1738944794 PUSHINT	//  kind cs _29
+    s2 s(-1) PUXC	//  kind cs kind _29
+    EQUAL	//  kind cs _30
     IFJMP:<{	//  kind cs
       NIP	//  cs
-      16 LDU	//  _79 _78
-      DROP	//  expectedVersion
-      ctx_code_version GETGLOB	//  expectedVersion _39
-      NEQ	//  _40
-      IFJMP:<{	// 
-        FALSE	//  _41
-      }>	// 
-      TRUE	//  _44
+      LDMSGADDR	//  _106 _105
+      NIP	//  cs
+      ENDS
+      TRUE	//  _34
     }>	//  kind cs
-    1658590374 PUSHINT	//  kind cs _45
-    s1 s2 XCHG	//  cs kind _45
-    EQUAL	//  cs _46
-    IFJMP:<{	//  cs
+    2894775163 PUSHINT	//  kind cs _35
+    s2 s(-1) PUXC	//  kind cs kind _35
+    EQUAL	//  kind cs _36
+    IFJMP:<{	//  kind cs
+      NIP	//  cs
       16 LDU	//  expectedVersion cs
-      ctx_params_version GETGLOB	//  expectedVersion cs _51
-      s1 s2 XCHG	//  cs expectedVersion _51
-      NEQ	//  cs _52
+      ctx_code_version GETGLOB	//  expectedVersion cs _41
+      s1 s2 XCHG	//  cs expectedVersion _41
+      NEQ	//  cs _42
       IFJMP:<{	//  cs
         DROP	// 
-        FALSE	//  _53
+        FALSE	//  _43
       }>	//  cs
-      LDREF	//  _85 _84
-      DROP	//  params
-      check_params CALLDICT	//  _57
-      NOT	//  _58
-      IFJMP:<{	// 
-        FALSE	//  _59
-      }>	// 
-      TRUE	//  _60
+      LDREF	//  _110 _109
+      NIP	//  cs
+      ENDS
+      TRUE	//  _47
+    }>	//  kind cs
+    1658590374 PUSHINT	//  kind cs _48
+    s2 s(-1) PUXC	//  kind cs kind _48
+    EQUAL	//  kind cs _49
+    IFJMP:<{	//  kind cs
+      NIP	//  cs
+      16 LDU	//  expectedVersion cs
+      ctx_params_version GETGLOB	//  expectedVersion cs _54
+      s1 s2 XCHG	//  cs expectedVersion _54
+      NEQ	//  cs _55
+      IFJMP:<{	//  cs
+        DROP	// 
+        FALSE	//  _56
+      }>	//  cs
+      LDREF	//  params cs
+      SWAP	//  cs params
+      check_params CALLDICT	//  cs _60
+      NOT	//  cs _61
+      IFJMP:<{	//  cs
+        DROP	// 
+        FALSE	//  _62
+      }>	//  cs
+      ENDS
+      TRUE	//  _64
+    }>	//  kind cs
+    3137658663 PUSHINT	//  kind cs _65
+    s2 s(-1) PUXC	//  kind cs kind _65
+    EQUAL	//  kind cs _66
+    IFJMP:<{	//  kind cs
+      NIP	//  cs
+      32 LDU	//  _116 _115
+      NIP	//  cs
+      ENDS
+      TRUE	//  _71
+    }>	//  kind cs
+    2105678790 PUSHINT	//  kind cs _72
+    s2 s(-1) PUXC	//  kind cs kind _72
+    EQUAL	//  kind cs _73
+    IFJMP:<{	//  kind cs
+      NIP	//  cs
+      256 LDU	//  _118 _117
+      NIP	//  cs
+      LDGRAMS	//  _120 _119
+      NIP	//  cs
+      ENDS
+      TRUE	//  _80
+    }>	//  kind cs
+    1146177121 PUSHINT	//  kind cs _81
+    s1 s2 XCHG	//  cs kind _81
+    EQUAL	//  cs _82
+    IFJMP:<{	//  cs
+      256 LDU	//  _122 _121
+      NIP	//  cs
+      LDGRAMS	//  _124 _123
+      NIP	//  cs
+      ENDS
+      TRUE	//  _89
     }>	//  cs
     DROP	// 
-    FALSE	//  _61
-  }>
-  execute_proposal PROC:<{
-    //  proposal
-    CTOS	//  cs
-    32 LDU	//  kind cs
-    1225918510 PUSHINT	//  kind cs _7
-    s2 s(-1) PUXC	//  kind cs kind _7
-    EQUAL	//  kind cs _8
-    IF:<{	//  kind cs
-      LDMSGADDR	//  kind to_addr cs
-      LDGRAMS	//  kind to_addr value cs
-      0 PUSHINT	//  kind to_addr value cs _16=0
-      24 PUSHINT	//  kind to_addr value cs _16=0 _17=24
-      NEWC	//  kind to_addr value cs _16=0 _17=24 _18
-      6 STU	//  kind to_addr value cs _16=0 _20
-      s0 s4 XCHG2	//  kind _16=0 value cs _20 to_addr
-      STSLICER	//  kind _16=0 value cs _21
-      ROT	//  kind _16=0 cs _21 value
-      STGRAMS	//  kind _16=0 cs _22
-      s1 s2 XCHG	//  kind cs _16=0 _22
-      105 STU	//  kind cs msg
-      SWAP	//  kind msg cs
-      1 LDI	//  kind msg _33 cs
-      SWAP	//  kind msg cs _33
-      IF:<{	//  kind msg cs
-        LDREF	//  kind msg stateInit cs
-        1 PUSHINT	//  kind msg stateInit cs _39=1
-        s0 s3 XCHG2	//  kind cs stateInit _39=1 msg
-        1 STU	//  kind cs stateInit msg
-        STREF	//  kind cs msg
-      }>ELSE<{	//  kind msg cs
-        0 PUSHINT
-        ROT	//  kind cs _43=0 msg
-        1 STU	//  kind cs msg
-      }>
-      SWAP	//  kind msg cs
-      1 LDI	//  kind msg _46 cs
-      SWAP	//  kind msg cs _46
-      IF:<{	//  kind msg cs
-        LDREF	//  kind msg payload cs
-        1 PUSHINT	//  kind msg payload cs _52=1
-        s0 s3 XCHG2	//  kind cs payload _52=1 msg
-        1 STU	//  kind cs payload msg
-        STREF	//  kind cs msg
-      }>ELSE<{	//  kind msg cs
-        0 PUSHINT
-        ROT	//  kind cs _56=0 msg
-        1 STU	//  kind cs msg
-      }>
-      ENDC	//  kind cs _59
-      2 PUSHINT	//  kind cs _59 _60=2
-      SENDRAWMSG
-    }>	//  kind cs
-    1738944794 PUSHINT	//  kind cs _62
-    s2 s(-1) PUXC	//  kind cs kind _62
-    EQUAL	//  kind cs _63
-    IF:<{	//  kind cs
-      LDMSGADDR	//  kind to_addr cs
-      0 PUSHINT	//  kind to_addr cs _68=0
-      16 PUSHINT	//  kind to_addr cs _68=0 _69=16
-      NEWC	//  kind to_addr cs _68=0 _69=16 _70
-      6 STU	//  kind to_addr cs _68=0 _72
-      s0 s3 XCHG2	//  kind _68=0 cs _72 to_addr
-      STSLICER	//  kind _68=0 cs _73
-      s2 PUSH	//  kind _68=0 cs _73 _74=0
-      STGRAMS	//  kind _68=0 cs _75
-      s1 s2 XCHG	//  kind cs _68=0 _75
-      107 STU	//  kind cs msg
-      ENDC	//  kind cs _90
-      160 PUSHINT	//  kind cs _90 _93
-      SENDRAWMSG
-    }>	//  kind cs
-    2894775163 PUSHINT	//  kind cs _95
-    s2 s(-1) PUXC	//  kind cs kind _95
-    EQUAL	//  kind cs _96
-    IF:<{	//  kind cs
-      16 LDU	//  kind expectedVersion cs
-      LDREF	//  kind expectedVersion newCode cs
-      ctx_code_version GETGLOB	//  kind expectedVersion newCode cs _104
-      s0 s3 XCHG2	//  kind cs newCode _104 expectedVersion
-      EQUAL	//  kind cs newCode _105
-      IF:<{	//  kind cs newCode
-        ctx_code_version GETGLOB	//  kind cs newCode _106
-        INC	//  kind cs newCode _108
-        ctx_code_version SETGLOB
-        store_base_data CALLDICT
-        DUP	//  kind cs newCode newCode
-        SETCODE
-        CTOS	//  kind cs _111
-        BLESS	//  kind cs _112
-        c3 POP
-        storage_upgrade CALLDICT
-        0 THROW
-      }>ELSE<{
-        DROP	//  kind cs
-      }>
-    }>	//  kind cs
-    1658590374 PUSHINT	//  kind cs _117
-    s1 s2 XCHG	//  cs kind _117
-    EQUAL	//  cs _118
-    IF:<{	//  cs
-      16 LDU	//  version cs
-      LDREF	//  version _156 _155
-      DROP	//  version new_params
-      ctx_params_version GETGLOB	//  version new_params _126
-      ROT	//  new_params _126 version
-      EQUAL	//  new_params _127
-      IF:<{	//  new_params
-        DUP	//  new_params new_params
-        check_params CALLDICT	//  new_params _128
-        IF:<{	//  new_params
-          ctx_params_version GETGLOB	//  new_params _129
-          INC	//  new_params _131
-          ctx_params_version SETGLOB
-          ctx_params SETGLOB
-          store_base_data CALLDICT
-        }>ELSE<{
-          DROP	// 
-        }>
-      }>ELSE<{
-        DROP	// 
-      }>
-    }>ELSE<{
-      DROP	// 
-    }>
+    FALSE	//  _90
   }>
   register_proposal PROC:<{
     //  seq proposal metadata member
@@ -873,7 +795,7 @@ PROGRAM{
     store_proposal CALLDICT
     store_base_data CALLDICT
   }>
-  cancel_proposal PROC:<{
+  abort_proposal PROC:<{
     //  proposalId member
     SWAP	//  member proposalId
     load_proposal CALLDICT
@@ -891,6 +813,250 @@ PROGRAM{
     ctx_proposal_state SETGLOB
     store_proposal CALLDICT
     store_base_data CALLDICT
+  }>
+  cancel_proposal PROC:<{
+    //  proposalId
+    load_proposal CALLDICT
+    72 PUSHINT	//  _2
+    ctx_proposal_state GETGLOB	//  _2 _3
+    3 PUSHINT	//  _2 _3 _4
+    EQUAL	//  _2 _5
+    ctx_proposal_state GETGLOB	//  _2 _5 _6
+    5 PUSHINT	//  _2 _5 _6 _7
+    EQUAL	//  _2 _5 _8
+    OR	//  _2 _9
+    ctx_proposal_state GETGLOB	//  _2 _9 _10
+    4 PUSHINT	//  _2 _9 _10 _11
+    EQUAL	//  _2 _9 _12
+    OR	//  _2 _13
+    THROWANYIFNOT
+    5 PUSHINT	//  _15
+    ctx_proposal_state SETGLOB
+    store_proposal CALLDICT
+    store_base_data CALLDICT
+  }>
+  allocate_voting_power PROC:<{
+    //  member shares
+    74 PUSHINT	//  member shares _2
+    OVER	//  member shares _2 shares
+    0 GTINT	//  member shares _2 _4
+    THROWANYIFNOT
+    ctx_params GETGLOB	//  member shares _7
+    load_total_shares_number CALLDICT	//  member shares totalShares
+    ctx_members_total GETGLOB	//  member shares totalShares allocatedShares
+    74 PUSHINT	//  member shares totalShares allocatedShares _11
+    s1 s3 XCPU	//  member shares totalShares _11 allocatedShares shares
+    ADD	//  member shares totalShares _11 _12
+    s1 s2 XCHG	//  member shares _11 totalShares _12
+    GEQ	//  member shares _11 _13
+    THROWANYIFNOT
+    ctx_members_dict GETGLOB	//  member shares _16
+    s2 PUSH	//  member shares _16 member
+    load_shares CALLDICT	//  member shares existingShares
+    DUP	//  member shares existingShares existingShares
+    0 EQINT	//  member shares existingShares _19
+    IF:<{	//  member shares existingShares
+      ctx_members_total GETGLOB	//  member shares existingShares _20
+      INC	//  member shares existingShares _22
+      ctx_members_total SETGLOB
+    }>	//  member shares existingShares
+    ctx_members_shares GETGLOB	//  member shares existingShares _23
+    s2 PUSH	//  member shares existingShares _23 shares
+    ADD	//  member shares existingShares _24
+    ctx_members_shares SETGLOB
+    ctx_members_dict GETGLOB	//  member shares existingShares _25
+    s0 s2 XCHG	//  member _25 existingShares shares
+    ADD	//  member _25 _26
+    s1 s2 XCHG	//  _25 member _26
+    store_shares CALLDICT	//  _27
+    ctx_members_dict SETGLOB
+    store_base_data CALLDICT
+  }>
+  deallocate_voting_power PROC:<{
+    //  member shares
+    74 PUSHINT	//  member shares _2
+    OVER	//  member shares _2 shares
+    0 GTINT	//  member shares _2 _4
+    THROWANYIFNOT
+    ctx_members_dict GETGLOB	//  member shares _7
+    s2 PUSH	//  member shares _7 member
+    load_shares CALLDICT	//  member shares existingShares
+    74 PUSHINT	//  member shares existingShares _9
+    s1 s2 PUSH2	//  member shares existingShares _9 existingShares shares
+    GEQ	//  member shares existingShares _9 _10
+    THROWANYIFNOT
+    s0 s1 PUSH2	//  member shares existingShares existingShares shares
+    EQUAL	//  member shares existingShares _12
+    IF:<{	//  member shares existingShares
+      74 PUSHINT	//  member shares existingShares _13
+      ctx_members_total GETGLOB	//  member shares existingShares _13 _14
+      0 GTINT	//  member shares existingShares _13 _16
+      THROWANYIFNOT
+      ctx_members_total GETGLOB	//  member shares existingShares _18
+      DEC	//  member shares existingShares _20
+      ctx_members_total SETGLOB
+    }>	//  member shares existingShares
+    ctx_members_shares GETGLOB	//  member shares existingShares _21
+    s2 PUSH	//  member shares existingShares _21 shares
+    SUB	//  member shares existingShares _22
+    ctx_members_shares SETGLOB
+    ctx_members_dict GETGLOB	//  member shares existingShares _23
+    s0 s2 XCHG	//  member _23 existingShares shares
+    SUB	//  member _23 _24
+    s1 s2 XCHG	//  _23 member _24
+    store_shares CALLDICT	//  _25
+    ctx_members_dict SETGLOB
+    store_base_data CALLDICT
+  }>
+  execute_proposal PROC:<{
+    //  proposal
+    CTOS	//  cs
+    32 LDU	//  kind cs
+    1225918510 PUSHINT	//  kind cs _7
+    s2 s(-1) PUXC	//  kind cs kind _7
+    EQUAL	//  kind cs _8
+    IF:<{	//  kind cs
+      LDMSGADDR	//  kind to_addr cs
+      LDGRAMS	//  kind to_addr value cs
+      0 PUSHINT	//  kind to_addr value cs _16=0
+      24 PUSHINT	//  kind to_addr value cs _16=0 _17=24
+      NEWC	//  kind to_addr value cs _16=0 _17=24 _18
+      6 STU	//  kind to_addr value cs _16=0 _20
+      s0 s4 XCHG2	//  kind _16=0 value cs _20 to_addr
+      STSLICER	//  kind _16=0 value cs _21
+      ROT	//  kind _16=0 cs _21 value
+      STGRAMS	//  kind _16=0 cs _22
+      s1 s2 XCHG	//  kind cs _16=0 _22
+      105 STU	//  kind cs msg
+      SWAP	//  kind msg cs
+      1 LDI	//  kind msg _33 cs
+      SWAP	//  kind msg cs _33
+      IF:<{	//  kind msg cs
+        LDREF	//  kind msg stateInit cs
+        1 PUSHINT	//  kind msg stateInit cs _39=1
+        s0 s3 XCHG2	//  kind cs stateInit _39=1 msg
+        1 STU	//  kind cs stateInit msg
+        STREF	//  kind cs msg
+      }>ELSE<{	//  kind msg cs
+        0 PUSHINT
+        ROT	//  kind cs _43=0 msg
+        1 STU	//  kind cs msg
+      }>
+      SWAP	//  kind msg cs
+      1 LDI	//  kind msg _46 cs
+      SWAP	//  kind msg cs _46
+      IF:<{	//  kind msg cs
+        LDREF	//  kind msg payload cs
+        1 PUSHINT	//  kind msg payload cs _52=1
+        s0 s3 XCHG2	//  kind cs payload _52=1 msg
+        1 STU	//  kind cs payload msg
+        STREF	//  kind cs msg
+      }>ELSE<{	//  kind msg cs
+        0 PUSHINT
+        ROT	//  kind cs _56=0 msg
+        1 STU	//  kind cs msg
+      }>
+      ENDC	//  kind cs _59
+      2 PUSHINT	//  kind cs _59 _60=2
+      SENDRAWMSG
+    }>	//  kind cs
+    1738944794 PUSHINT	//  kind cs _62
+    s2 s(-1) PUXC	//  kind cs kind _62
+    EQUAL	//  kind cs _63
+    IF:<{	//  kind cs
+      LDMSGADDR	//  kind to_addr cs
+      0 PUSHINT	//  kind to_addr cs _68=0
+      16 PUSHINT	//  kind to_addr cs _68=0 _69=16
+      NEWC	//  kind to_addr cs _68=0 _69=16 _70
+      6 STU	//  kind to_addr cs _68=0 _72
+      s0 s3 XCHG2	//  kind _68=0 cs _72 to_addr
+      STSLICER	//  kind _68=0 cs _73
+      s2 PUSH	//  kind _68=0 cs _73 _74=0
+      STGRAMS	//  kind _68=0 cs _75
+      s1 s2 XCHG	//  kind cs _68=0 _75
+      107 STU	//  kind cs msg
+      ENDC	//  kind cs _90
+      160 PUSHINT	//  kind cs _90 _93
+      SENDRAWMSG
+    }>	//  kind cs
+    2894775163 PUSHINT	//  kind cs _95
+    s2 s(-1) PUXC	//  kind cs kind _95
+    EQUAL	//  kind cs _96
+    IF:<{	//  kind cs
+      16 LDU	//  kind expectedVersion cs
+      LDREF	//  kind expectedVersion newCode cs
+      ctx_code_version GETGLOB	//  kind expectedVersion newCode cs _104
+      s0 s3 XCHG2	//  kind cs newCode _104 expectedVersion
+      EQUAL	//  kind cs newCode _105
+      IF:<{	//  kind cs newCode
+        ctx_code_version GETGLOB	//  kind cs newCode _106
+        INC	//  kind cs newCode _108
+        ctx_code_version SETGLOB
+        store_base_data CALLDICT
+        DUP	//  kind cs newCode newCode
+        SETCODE
+        CTOS	//  kind cs _111
+        BLESS	//  kind cs _112
+        c3 POP
+        storage_upgrade CALLDICT
+        0 THROW
+      }>ELSE<{
+        DROP	//  kind cs
+      }>
+    }>	//  kind cs
+    1658590374 PUSHINT	//  kind cs _117
+    s2 s(-1) PUXC	//  kind cs kind _117
+    EQUAL	//  kind cs _118
+    IF:<{	//  kind cs
+      16 LDU	//  kind version cs
+      LDREF	//  kind version new_params cs
+      ctx_params_version GETGLOB	//  kind version new_params cs _126
+      s0 s3 XCHG2	//  kind cs new_params _126 version
+      EQUAL	//  kind cs new_params _127
+      IF:<{	//  kind cs new_params
+        DUP	//  kind cs new_params new_params
+        check_params CALLDICT	//  kind cs new_params _128
+        IF:<{	//  kind cs new_params
+          ctx_params_version GETGLOB	//  kind cs new_params _129
+          INC	//  kind cs new_params _131
+          ctx_params_version SETGLOB
+          ctx_params SETGLOB
+          store_base_data CALLDICT
+        }>ELSE<{
+          DROP	//  kind cs
+        }>
+      }>ELSE<{
+        DROP	//  kind cs
+      }>
+    }>	//  kind cs
+    3137658663 PUSHINT	//  kind cs _133
+    s2 s(-1) PUXC	//  kind cs kind _133
+    EQUAL	//  kind cs _134
+    IF:<{	//  kind cs
+      32 LDU	//  kind id cs
+      SWAP	//  kind cs id
+      cancel_proposal CALLDICT
+    }>	//  kind cs
+    2105678790 PUSHINT	//  kind cs _140
+    s2 s(-1) PUXC	//  kind cs kind _140
+    EQUAL	//  kind cs _141
+    IF:<{	//  kind cs
+      256 LDU	//  kind member cs
+      LDGRAMS	//  kind member shares cs
+      -ROT	//  kind cs member shares
+      allocate_voting_power CALLDICT
+    }>	//  kind cs
+    1146177121 PUSHINT	//  kind cs _150
+    s1 s2 XCHG	//  cs kind _150
+    EQUAL	//  cs _151
+    IF:<{	//  cs
+      256 LDU	//  member cs
+      LDGRAMS	//  member _193 _192
+      DROP	//  member shares
+      deallocate_voting_power CALLDICT
+    }>ELSE<{
+      DROP	// 
+    }>
   }>
   get_version PROC:<{
     // 
@@ -1008,10 +1174,8 @@ PROGRAM{
   }>
   get_contract_type PROC:<{
     // 
-    9524005758522720271279095783560236212427390214770535987 PUSHINT	//  _0=9524005758522720271279095783560236212427390214770535987
-    NEWC	//  _0=9524005758522720271279095783560236212427390214770535987 _1
-    184 STU	//  _3
-    ENDC	//  _4
+    123515602279859691144772641439386770278 PUSHINT	//  _0=123515602279859691144772641439386770278
+    21320899891151534394772811350965710961 PUSHINT	//  _0=123515602279859691144772641439386770278 _1=21320899891151534394772811350965710961
   }>
   op_proposal PROC:<{
     //  member value in_msg query_id
@@ -1052,16 +1216,17 @@ PROGRAM{
     2514550856 PUSHINT	//  member query_id proposal _11
     s3 s0 s3 XCHG3	//  proposal member _11 query_id
     send_empty_receipt_message CALLDICT
+    COMMIT
     execute_proposal CALLDICT
   }>
-  op_cancel PROC:<{
+  op_abort PROC:<{
     //  member value in_msg query_id
     s2 POP	//  member query_id in_msg
     32 LDU	//  member query_id proposalId in_msg
     ENDS
     s2 PUSH	//  member query_id proposalId member
-    cancel_proposal CALLDICT
-    29265562 PUSHINT	//  member query_id _10
+    abort_proposal CALLDICT
+    3612777127 PUSHINT	//  member query_id _10
     SWAP	//  member _10 query_id
     send_empty_receipt_message CALLDICT
   }>
@@ -1119,12 +1284,12 @@ PROGRAM{
       s2 s3 XCHG	//  member msg_value in_msg query_id
       op_execute CALLDICT
     }>	//  msg_value member op query_id in_msg
-    3423544614 PUSHINT	//  msg_value member op query_id in_msg _46
+    1558599333 PUSHINT	//  msg_value member op query_id in_msg _46
     s1 s3 XCHG	//  msg_value member in_msg query_id op _46
     EQUAL	//  msg_value member in_msg query_id _47
     IFJMP:<{	//  msg_value member in_msg query_id
       s2 s3 XCHG	//  member msg_value in_msg query_id
-      op_cancel CALLDICT
+      op_abort CALLDICT
     }>	//  msg_value member in_msg query_id
     4 BLKDROP	// 
   }>

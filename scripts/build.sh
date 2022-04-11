@@ -24,9 +24,11 @@ cat ./source/modules/storage-params.fc >> ./output/dao.fc
 echo $'\n' >> ./output/dao.fc
 
 # Model
-cat ./source/modules/proposals.fc >> ./output/dao.fc
+cat ./source/modules/proposals-check.fc >> ./output/dao.fc
 echo $'\n' >> ./output/dao.fc
 cat ./source/modules/model.fc >> ./output/dao.fc
+echo $'\n' >> ./output/dao.fc
+cat ./source/modules/proposals-execute.fc >> ./output/dao.fc
 echo $'\n' >> ./output/dao.fc
 
 # Get

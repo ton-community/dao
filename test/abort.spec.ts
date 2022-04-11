@@ -2,7 +2,7 @@ import { beginCell, toNano } from "ton";
 import { SmartContract } from "ton-contract-executor";
 import { createCode } from "./contract/createCode";
 import { createData } from "./contract/createData";
-import { cancelProposal, createMetadata, createProposal, createVote, executeProposal, getProposal } from "./contract/operations";
+import { abortProposal, createMetadata, createProposal, createVote, executeProposal, getProposal } from "./contract/operations";
 import { sendMessage } from "./contract/sendMessage";
 import { randomAddress } from "./utils/randomAddress";
 
@@ -12,8 +12,8 @@ const member3 = randomAddress(0, "initial-3");
 const member4 = randomAddress(0, "initial-4");
 const outsider = randomAddress(0, "outsider-1");
 
-describe("cancel", () => {
-    it("should cancel transfer proposal", async () => {
+describe("abort", () => {
+    it("should abort transfer proposal", async () => {
 
         // Create contract
         const executor = await SmartContract.fromCell(
@@ -49,7 +49,7 @@ describe("cancel", () => {
             executor,
             toNano(1),
             member1,
-            cancelProposal(0)
+            abortProposal(0)
         );
         expect(res).toMatchObject([
             {
@@ -61,7 +61,7 @@ describe("cancel", () => {
 
         // Check state
         expect(await getProposal(executor, 0)).toMatchObject({
-            state: 'cancelled',
+            state: 'aborted',
             votedYes: 1000,
             votedNo: 0,
             votedAbstain: 0,

@@ -63,5 +63,134 @@ describe("execute", () => {
                 value: toNano(10).toString(10)
             }
         ]);
+
+        // Check state
+        expect(await getProposal(executor, 0)).toMatchObject({
+            state: 'executed',
+            votedYes: 1000,
+            votedNo: 0,
+            votedAbstain: 0,
+            author: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
+            successTreshold: 1000,
+            failureTreshold: 250
+        })
+    });
+
+    it("should execute resolution proposal", async () => {
+
+        // Create contract
+        const executor = await SmartContract.fromCell(
+            createCode(),
+            createData({
+                totalShares: 1000,
+                failureTreshold: 250,
+                successTreshold: 1000,
+                members: [{ address: member1, shares: 1000 }]
+            })
+        );
+
+        // Create proposal
+        await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createProposal(
+                0,
+                beginCell()
+                    .storeUint(3070113962, 32) // resolution proposal
+                    .endCell(),
+                createMetadata()
+            )
+        );
+
+        // Create proposal
+        let res = await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            executeProposal(0)
+        );
+        expect(res).toMatchObject([
+            {
+                mode: 64,
+                to: member1.toFriendly({ testOnly: true }),
+                value: '0'
+            }
+        ]);
+
+        // Check state
+        expect(await getProposal(executor, 0)).toMatchObject({
+            state: 'executed',
+            votedYes: 1000,
+            votedNo: 0,
+            votedAbstain: 0,
+            author: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
+            successTreshold: 1000,
+            failureTreshold: 250
+        })
+    });
+
+    it("should execute params proposal", async () => {
+
+        // Create contract
+        const executor = await SmartContract.fromCell(
+            createCode(),
+            createData({
+                totalShares: 1000,
+                failureTreshold: 250,
+                successTreshold: 1000,
+                members: [{ address: member1, shares: 1000 }]
+            })
+        );
+
+        // Create proposal
+        await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createProposal(
+                0,
+                beginCell()
+                    .storeUint(1658590374, 32) // params proposal
+                    .storeUint(1, 16)
+                    .storeRef(beginCell()
+                        .storeUint(0, 1)
+                        .storeCoins(2000)
+                        .storeCoins(1000)
+                        .storeCoins(250)
+                        .storeBit(true)
+                        .storeRef(beginCell()
+                            .endCell())
+                        .endCell())
+                    .endCell(),
+                createMetadata()
+            )
+        );
+
+        // Create proposal
+        let res = await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            executeProposal(0)
+        );
+        expect(res).toMatchObject([
+            {
+                mode: 64,
+                to: member1.toFriendly({ testOnly: true }),
+                value: '0'
+            }
+        ]);
+
+        // Check state
+        expect(await getProposal(executor, 0)).toMatchObject({
+            state: 'executed',
+            votedYes: 1000,
+            votedNo: 0,
+            votedAbstain: 0,
+            author: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
+            successTreshold: 1000,
+            failureTreshold: 250
+        });
     });
 });

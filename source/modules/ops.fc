@@ -35,10 +35,15 @@
     ;; Prepare
     var proposal = prepare_execute(proposalId, member);
     send_empty_receipt_message(member, op::execute::ok(), query_id);
+
+    ;; Commit (to ignore errors during execution)
+    commit();
+
+    ;; Execute
     execute_proposal(proposal);
 }
 
-() op_cancel(int member, int value, slice in_msg, int query_id) impure {
+() op_abort(int member, int value, slice in_msg, int query_id) impure {
 
     ;; Load proposal ID
     int proposalId = in_msg~load_uint(32);
@@ -47,6 +52,6 @@
     in_msg.end_parse();
 
     ;; Cancel proposal
-    cancel_proposal(proposalId, member);
-    send_empty_receipt_message(member, op::cancel::ok(), query_id);
+    abort_proposal(proposalId, member);
+    send_empty_receipt_message(member, op::abort::ok(), query_id);
 }

@@ -1,19 +1,15 @@
 ;; Commands
 int op::proposal() asm "3241702467 PUSHINT";
 int op::proposal::ok() asm "2391675301 PUSHINT";
-int op::proposal::failed() asm "3508280713 PUSHINT";
 
 int op::vote() asm "3047515073 PUSHINT";
 int op::vote::ok() asm "1127259026 PUSHINT";
-int op::vote::failed() asm "3486613244 PUSHINT";
 
 int op::execute() asm "2483002579 PUSHINT";
 int op::execute::ok() asm "2514550856 PUSHINT";
-int op::execute::failed() asm "2163078063 PUSHINT";
 
-int op::cancel() asm "3423544614 PUSHINT";
-int op::cancel::ok() asm "29265562 PUSHINT";
-int op::cancel::failed() asm "760914673 PUSHINT";
+int op::abort() asm "1558599333 PUSHINT";
+int op::abort::ok() asm "3612777127 PUSHINT";
 
 ;; Proposals
 int proposal::transaction() asm "1225918510 PUSHINT";
@@ -21,6 +17,9 @@ int proposal::resolution() asm "3070113962 PUSHINT";
 int proposal::destroy() asm "1738944794 PUSHINT";
 int proposal::upgrade() asm "2894775163 PUSHINT";
 int proposal::params() asm "1658590374 PUSHINT";
+int proposal::cancel() asm "3137658663 PUSHINT";
+int proposal::allocate() asm "2105678790 PUSHINT";
+int proposal::deallocate() asm "1146177121 PUSHINT";
 
 ;; Errors
 int error::invalid_address() asm "70 PUSHINT";
@@ -39,7 +38,8 @@ int state::pending() asm "0 PUSHINT";
 int state::success() asm "1 PUSHINT";
 int state::failure() asm "2 PUSHINT";
 int state::executed() asm "3 PUSHINT";
-int state::cancelled() asm "4 PUSHINT";
+int state::aborted() asm "4 PUSHINT";
+int state::cancelled() asm "5 PUSHINT";
 
 ;; uint64 max value
 int params::max_shares() inline {

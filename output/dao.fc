@@ -1,19 +1,15 @@
 ;; Commands
 int op::proposal() asm "3241702467 PUSHINT";
 int op::proposal::ok() asm "2391675301 PUSHINT";
-int op::proposal::failed() asm "3508280713 PUSHINT";
 
 int op::vote() asm "3047515073 PUSHINT";
 int op::vote::ok() asm "1127259026 PUSHINT";
-int op::vote::failed() asm "3486613244 PUSHINT";
 
 int op::execute() asm "2483002579 PUSHINT";
 int op::execute::ok() asm "2514550856 PUSHINT";
-int op::execute::failed() asm "2163078063 PUSHINT";
 
-int op::cancel() asm "3423544614 PUSHINT";
-int op::cancel::ok() asm "29265562 PUSHINT";
-int op::cancel::failed() asm "760914673 PUSHINT";
+int op::abort() asm "1558599333 PUSHINT";
+int op::abort::ok() asm "3612777127 PUSHINT";
 
 ;; Proposals
 int proposal::transaction() asm "1225918510 PUSHINT";
@@ -21,6 +17,9 @@ int proposal::resolution() asm "3070113962 PUSHINT";
 int proposal::destroy() asm "1738944794 PUSHINT";
 int proposal::upgrade() asm "2894775163 PUSHINT";
 int proposal::params() asm "1658590374 PUSHINT";
+int proposal::cancel() asm "3137658663 PUSHINT";
+int proposal::allocate() asm "2105678790 PUSHINT";
+int proposal::deallocate() asm "1146177121 PUSHINT";
 
 ;; Errors
 int error::invalid_address() asm "70 PUSHINT";
@@ -39,7 +38,8 @@ int state::pending() asm "0 PUSHINT";
 int state::success() asm "1 PUSHINT";
 int state::failure() asm "2 PUSHINT";
 int state::executed() asm "3 PUSHINT";
-int state::cancelled() asm "4 PUSHINT";
+int state::aborted() asm "4 PUSHINT";
+int state::cancelled() asm "5 PUSHINT";
 
 ;; uint64 max value
 int params::max_shares() inline {
@@ -439,12 +439,14 @@ int check_proposal(cell proposal) {
 
     ;; Resolution proposal
     if (kind == proposal::resolution()) {
+        cs.end_parse();
         return true;
     }
 
     ;; Destroy proposal
     if (kind == proposal::destroy()) {
         cs~load_msg_addr(); ;; Load target
+        cs.end_parse();
         return true;
     }
 
@@ -455,6 +457,7 @@ int check_proposal(cell proposal) {
             return false;
         } else {
             cs~load_ref(); ;; Load code ref
+            cs.end_parse();
             return true;
         }
     }
@@ -469,109 +472,35 @@ int check_proposal(cell proposal) {
             if (~ check_params(params)) {
                 return false;
             }
+            cs.end_parse();
             return true;
         }
     }
 
+    ;; Cancel proposal
+    if (kind == proposal::cancel()) {
+        cs~load_uint(32);
+        cs.end_parse();
+        return true;
+    }
+
+    ;; Allocate proposal
+    if (kind == proposal::allocate()) {
+        cs~load_uint(256);
+        cs~load_coins();
+        cs.end_parse();
+        return true;
+    }
+
+    ;; Deallocate proposal
+    if (kind == proposal::deallocate()) {
+        cs~load_uint(256);
+        cs~load_coins();
+        cs.end_parse();
+        return true;
+    }
+
     return false;
-}
-
-;;
-;; Proposal execution
-;; NOTE: execution silently fails on invalid proposal to mark proposal as executed instead of crashing transactions
-;;       but execution fails if something is wrong
-;;
-
-() execute_proposal(cell proposal) impure {
-
-    ;; Begin parsing
-    slice cs = proposal.begin_parse();
-    int kind = cs~load_uint(32);
-
-    ;; Tansaction
-    if (kind == proposal::transaction()) {
-
-        ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 011000 -> 0x18
-
-        ;; Basic message
-        slice to_addr = cs~load_msg_addr();
-        int value = cs~load_coins();
-        var msg = begin_cell()
-            .store_uint(0x18, 6)
-            .store_slice(to_addr)
-            .store_coins(value)
-            .store_uint(0, 1 + 4 + 4 + 64 + 32);
-
-        ;; State init
-        if (cs~load_int(1)) {
-            var stateInit = cs~load_ref();
-            msg = msg.store_uint(1, 1);
-            msg = msg.store_ref(stateInit);
-        } else {
-            msg = msg.store_uint(0, 1);
-        }
-
-        ;; Payload
-        if (cs~load_int(1)) {
-            var payload = cs~load_ref();
-            msg = msg.store_uint(1, 1);
-            msg = msg.store_ref(payload);
-        } else {
-            msg = msg.store_uint(0, 1);
-        }
-
-        ;; Send message
-        send_raw_message(msg.end_cell(), 2);
-    }
-
-    ;; Destroy contract
-    if (kind == proposal::destroy()) {
-
-        ;; Create destroy message
-        ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000 -> 0x10
-        slice to_addr = cs~load_msg_addr();
-        var msg = begin_cell()
-            .store_uint(0x10, 6)
-            .store_slice(to_addr)
-            .store_coins(0)
-            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1);
-
-        ;; Send message
-        send_raw_message(msg.end_cell(), 32 + 128);
-    }
-
-    ;; Upgrade contract
-    if (kind == proposal::upgrade()) {
-        var expectedVersion = cs~load_uint(16);
-        var newCode = cs~load_ref();
-        if (ctx_code_version == expectedVersion) {
-
-            ;; Update code version
-            ctx_code_version = ctx_code_version + 1;
-            store_base_data();
-
-            ;; Update code
-            set_code(newCode);
-
-            ;; Upgrade code
-            set_c3(newCode.begin_parse().bless());
-            storage_upgrade();
-            throw(0);
-        }
-    }
-
-    ;; Update metadata
-    if (kind == proposal::params()) {
-        var version = cs~load_uint(16);
-        cell new_params = cs~load_ref();
-        if (ctx_params_version == version) {
-            if (check_params(new_params)) {
-                ctx_params_version = ctx_params_version + 1;
-                ctx_params = new_params;
-                store_base_data();   
-            }
-        }
-    }
 }
 
 ;;
@@ -716,10 +645,10 @@ cell prepare_execute(int proposalId, int member) impure {
 }
 
 ;;
-;; Prepare execution
+;; Abort execution
 ;;
 
-() cancel_proposal(int proposalId, int member) impure {
+() abort_proposal(int proposalId, int member) impure {
     
     ;; Load proposal
     load_proposal(proposalId);
@@ -731,11 +660,202 @@ cell prepare_execute(int proposalId, int member) impure {
     throw_unless(error::invalid_message(), ctx_proposal_author == member);
 
     ;; Update executed state
+    ctx_proposal_state = state::aborted();
+
+    ;; Persist
+    store_proposal();
+    store_base_data();
+}
+
+;;
+;; Cancel proposal
+;;
+
+() cancel_proposal(int proposalId) impure {
+    
+    ;; Load proposal
+    load_proposal(proposalId);
+
+    ;; Check proposal state
+    throw_unless(error::invalid_message(), 
+        (ctx_proposal_state == state::executed()) | (ctx_proposal_state == state::cancelled()) | (ctx_proposal_state == state::aborted())
+    );
+
+    ;; Update executed state
     ctx_proposal_state = state::cancelled();
 
     ;; Persist
     store_proposal();
     store_base_data();
+}
+
+;;
+;; Allocate voting power
+;;
+
+() allocate_voting_power(int member, int shares) impure {
+
+    ;; Check input
+    throw_unless(error::internal_error(), shares > 0);
+
+    ;; Check if shares available
+    var totalShares = load_total_shares_number(ctx_params);
+    var allocatedShares = ctx_members_total;
+    throw_unless(error::internal_error(), totalShares >= allocatedShares + shares);
+
+    ;; Update membership
+    int existingShares = load_shares(ctx_members_dict, member);
+    if (existingShares == 0) {
+        ctx_members_total = ctx_members_total + 1;
+    }
+    ctx_members_shares = ctx_members_shares + shares;
+    ctx_members_dict = store_shares(ctx_members_dict, member, existingShares + shares);
+
+    ;; Persist
+    store_base_data();
+}
+
+;;
+;; Deallocate voting power
+;;
+
+() deallocate_voting_power(int member, int shares) impure {
+
+    ;; Check input
+    throw_unless(error::internal_error(), shares > 0);
+
+    ;; Load existing
+    int existingShares = load_shares(ctx_members_dict, member);
+    throw_unless(error::internal_error(), existingShares >= shares);
+
+    ;; Update membership
+    if (existingShares == shares) {
+        throw_unless(error::internal_error(), ctx_members_total > 0);
+        ctx_members_total = ctx_members_total - 1;
+    }
+    ctx_members_shares = ctx_members_shares - shares;
+    ctx_members_dict = store_shares(ctx_members_dict, member, existingShares - shares);
+
+    ;; Persist
+    store_base_data();
+}
+
+;;
+;; Proposal execution
+;; NOTE: execution silently fails on invalid proposal to mark proposal as executed instead of crashing transactions
+;;       but execution fails if something is wrong
+;;
+
+() execute_proposal(cell proposal) impure {
+
+    ;; Begin parsing
+    slice cs = proposal.begin_parse();
+    int kind = cs~load_uint(32);
+
+    ;; Tansaction
+    if (kind == proposal::transaction()) {
+
+        ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 011000 -> 0x18
+
+        ;; Basic message
+        slice to_addr = cs~load_msg_addr();
+        int value = cs~load_coins();
+        var msg = begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(to_addr)
+            .store_coins(value)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32);
+
+        ;; State init
+        if (cs~load_int(1)) {
+            var stateInit = cs~load_ref();
+            msg = msg.store_uint(1, 1);
+            msg = msg.store_ref(stateInit);
+        } else {
+            msg = msg.store_uint(0, 1);
+        }
+
+        ;; Payload
+        if (cs~load_int(1)) {
+            var payload = cs~load_ref();
+            msg = msg.store_uint(1, 1);
+            msg = msg.store_ref(payload);
+        } else {
+            msg = msg.store_uint(0, 1);
+        }
+
+        ;; Send message
+        send_raw_message(msg.end_cell(), 2);
+    }
+
+    ;; Destroy contract
+    if (kind == proposal::destroy()) {
+
+        ;; Create destroy message
+        ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000 -> 0x10
+        slice to_addr = cs~load_msg_addr();
+        var msg = begin_cell()
+            .store_uint(0x10, 6)
+            .store_slice(to_addr)
+            .store_coins(0)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1);
+
+        ;; Send message
+        send_raw_message(msg.end_cell(), 32 + 128);
+    }
+
+    ;; Upgrade contract
+    if (kind == proposal::upgrade()) {
+        var expectedVersion = cs~load_uint(16);
+        var newCode = cs~load_ref();
+        if (ctx_code_version == expectedVersion) {
+
+            ;; Update code version
+            ctx_code_version = ctx_code_version + 1;
+            store_base_data();
+
+            ;; Update code
+            set_code(newCode);
+
+            ;; Upgrade code
+            set_c3(newCode.begin_parse().bless());
+            storage_upgrade();
+            throw(0);
+        }
+    }
+
+    ;; Update metadata
+    if (kind == proposal::params()) {
+        var version = cs~load_uint(16);
+        cell new_params = cs~load_ref();
+        if (ctx_params_version == version) {
+            if (check_params(new_params)) {
+                ctx_params_version = ctx_params_version + 1;
+                ctx_params = new_params;
+                store_base_data();   
+            }
+        }
+    }
+
+    ;; Cancel proposal
+    if (kind == proposal::cancel()) {
+        var id = cs~load_uint(32);
+        cancel_proposal(id);
+    }
+
+    ;; Allocate proposal
+    if (kind == proposal::allocate()) {
+        var member = cs~load_uint(256);
+        var shares = cs~load_coins();
+        allocate_voting_power(member, shares);
+    }
+
+    ;; Deallocate proposal
+    if (kind == proposal::deallocate()) {
+        var member = cs~load_uint(256);
+        var shares = cs~load_coins();
+        deallocate_voting_power(member, shares);
+    }
 }
 
 _ get_version() method_id {
@@ -751,6 +871,7 @@ _ get_members_info() method_id {
     load_base_data();
     return (0, ctx_members_total, ctx_members_shares);
 }
+
 _ get_params() method_id {
     load_base_data();
     var total_shares = load_total_shares_number(ctx_params);
@@ -844,9 +965,10 @@ _ get_membership(slice addr) method_id {
 ;;
 
 _ get_contract_type() method_id {
-    return begin_cell()
-        .store_uint(9524005758522720271279095783560236212427390214770535987, 184) ;; com.tonwhales.dao:0.0.3
-    .end_cell();
+    return (
+        123515602279859691144772641439386770278, ;; org.ton.introspection.v0
+        21320899891151534394772811350965710961 ;; com.tonwhales.dao:v0
+    );
 }
 
 () op_proposal(int member, int value, slice in_msg, int query_id) impure {
@@ -886,10 +1008,15 @@ _ get_contract_type() method_id {
     ;; Prepare
     var proposal = prepare_execute(proposalId, member);
     send_empty_receipt_message(member, op::execute::ok(), query_id);
+
+    ;; Commit (to ignore errors during execution)
+    commit();
+
+    ;; Execute
     execute_proposal(proposal);
 }
 
-() op_cancel(int member, int value, slice in_msg, int query_id) impure {
+() op_abort(int member, int value, slice in_msg, int query_id) impure {
 
     ;; Load proposal ID
     int proposalId = in_msg~load_uint(32);
@@ -898,8 +1025,8 @@ _ get_contract_type() method_id {
     in_msg.end_parse();
 
     ;; Cancel proposal
-    cancel_proposal(proposalId, member);
-    send_empty_receipt_message(member, op::cancel::ok(), query_id);
+    abort_proposal(proposalId, member);
+    send_empty_receipt_message(member, op::abort::ok(), query_id);
 }
 
 () recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
@@ -946,8 +1073,8 @@ _ get_contract_type() method_id {
         op_execute(member, msg_value, in_msg, query_id);
         return ();
     }
-    if (op == op::cancel()) {
-        op_cancel(member, msg_value, in_msg, query_id);
+    if (op == op::abort()) {
+        op_abort(member, msg_value, in_msg, query_id);
         return ();
     }
 

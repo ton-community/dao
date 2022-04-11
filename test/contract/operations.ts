@@ -24,9 +24,9 @@ export function executeProposal(id: number) {
         .endCell();
 }
 
-export function cancelProposal(id: number) {
+export function abortProposal(id: number) {
     return beginCell()
-        .storeUint(3423544614, 32)
+        .storeUint(1558599333, 32)
         .storeUint(10000, 64)
         .storeUint(id, 32)
         .endCell();
@@ -75,7 +75,7 @@ export async function getProposal(contract: SmartContract, id: number) {
     }
 
     let rawState = (proposal[1] as BN).toNumber();
-    let state: 'pending' | 'success' | 'failure' | 'executed' | 'cancelled' = 'pending';
+    let state: 'pending' | 'success' | 'failure' | 'executed' | 'aborted' | 'cancelled' = 'pending';
     if (rawState === 0) {
         state = 'pending';
     } else if (rawState === 1) {
@@ -85,6 +85,8 @@ export async function getProposal(contract: SmartContract, id: number) {
     } else if (rawState === 3) {
         state = 'executed';
     } else if (rawState === 4) {
+        state = 'aborted';
+    } else if (rawState === 5) {
         state = 'cancelled';
     } else {
         throw Error('Unknown state: ' + rawState);
