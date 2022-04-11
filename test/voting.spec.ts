@@ -21,8 +21,9 @@ describe("voting", () => {
             createCode(),
             createData({
                 totalShares: 5000,
-                failureTreshold: 1000,
-                successTreshold: 2040,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [
                     { address: member1, shares: 1000 },
                     { address: member2, shares: 1000 },
@@ -76,8 +77,8 @@ describe("voting", () => {
             votedNo: 0,
             votedAbstain: 0,
             author: member1.toFriendly({ testOnly: true }),
-            successTreshold: 2040, // 51%
-            failureTreshold: 1000 // 25%
+            successTreshold: 3000,
+            failureTreshold: 1000
         });
 
         // Vote
@@ -101,8 +102,8 @@ describe("voting", () => {
             votedNo: 0,
             votedAbstain: 0,
             author: member1.toFriendly({ testOnly: true }),
-            successTreshold: 2040, // 51%
-            failureTreshold: 1000 // 25%
+            successTreshold: 3000,
+            failureTreshold: 1000
         });
 
         // Last vote rejects since it is already successful
@@ -121,8 +122,9 @@ describe("voting", () => {
             createCode(),
             createData({
                 totalShares: 5000,
-                failureTreshold: 1000,
-                successTreshold: 2040,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [
                     { address: member1, shares: 1000 },
                     { address: member2, shares: 1000 },
@@ -176,8 +178,8 @@ describe("voting", () => {
             votedNo: 1000, // Reached treshold
             votedAbstain: 0,
             author: member1.toFriendly({ testOnly: true }),
-            successTreshold: 2040, // 51%
-            failureTreshold: 1000 // 25%
+            successTreshold: 3000,
+            failureTreshold: 1000
         });
 
         // Last vote rejects since it is already successful
@@ -196,8 +198,9 @@ describe("voting", () => {
             createCode(),
             createData({
                 totalShares: 5000,
-                failureTreshold: 1000,
-                successTreshold: 2040,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [
                     { address: member1, shares: 1000 },
                     { address: member2, shares: 1000 },
@@ -251,8 +254,8 @@ describe("voting", () => {
             votedNo: 0,
             votedAbstain: 1000,
             author: member1.toFriendly({ testOnly: true }),
-            successTreshold: 2040, // 51%
-            failureTreshold: 1000 // 25%
+            successTreshold: 3000,
+            failureTreshold: 1000
         });
 
         // Vote
@@ -276,8 +279,8 @@ describe("voting", () => {
             votedNo: 0,
             votedAbstain: 2000,
             author: member1.toFriendly({ testOnly: true }),
-            successTreshold: 2040, // 51%
-            failureTreshold: 1000 // 25%
+            successTreshold: 3000,
+            failureTreshold: 1000
         });
 
         // Last vote rejects since it is already successful
@@ -296,8 +299,9 @@ describe("voting", () => {
             createCode(),
             createData({
                 totalShares: 5000,
-                failureTreshold: 1000,
-                successTreshold: 2040,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [
                     { address: member1, shares: 1000 },
                     { address: member2, shares: 1000 },
@@ -358,8 +362,9 @@ describe("voting", () => {
             createCode(),
             createData({
                 totalShares: 5000,
-                failureTreshold: 1000,
-                successTreshold: 2040,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [
                     { address: member1, shares: 1000 },
                     { address: member2, shares: 1000 },
@@ -433,8 +438,9 @@ describe("voting", () => {
             createCode(),
             createData({
                 totalShares: 5000,
-                failureTreshold: 1000,
-                successTreshold: 2040,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [
                     { address: member1, shares: 1000 },
                     { address: member2, shares: 1000 },

@@ -20,8 +20,9 @@ describe("get", () => {
             createCode(),
             createData({
                 totalShares: 1000,
-                failureTreshold: 250,
-                successTreshold: 1000,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [{ address: member1, shares: 1000 }]
             })
         );

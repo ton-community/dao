@@ -11,6 +11,7 @@ import { Address, beginCell, beginDict } from "ton";
 export function createData(
     params: {
         totalShares: number,
+        baseTreshold: number,
         successTreshold: number,
         failureTreshold: number,
         members: { address: Address, shares: number }[]
@@ -46,6 +47,7 @@ export function createData(
         .storeRef(beginCell()
             .storeUint(0, 1)
             .storeCoins(params.totalShares)
+            .storeCoins(params.baseTreshold)
             .storeCoins(params.successTreshold)
             .storeCoins(params.failureTreshold)
             .storeBit(true)

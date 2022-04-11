@@ -412,29 +412,31 @@ PROGRAM{
     LDGRAMS	//  allocated cs
     74 PUSHINT	//  allocated cs _14
     params::max_shares INLINECALLDICT	//  allocated cs _14 _15
-    s3 PUSH	//  allocated cs _14 _15 allocated
-    GEQ	//  allocated cs _14 _16
+    s0 s3 XCHG2	//  _14 cs _15 allocated
+    GEQ	//  _14 cs _16
+    s1 s2 XCHG	//  cs _14 _16
     THROWANYIFNOT
-    LDGRAMS	//  allocated success cs
-    LDGRAMS	//  allocated success failure cs
-    74 PUSHINT	//  allocated success failure cs _24
-    s4 s3 PUXC	//  allocated _24 failure cs allocated success
-    GREATER	//  allocated _24 failure cs _25
-    s1 s3 XCHG	//  allocated cs failure _24 _25
+    LDGRAMS	//  base cs
+    LDGRAMS	//  base success cs
+    LDGRAMS	//  base success failure cs
+    74 PUSHINT	//  base success failure cs _27
+    s4 s3 PUXC	//  base _27 failure cs base success
+    GEQ	//  base _27 failure cs _28
+    s1 s3 XCHG	//  base cs failure _27 _28
     THROWANYIFNOT
-    74 PUSHINT	//  allocated cs failure _27
-    s3 s3 XCHG2	//  _27 cs allocated failure
-    GREATER	//  _27 cs _28
-    s1 s2 XCHG	//  cs _27 _28
+    74 PUSHINT	//  base cs failure _30
+    s3 s3 XCHG2	//  _30 cs base failure
+    GEQ	//  _30 cs _31
+    s1 s2 XCHG	//  cs _30 _31
     THROWANYIFNOT
-    1 LDI	//  _30 cs
-    SWAP	//  cs _30
+    1 LDI	//  _33 cs
+    SWAP	//  cs _33
     IF:<{	//  cs
-      LDREF	//  _48 _47
+      LDREF	//  _53 _52
       NIP	//  cs
     }>	//  cs
     ENDS
-    TRUE	//  _36
+    TRUE	//  _39
   }>
   load_total_shares_number PROC:<{
     //  src
@@ -462,11 +464,12 @@ PROGRAM{
     0 EQINT	//  _7 cs _9
     s1 s2 XCHG	//  cs _7 _9
     THROWANYIFNOT
-    LDGRAMS	//  _22 _21
+    LDGRAMS	//  _25 _24
     NIP	//  cs
-    LDGRAMS	//  success cs
-    LDGRAMS	//  success _26 _25
-    DROP	//  success failure
+    LDGRAMS	//  base cs
+    LDGRAMS	//  base success cs
+    LDGRAMS	//  base success _31 _30
+    DROP	//  base success failure
   }>
   load_metadata PROC:<{
     //  src
@@ -477,20 +480,22 @@ PROGRAM{
     0 EQINT	//  _7 cs _9
     s1 s2 XCHG	//  cs _7 _9
     THROWANYIFNOT
-    LDGRAMS	//  _26 _25
-    NIP	//  cs
     LDGRAMS	//  _28 _27
     NIP	//  cs
     LDGRAMS	//  _30 _29
     NIP	//  cs
-    1 LDI	//  _17 cs
-    SWAP	//  cs _17
+    LDGRAMS	//  _32 _31
+    NIP	//  cs
+    LDGRAMS	//  _34 _33
+    NIP	//  cs
+    1 LDI	//  _19 cs
+    SWAP	//  cs _19
     IFJMP:<{	//  cs
-      LDREF	//  _34 _33
-      DROP	//  _20
+      LDREF	//  _38 _37
+      DROP	//  _22
     }>	//  cs
     DROP	// 
-    PUSHNULL	//  _22
+    PUSHNULL	//  _24
   }>
   check_proposal PROC:<{
     //  proposal
@@ -631,10 +636,20 @@ PROGRAM{
     EQUAL	//  seq proposal metadata member shares _11 _13
     THROWANYIFNOT
     0 PUSHINT	//  seq proposal metadata member shares state
-    ctx_params GETGLOB	//  seq proposal metadata member shares state _19
-    load_voting_params CALLDICT	//  seq proposal metadata member shares state treshold_success treshold_failure
+    ctx_params GETGLOB	//  seq proposal metadata member shares state _20
+    load_voting_params CALLDICT	//  seq proposal metadata member shares state treshold_base treshold_success_src treshold_failure_src
+    ctx_members_shares GETGLOB	//  seq proposal metadata member shares state treshold_base treshold_success_src treshold_failure_src _23
+    ROT	//  seq proposal metadata member shares state treshold_base treshold_failure_src _23 treshold_success_src
+    MUL	//  seq proposal metadata member shares state treshold_base treshold_failure_src _24
+    s2 PUSH	//  seq proposal metadata member shares state treshold_base treshold_failure_src _24 treshold_base
+    DIV	//  seq proposal metadata member shares state treshold_base treshold_failure_src treshold_success
+    ctx_members_shares GETGLOB	//  seq proposal metadata member shares state treshold_base treshold_failure_src treshold_success _27
+    ROT	//  seq proposal metadata member shares state treshold_base treshold_success _27 treshold_failure_src
+    MUL	//  seq proposal metadata member shares state treshold_base treshold_success _28
+    ROT	//  seq proposal metadata member shares state treshold_success _28 treshold_base
+    DIV	//  seq proposal metadata member shares state treshold_success treshold_failure
     s3 s1 PUSH2	//  seq proposal metadata member shares state treshold_success treshold_failure shares treshold_success
-    GEQ	//  seq proposal metadata member shares state treshold_success treshold_failure _21
+    GEQ	//  seq proposal metadata member shares state treshold_success treshold_failure _30
     IF:<{	//  seq proposal metadata member shares state treshold_success treshold_failure
       s2 POP	//  seq proposal metadata member shares treshold_failure treshold_success
       1 PUSHINT	//  seq proposal metadata member shares treshold_failure treshold_success state
@@ -646,13 +661,13 @@ PROGRAM{
     ctx_proposal_state SETGLOB
     s0 s2 XCHG	//  seq proposal metadata member treshold_success treshold_failure shares
     ctx_proposal_voted_yes SETGLOB
-    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _23=0
+    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _32=0
     ctx_proposal_voted_no SETGLOB
-    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _24=0
+    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _33=0
     ctx_proposal_voted_abstain SETGLOB
     s2 PUSH	//  seq proposal metadata member treshold_success treshold_failure member
     ctx_proposal_author SETGLOB
-    NOW	//  seq proposal metadata member treshold_success treshold_failure _25
+    NOW	//  seq proposal metadata member treshold_success treshold_failure _34
     ctx_proposal_created SETGLOB
     SWAP	//  seq proposal metadata member treshold_failure treshold_success
     ctx_proposal_treshold_success SETGLOB
@@ -660,23 +675,23 @@ PROGRAM{
     SWAP	//  seq proposal member metadata
     ctx_proposal_metadata SETGLOB
     PUSHNULL	//  seq proposal member votes
-    1 PUSHINT	//  seq proposal member votes _29
-    NEWC	//  seq proposal member votes _29 _30
-    2 STU	//  seq proposal member votes _32
+    1 PUSHINT	//  seq proposal member votes _38
+    NEWC	//  seq proposal member votes _38 _39
+    2 STU	//  seq proposal member votes _41
     -ROT
-    8 PUSHPOW2	//  seq proposal _32 member votes _33=256
+    8 PUSHPOW2	//  seq proposal _41 member votes _42=256
     DICTUSETB	//  seq proposal votes
     ctx_proposal_votes SETGLOB
     ctx_proposal_body SETGLOB
-    ctx_members_dict GETGLOB	//  seq _35
+    ctx_members_dict GETGLOB	//  seq _44
     ctx_proposal_members SETGLOB
-    ctx_members_total GETGLOB	//  seq _36
+    ctx_members_total GETGLOB	//  seq _45
     ctx_proposal_members_total SETGLOB
-    ctx_members_shares GETGLOB	//  seq _37
+    ctx_members_shares GETGLOB	//  seq _46
     ctx_proposal_members_shares SETGLOB
-    ctx_params GETGLOB	//  seq _38
+    ctx_params GETGLOB	//  seq _47
     ctx_proposal_params SETGLOB
-    INC	//  _40
+    INC	//  _49
     ctx_proposals_seq SETGLOB
     store_proposal CALLDICT
     store_base_data CALLDICT
@@ -1081,15 +1096,15 @@ PROGRAM{
     load_base_data CALLDICT
     ctx_params GETGLOB	//  _2
     load_total_shares_number CALLDICT	//  total_shares
-    ctx_params GETGLOB	//  total_shares _6
-    load_voting_params CALLDICT	//  total_shares successTreshold failureTreshold
-    ctx_params GETGLOB	//  total_shares successTreshold failureTreshold _9
-    load_metadata CALLDICT	//  total_shares successTreshold failureTreshold metadata
-    0 PUSHINT	//  total_shares successTreshold failureTreshold metadata _11=0
-    ctx_members_shares GETGLOB	//  total_shares successTreshold failureTreshold metadata _11=0 _12
-    s3 s3 XCHG2
-    s0 s5 XCHG
-    s4 s1 s4 XCHG3	//  _11=0 total_shares _12 successTreshold failureTreshold metadata
+    ctx_params GETGLOB	//  total_shares _7
+    load_voting_params CALLDICT	//  total_shares base successTreshold failureTreshold
+    ctx_params GETGLOB	//  total_shares base successTreshold failureTreshold _10
+    load_metadata CALLDICT	//  total_shares base successTreshold failureTreshold metadata
+    0 PUSHINT	//  total_shares base successTreshold failureTreshold metadata _12=0
+    ctx_members_shares GETGLOB	//  total_shares base successTreshold failureTreshold metadata _12=0 _13
+    s4 s6 s4 XCHG3
+    s1 s5 XCHG
+    s1 s3 XCHG	//  _12=0 total_shares _13 base successTreshold failureTreshold metadata
   }>
   get_last_proposal_id PROC:<{
     // 

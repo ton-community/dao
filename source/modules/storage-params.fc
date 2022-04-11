@@ -8,10 +8,11 @@ _ check_params(cell src) {
     ;; Shares and voting
     var allocated = cs~load_coins(); ;; Check allocated
     throw_unless(error::internal_error(), params::max_shares() >= allocated);
-    var success = cs~load_coins(); ;; Check success
-    var failure = cs~load_coins(); ;; Check failure
-    throw_unless(error::internal_error(), allocated > success);
-    throw_unless(error::internal_error(), allocated > failure);
+    var base = cs~load_coins(); ;; Base
+    var success = cs~load_coins(); ;; Success
+    var failure = cs~load_coins(); ;; Failure
+    throw_unless(error::internal_error(), base >= success);
+    throw_unless(error::internal_error(), base >= failure);
 
     ;; Check metadata
     if (cs~load_int(1)) {
@@ -46,9 +47,10 @@ _ load_voting_params(cell src) {
     cs~load_coins();
 
     ;; Params
+    var base = cs~load_coins();
     var success = cs~load_coins();
     var failure = cs~load_coins();
-    return (success, failure);
+    return (base, success, failure);
 }
 
 _ load_metadata(cell src) {
@@ -56,6 +58,7 @@ _ load_metadata(cell src) {
     
     var version = cs~load_uint(1);
     throw_unless(error::internal_error(), version == 0);
+    cs~load_coins();
     cs~load_coins();
     cs~load_coins();
     cs~load_coins();

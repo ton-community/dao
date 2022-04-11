@@ -11,9 +11,13 @@
     ;; Check seq
     throw_unless(error::invalid_message(), seq == ctx_proposals_seq);
 
-    ;; Resolve state
+    ;; Resolve tresholds
     int state = state::pending();
-    var (treshold_success, treshold_failure) = load_voting_params(ctx_params);
+    var (treshold_base, treshold_success_src, treshold_failure_src) = load_voting_params(ctx_params);
+    var treshold_success = (ctx_members_shares * treshold_success_src) / treshold_base;
+    var treshold_failure = (ctx_members_shares * treshold_failure_src) / treshold_base;
+
+    ;; Check if auto-success
     if (shares >= treshold_success) {
         state = state::success();
     }

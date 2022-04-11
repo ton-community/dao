@@ -16,8 +16,9 @@ describe("proposals", () => {
             createCode(),
             createData({
                 totalShares: 5000,
-                failureTreshold: 500,
-                successTreshold: 1020,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [
                     { address: member1, shares: 1000 },
                     { address: member2, shares: 1000 },
@@ -59,8 +60,8 @@ describe("proposals", () => {
             votedNo: 0,
             votedAbstain: 0,
             author: member1.toFriendly({ testOnly: true }),
-            successTreshold: 1020, // 51%
-            failureTreshold: 500 // 25%
+            successTreshold: 1500,
+            failureTreshold: 500
         });
     });
 
@@ -69,8 +70,9 @@ describe("proposals", () => {
             createCode(),
             createData({
                 totalShares: 5000,
-                failureTreshold: 1500,
-                successTreshold: 3060,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [
                     { address: member1, shares: 5000 },
                     { address: member2, shares: 1000 },
@@ -112,8 +114,8 @@ describe("proposals", () => {
             votedNo: 0,
             votedAbstain: 0,
             author: member1.toFriendly({ testOnly: true }),
-            successTreshold: 3060, // 51%
-            failureTreshold: 1500 // 25%
+            successTreshold: 4500,
+            failureTreshold: 1500
         });
     });
 
@@ -122,8 +124,9 @@ describe("proposals", () => {
             createCode(),
             createData({
                 totalShares: 5000,
-                failureTreshold: 500,
-                successTreshold: 1020,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [
                     { address: member1, shares: 1000 },
                     { address: member2, shares: 1000 },
@@ -156,8 +159,9 @@ describe("proposals", () => {
             createCode(),
             createData({
                 totalShares: 5000,
-                failureTreshold: 500,
-                successTreshold: 1020,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [
                     { address: member1, shares: 1000 },
                     { address: member2, shares: 1000 },

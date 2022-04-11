@@ -20,8 +20,9 @@ describe("execute", () => {
             createCode(),
             createData({
                 totalShares: 1000,
-                failureTreshold: 250,
-                successTreshold: 1000,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [{ address: member1, shares: 1000 }]
             })
         );
@@ -71,7 +72,7 @@ describe("execute", () => {
             votedNo: 0,
             votedAbstain: 0,
             author: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
-            successTreshold: 1000,
+            successTreshold: 750,
             failureTreshold: 250
         })
     });
@@ -83,8 +84,9 @@ describe("execute", () => {
             createCode(),
             createData({
                 totalShares: 1000,
-                failureTreshold: 250,
-                successTreshold: 1000,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [{ address: member1, shares: 1000 }]
             })
         );
@@ -125,7 +127,7 @@ describe("execute", () => {
             votedNo: 0,
             votedAbstain: 0,
             author: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
-            successTreshold: 1000,
+            successTreshold: 750,
             failureTreshold: 250
         })
     });
@@ -137,8 +139,9 @@ describe("execute", () => {
             createCode(),
             createData({
                 totalShares: 1000,
-                failureTreshold: 250,
-                successTreshold: 1000,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [{ address: member1, shares: 1000 }]
             })
         );
@@ -155,8 +158,9 @@ describe("execute", () => {
                     .storeUint(1, 16)
                     .storeRef(beginCell()
                         .storeUint(0, 1)
-                        .storeCoins(2000)
                         .storeCoins(1000)
+                        .storeCoins(750)
+                        .storeCoins(250)
                         .storeCoins(250)
                         .storeBit(true)
                         .storeRef(beginCell()
@@ -189,7 +193,7 @@ describe("execute", () => {
             votedNo: 0,
             votedAbstain: 0,
             author: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
-            successTreshold: 1000,
+            successTreshold: 750,
             failureTreshold: 250
         });
     });

@@ -20,8 +20,9 @@ describe("abort", () => {
             createCode(),
             createData({
                 totalShares: 1000,
-                failureTreshold: 250,
-                successTreshold: 1000,
+                baseTreshold: 100,
+                failureTreshold: 25,
+                successTreshold: 75,
                 members: [{ address: member1, shares: 1000 }]
             })
         );
@@ -66,7 +67,7 @@ describe("abort", () => {
             votedNo: 0,
             votedAbstain: 0,
             author: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
-            successTreshold: 1000,
+            successTreshold: 750,
             failureTreshold: 250
         })
     });
