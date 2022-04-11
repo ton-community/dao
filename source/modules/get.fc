@@ -20,6 +20,11 @@ _ get_params() method_id {
     return (0, total_shares, ctx_members_shares, base, successTreshold, failureTreshold, metadata);
 }
 
+_ get_params_raw() method_id {
+    load_base_data();
+    return ctx_params;
+}
+
 ;;
 ;; Proposals
 ;;
@@ -98,6 +103,11 @@ _ get_membership(slice addr) method_id {
     } else {
         return (0, 0);
     }
+}
+
+_ get_members_raw() method_id {
+    load_base_data();
+    return ctx_members_dict;
 }
 
 ;;

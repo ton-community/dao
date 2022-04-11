@@ -30,10 +30,12 @@ PROGRAM{
   107037 DECLMETHOD get_code_version
   119035 DECLMETHOD get_members_info
   115150 DECLMETHOD get_params
+  121136 DECLMETHOD get_params_raw
   129834 DECLMETHOD get_last_proposal_id
   94347 DECLMETHOD get_proposal
   99394 DECLMETHOD get_proposal_vote
   116485 DECLMETHOD get_membership
+  89295 DECLMETHOD get_members_raw
   70371 DECLMETHOD get_contract_type
   DECLPROC op_proposal
   DECLPROC op_vote
@@ -1106,6 +1108,11 @@ PROGRAM{
     s1 s5 XCHG
     s1 s3 XCHG	//  _12=0 total_shares _13 base successTreshold failureTreshold metadata
   }>
+  get_params_raw PROC:<{
+    // 
+    load_base_data CALLDICT
+    ctx_params GETGLOB	//  _1
+  }>
   get_last_proposal_id PROC:<{
     // 
     load_base_data CALLDICT
@@ -1186,6 +1193,11 @@ PROGRAM{
     DROP	// 
     0 PUSHINT	//  _19=0
     DUP	//  _19=0 _20=0
+  }>
+  get_members_raw PROC:<{
+    // 
+    load_base_data CALLDICT
+    ctx_members_dict GETGLOB	//  _1
   }>
   get_contract_type PROC:<{
     // 
