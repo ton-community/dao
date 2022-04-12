@@ -1,5 +1,5 @@
 _ get_version() method_id {
-    return (0, 0, 4);
+    return (0, 0, 5);
 }
 
 _ get_code_version() method_id {
@@ -17,12 +17,12 @@ _ get_params() method_id {
     var total_shares = load_total_shares_number(ctx_params);
     var (base, successTreshold, failureTreshold) = load_voting_params(ctx_params);
     var metadata = load_metadata(ctx_params);
-    return (0, total_shares, ctx_members_shares, base, successTreshold, failureTreshold, metadata);
+    return (0, total_shares, ctx_members_shares, base, successTreshold, failureTreshold, metadata, ctx_params_version);
 }
 
 _ get_params_raw() method_id {
     load_base_data();
-    return ctx_params;
+    return (ctx_params, ctx_params_version);
 }
 
 ;;
@@ -114,7 +114,7 @@ _ get_members_raw() method_id {
 ;; Contract
 ;;
 
-_ get_contract_type() method_id {
+_ supported_interfaces() method_id {
     return (
         123515602279859691144772641439386770278, ;; org.ton.introspection.v0
         21320899891151534394772811350965710961 ;; com.tonwhales.dao:v0

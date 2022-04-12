@@ -36,7 +36,7 @@ PROGRAM{
   99394 DECLMETHOD get_proposal_vote
   116485 DECLMETHOD get_membership
   89295 DECLMETHOD get_members_raw
-  70371 DECLMETHOD get_contract_type
+  113617 DECLMETHOD supported_interfaces
   DECLPROC op_proposal
   DECLPROC op_vote
   DECLPROC op_execute
@@ -1079,7 +1079,7 @@ PROGRAM{
     // 
     0 PUSHINT	//  _0=0
     DUP	//  _0=0 _1=0
-    4 PUSHINT	//  _0=0 _1=0 _2=4
+    5 PUSHINT	//  _0=0 _1=0 _2=5
   }>
   get_code_version PROC:<{
     // 
@@ -1104,14 +1104,16 @@ PROGRAM{
     load_metadata CALLDICT	//  total_shares base successTreshold failureTreshold metadata
     0 PUSHINT	//  total_shares base successTreshold failureTreshold metadata _12=0
     ctx_members_shares GETGLOB	//  total_shares base successTreshold failureTreshold metadata _12=0 _13
-    s4 s6 s4 XCHG3
-    s1 s5 XCHG
-    s1 s3 XCHG	//  _12=0 total_shares _13 base successTreshold failureTreshold metadata
+    ctx_params_version GETGLOB	//  total_shares base successTreshold failureTreshold metadata _12=0 _13 _14
+    s2 s7 XCHG
+    s6 s5 s0 XCHG3
+    s4 s3 s0 XCHG3	//  _12=0 total_shares _13 base successTreshold failureTreshold metadata _14
   }>
   get_params_raw PROC:<{
     // 
     load_base_data CALLDICT
     ctx_params GETGLOB	//  _1
+    ctx_params_version GETGLOB	//  _1 _2
   }>
   get_last_proposal_id PROC:<{
     // 
@@ -1199,7 +1201,7 @@ PROGRAM{
     load_base_data CALLDICT
     ctx_members_dict GETGLOB	//  _1
   }>
-  get_contract_type PROC:<{
+  supported_interfaces PROC:<{
     // 
     123515602279859691144772641439386770278 PUSHINT	//  _0=123515602279859691144772641439386770278
     21320899891151534394772811350965710961 PUSHINT	//  _0=123515602279859691144772641439386770278 _1=21320899891151534394772811350965710961

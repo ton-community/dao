@@ -59,7 +59,7 @@ describe("execute", () => {
                 value: '0'
             },
             {
-                mode: 2,
+                mode: 3,
                 to: outsider.toFriendly({ testOnly: true }),
                 value: toNano(10).toString(10)
             }
