@@ -866,7 +866,7 @@ cell prepare_execute(int proposalId, int member) impure {
 }
 
 _ get_version() method_id {
-    return (0, 0, 3);
+    return (0, 0, 4);
 }
 
 _ get_code_version() method_id {

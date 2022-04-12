@@ -1079,7 +1079,7 @@ PROGRAM{
     // 
     0 PUSHINT	//  _0=0
     DUP	//  _0=0 _1=0
-    3 PUSHINT	//  _0=0 _1=0 _2=3
+    4 PUSHINT	//  _0=0 _1=0 _2=4
   }>
   get_code_version PROC:<{
     // 
