@@ -974,46 +974,46 @@ PROGRAM{
         1 STU	//  kind cs msg
       }>
       ENDC	//  kind cs _59
-      2 PUSHINT	//  kind cs _59 _60=2
+      3 PUSHINT	//  kind cs _59 _62
       SENDRAWMSG
     }>	//  kind cs
-    1738944794 PUSHINT	//  kind cs _62
-    s2 s(-1) PUXC	//  kind cs kind _62
-    EQUAL	//  kind cs _63
+    1738944794 PUSHINT	//  kind cs _64
+    s2 s(-1) PUXC	//  kind cs kind _64
+    EQUAL	//  kind cs _65
     IF:<{	//  kind cs
       LDMSGADDR	//  kind to_addr cs
-      0 PUSHINT	//  kind to_addr cs _68=0
-      16 PUSHINT	//  kind to_addr cs _68=0 _69=16
-      NEWC	//  kind to_addr cs _68=0 _69=16 _70
-      6 STU	//  kind to_addr cs _68=0 _72
-      s0 s3 XCHG2	//  kind _68=0 cs _72 to_addr
-      STSLICER	//  kind _68=0 cs _73
-      s2 PUSH	//  kind _68=0 cs _73 _74=0
-      STGRAMS	//  kind _68=0 cs _75
-      s1 s2 XCHG	//  kind cs _68=0 _75
+      0 PUSHINT	//  kind to_addr cs _70=0
+      16 PUSHINT	//  kind to_addr cs _70=0 _71=16
+      NEWC	//  kind to_addr cs _70=0 _71=16 _72
+      6 STU	//  kind to_addr cs _70=0 _74
+      s0 s3 XCHG2	//  kind _70=0 cs _74 to_addr
+      STSLICER	//  kind _70=0 cs _75
+      s2 PUSH	//  kind _70=0 cs _75 _76=0
+      STGRAMS	//  kind _70=0 cs _77
+      s1 s2 XCHG	//  kind cs _70=0 _77
       107 STU	//  kind cs msg
-      ENDC	//  kind cs _90
-      160 PUSHINT	//  kind cs _90 _93
+      ENDC	//  kind cs _92
+      160 PUSHINT	//  kind cs _92 _95
       SENDRAWMSG
     }>	//  kind cs
-    2894775163 PUSHINT	//  kind cs _95
-    s2 s(-1) PUXC	//  kind cs kind _95
-    EQUAL	//  kind cs _96
+    2894775163 PUSHINT	//  kind cs _97
+    s2 s(-1) PUXC	//  kind cs kind _97
+    EQUAL	//  kind cs _98
     IF:<{	//  kind cs
       16 LDU	//  kind expectedVersion cs
       LDREF	//  kind expectedVersion newCode cs
-      ctx_code_version GETGLOB	//  kind expectedVersion newCode cs _104
-      s0 s3 XCHG2	//  kind cs newCode _104 expectedVersion
-      EQUAL	//  kind cs newCode _105
+      ctx_code_version GETGLOB	//  kind expectedVersion newCode cs _106
+      s0 s3 XCHG2	//  kind cs newCode _106 expectedVersion
+      EQUAL	//  kind cs newCode _107
       IF:<{	//  kind cs newCode
-        ctx_code_version GETGLOB	//  kind cs newCode _106
-        INC	//  kind cs newCode _108
+        ctx_code_version GETGLOB	//  kind cs newCode _108
+        INC	//  kind cs newCode _110
         ctx_code_version SETGLOB
         store_base_data CALLDICT
         DUP	//  kind cs newCode newCode
         SETCODE
-        CTOS	//  kind cs _111
-        BLESS	//  kind cs _112
+        CTOS	//  kind cs _113
+        BLESS	//  kind cs _114
         c3 POP
         storage_upgrade CALLDICT
         0 THROW
@@ -1021,21 +1021,21 @@ PROGRAM{
         DROP	//  kind cs
       }>
     }>	//  kind cs
-    1658590374 PUSHINT	//  kind cs _117
-    s2 s(-1) PUXC	//  kind cs kind _117
-    EQUAL	//  kind cs _118
+    1658590374 PUSHINT	//  kind cs _119
+    s2 s(-1) PUXC	//  kind cs kind _119
+    EQUAL	//  kind cs _120
     IF:<{	//  kind cs
       16 LDU	//  kind version cs
       LDREF	//  kind version new_params cs
-      ctx_params_version GETGLOB	//  kind version new_params cs _126
-      s0 s3 XCHG2	//  kind cs new_params _126 version
-      EQUAL	//  kind cs new_params _127
+      ctx_params_version GETGLOB	//  kind version new_params cs _128
+      s0 s3 XCHG2	//  kind cs new_params _128 version
+      EQUAL	//  kind cs new_params _129
       IF:<{	//  kind cs new_params
         DUP	//  kind cs new_params new_params
-        check_params CALLDICT	//  kind cs new_params _128
+        check_params CALLDICT	//  kind cs new_params _130
         IF:<{	//  kind cs new_params
-          ctx_params_version GETGLOB	//  kind cs new_params _129
-          INC	//  kind cs new_params _131
+          ctx_params_version GETGLOB	//  kind cs new_params _131
+          INC	//  kind cs new_params _133
           ctx_params_version SETGLOB
           ctx_params SETGLOB
           store_base_data CALLDICT
@@ -1046,29 +1046,29 @@ PROGRAM{
         DROP	//  kind cs
       }>
     }>	//  kind cs
-    3137658663 PUSHINT	//  kind cs _133
-    s2 s(-1) PUXC	//  kind cs kind _133
-    EQUAL	//  kind cs _134
+    3137658663 PUSHINT	//  kind cs _135
+    s2 s(-1) PUXC	//  kind cs kind _135
+    EQUAL	//  kind cs _136
     IF:<{	//  kind cs
       32 LDU	//  kind id cs
       SWAP	//  kind cs id
       cancel_proposal CALLDICT
     }>	//  kind cs
-    2105678790 PUSHINT	//  kind cs _140
-    s2 s(-1) PUXC	//  kind cs kind _140
-    EQUAL	//  kind cs _141
+    2105678790 PUSHINT	//  kind cs _142
+    s2 s(-1) PUXC	//  kind cs kind _142
+    EQUAL	//  kind cs _143
     IF:<{	//  kind cs
       256 LDU	//  kind member cs
       LDGRAMS	//  kind member shares cs
       -ROT	//  kind cs member shares
       allocate_voting_power CALLDICT
     }>	//  kind cs
-    1146177121 PUSHINT	//  kind cs _150
-    s1 s2 XCHG	//  cs kind _150
-    EQUAL	//  cs _151
+    1146177121 PUSHINT	//  kind cs _152
+    s1 s2 XCHG	//  cs kind _152
+    EQUAL	//  cs _153
     IF:<{	//  cs
       256 LDU	//  member cs
-      LDGRAMS	//  member _193 _192
+      LDGRAMS	//  member _195 _194
       DROP	//  member shares
       deallocate_voting_power CALLDICT
     }>ELSE<{

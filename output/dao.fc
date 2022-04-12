@@ -792,7 +792,7 @@ cell prepare_execute(int proposalId, int member) impure {
         }
 
         ;; Send message
-        send_raw_message(msg.end_cell(), 2);
+        send_raw_message(msg.end_cell(), 1 + 2);
     }
 
     ;; Destroy contract
