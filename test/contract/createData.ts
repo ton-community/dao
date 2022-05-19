@@ -54,5 +54,6 @@ export function createData(
             .storeRef(beginCell()
                 .endCell())
             .endCell())
+        .storeBit(false)
         .endCell();
 }

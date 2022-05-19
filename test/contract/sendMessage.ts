@@ -42,6 +42,6 @@ export async function sendMessage(contract: SmartContract, value: BN, from: Addr
         }
         return d;
     } else {
-        return [];
+        throw Error('Failed');
     }
 }

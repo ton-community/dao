@@ -159,6 +159,8 @@ global cell ctx_proposals_ids;
 
 global cell ctx_params;
 
+global cell ctx_extras;
+
 () load_base_data() impure {
 
     ;; Parse root
@@ -169,6 +171,7 @@ global cell ctx_params;
     cell membersRef = ds~load_ref();
     cell proposalsRef = ds~load_ref();
     ctx_params = ds~load_ref();
+    ctx_extras = ds~load_dict();
     ds.end_parse();
 
     ;; Parse members
@@ -202,6 +205,7 @@ global cell ctx_params;
             .store_dict(ctx_proposals_ids)
         .end_cell())
         .store_ref(ctx_params)
+        .store_dict(ctx_extras)
     .end_cell());
 }
 
@@ -984,7 +988,7 @@ _ get_members_raw() method_id {
 _ supported_interfaces() method_id {
     return (
         123515602279859691144772641439386770278, ;; org.ton.introspection.v0
-        21320899891151534394772811350965710961 ;; com.tonwhales.dao:v0
+        122913010600626208305166324626056938280 ;; com.tonwhales.dao.v0
     );
 }
 

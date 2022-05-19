@@ -117,6 +117,6 @@ _ get_members_raw() method_id {
 _ supported_interfaces() method_id {
     return (
         123515602279859691144772641439386770278, ;; org.ton.introspection.v0
-        21320899891151534394772811350965710961 ;; com.tonwhales.dao:v0
+        122913010600626208305166324626056938280 ;; com.tonwhales.dao.v0
     );
 }

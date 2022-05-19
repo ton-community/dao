@@ -12,6 +12,8 @@ global cell ctx_proposals_ids;
 
 global cell ctx_params;
 
+global cell ctx_extras;
+
 () load_base_data() impure {
 
     ;; Parse root
@@ -22,6 +24,7 @@ global cell ctx_params;
     cell membersRef = ds~load_ref();
     cell proposalsRef = ds~load_ref();
     ctx_params = ds~load_ref();
+    ctx_extras = ds~load_dict();
     ds.end_parse();
 
     ;; Parse members
@@ -55,6 +58,7 @@ global cell ctx_params;
             .store_dict(ctx_proposals_ids)
         .end_cell())
         .store_ref(ctx_params)
+        .store_dict(ctx_extras)
     .end_cell());
 }
 

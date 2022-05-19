@@ -52,6 +52,7 @@ PROGRAM{
   DECLGLOBVAR ctx_proposals_dict
   DECLGLOBVAR ctx_proposals_ids
   DECLGLOBVAR ctx_params
+  DECLGLOBVAR ctx_extras
   DECLGLOBVAR ctx_proposal_id
   DECLGLOBVAR ctx_proposal_state
   DECLGLOBVAR ctx_proposal_voted_yes
@@ -179,61 +180,66 @@ PROGRAM{
     LDREF	//  membersRef proposalsRef _18 ds
     SWAP	//  membersRef proposalsRef ds _18
     ctx_params SETGLOB
+    LDDICT	//  membersRef proposalsRef _20 ds
+    SWAP	//  membersRef proposalsRef ds _20
+    ctx_extras SETGLOB
     ENDS
     SWAP	//  proposalsRef membersRef
     CTOS	//  proposalsRef ds
-    LDGRAMS	//  proposalsRef _22 ds
-    SWAP	//  proposalsRef ds _22
-    ctx_members_shares SETGLOB
-    32 LDU	//  proposalsRef _24 ds
+    LDGRAMS	//  proposalsRef _24 ds
     SWAP	//  proposalsRef ds _24
+    ctx_members_shares SETGLOB
+    32 LDU	//  proposalsRef _26 ds
+    SWAP	//  proposalsRef ds _26
     ctx_members_total SETGLOB
-    LDREF	//  proposalsRef _27 ds
-    SWAP	//  proposalsRef ds _27
+    LDREF	//  proposalsRef _29 ds
+    SWAP	//  proposalsRef ds _29
     ctx_members_dict SETGLOB
     ENDS
     CTOS	//  ds
-    32 LDU	//  _31 ds
-    SWAP	//  ds _31
+    32 LDU	//  _33 ds
+    SWAP	//  ds _33
     ctx_proposals_seq SETGLOB
-    LDDICT	//  _34 ds
-    SWAP	//  ds _34
-    ctx_proposals_dict SETGLOB
     LDDICT	//  _36 ds
     SWAP	//  ds _36
+    ctx_proposals_dict SETGLOB
+    LDDICT	//  _38 ds
+    SWAP	//  ds _38
     ctx_proposals_ids SETGLOB
     ENDS
   }>
   store_base_data PROC:<{
     // 
-    ctx_params GETGLOB	//  _0
-    ctx_proposals_ids GETGLOB	//  _0 _1
-    ctx_proposals_dict GETGLOB	//  _0 _1 _2
-    ctx_proposals_seq GETGLOB	//  _0 _1 _2 _3
-    NEWC	//  _0 _1 _2 _3 _4
-    32 STU	//  _0 _1 _2 _6
-    STDICT	//  _0 _1 _7
-    STDICT	//  _0 _8
-    ENDC	//  _0 _9
-    ctx_members_dict GETGLOB	//  _0 _9 _10
-    ctx_members_total GETGLOB	//  _0 _9 _10 _11
-    NEWC	//  _0 _9 _10 _11 _12
-    ctx_members_shares GETGLOB	//  _0 _9 _10 _11 _12 _13
-    STGRAMS	//  _0 _9 _10 _11 _14
-    32 STU	//  _0 _9 _10 _16
-    STREF	//  _0 _9 _17
-    ENDC	//  _0 _9 _18
-    ctx_params_version GETGLOB	//  _0 _9 _18 _19
-    ctx_code_version GETGLOB	//  _0 _9 _18 _19 _20
-    ctx_version GETGLOB	//  _0 _9 _18 _19 _20 _21
-    NEWC	//  _0 _9 _18 _19 _20 _21 _22
-    16 STU	//  _0 _9 _18 _19 _20 _24
-    16 STU	//  _0 _9 _18 _19 _26
-    16 STU	//  _0 _9 _18 _28
-    STREF	//  _0 _9 _29
-    STREF	//  _0 _30
-    STREF	//  _31
-    ENDC	//  _32
+    ctx_extras GETGLOB	//  _0
+    ctx_params GETGLOB	//  _0 _1
+    ctx_proposals_ids GETGLOB	//  _0 _1 _2
+    ctx_proposals_dict GETGLOB	//  _0 _1 _2 _3
+    ctx_proposals_seq GETGLOB	//  _0 _1 _2 _3 _4
+    NEWC	//  _0 _1 _2 _3 _4 _5
+    32 STU	//  _0 _1 _2 _3 _7
+    STDICT	//  _0 _1 _2 _8
+    STDICT	//  _0 _1 _9
+    ENDC	//  _0 _1 _10
+    ctx_members_dict GETGLOB	//  _0 _1 _10 _11
+    ctx_members_total GETGLOB	//  _0 _1 _10 _11 _12
+    NEWC	//  _0 _1 _10 _11 _12 _13
+    ctx_members_shares GETGLOB	//  _0 _1 _10 _11 _12 _13 _14
+    STGRAMS	//  _0 _1 _10 _11 _12 _15
+    32 STU	//  _0 _1 _10 _11 _17
+    STREF	//  _0 _1 _10 _18
+    ENDC	//  _0 _1 _10 _19
+    ctx_params_version GETGLOB	//  _0 _1 _10 _19 _20
+    ctx_code_version GETGLOB	//  _0 _1 _10 _19 _20 _21
+    ctx_version GETGLOB	//  _0 _1 _10 _19 _20 _21 _22
+    NEWC	//  _0 _1 _10 _19 _20 _21 _22 _23
+    16 STU	//  _0 _1 _10 _19 _20 _21 _25
+    16 STU	//  _0 _1 _10 _19 _20 _27
+    16 STU	//  _0 _1 _10 _19 _29
+    STREF	//  _0 _1 _10 _30
+    STREF	//  _0 _1 _31
+    STREF	//  _0 _32
+    STDICT	//  _33
+    ENDC	//  _34
     c4 POP
   }>
   storage_upgrade PROC:<{
@@ -1204,7 +1210,7 @@ PROGRAM{
   supported_interfaces PROC:<{
     // 
     123515602279859691144772641439386770278 PUSHINT	//  _0=123515602279859691144772641439386770278
-    21320899891151534394772811350965710961 PUSHINT	//  _0=123515602279859691144772641439386770278 _1=21320899891151534394772811350965710961
+    122913010600626208305166324626056938280 PUSHINT	//  _0=123515602279859691144772641439386770278 _1=122913010600626208305166324626056938280
   }>
   op_proposal PROC:<{
     //  member value in_msg query_id
