@@ -14,6 +14,11 @@ _ check_params(cell src) {
     throw_unless(error::internal_error(), base >= success);
     throw_unless(error::internal_error(), base >= failure);
 
+    ;; Proposal cost
+    var proposalCost = cs~load_coins();
+    throw_unless(error::internal_error(), proposalCost > coins::1());
+    throw_unless(error::internal_error(), proposalCost <= coins::100());
+
     ;; Check metadata
     if (cs~load_int(1)) {
         cs~load_ref();
@@ -21,6 +26,25 @@ _ check_params(cell src) {
 
     cs.end_parse();
     return true;
+}
+
+_ load_proposal_cost(cell src) {
+    var cs = src.begin_parse();
+
+    ;; Serialization version
+    var version = cs~load_uint(1);
+    throw_unless(error::internal_error(), version == 0);
+
+    ;; Allocated
+    cs~load_coins();
+
+    ;; Params
+    cs~load_coins(); ;; Base
+    cs~load_coins(); ;; Success
+    cs~load_coins(); ;; Failure
+
+    ;; Proposal cost
+    return cs~load_coins();
 }
 
 _ load_total_shares_number(cell src) {

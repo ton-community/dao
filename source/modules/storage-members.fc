@@ -1,9 +1,8 @@
 ;;
 ;; Members storage
 ;; NOTE: this storage have to store ONLY voting shares, do not add anything else here
-;;       since it is copied furing proposal creation
+;;       since it is copied during proposal creation
 ;;
-
 
 int load_shares(cell dict, int member) {
     var (cs, found) = dict.udict_get?(256, member);

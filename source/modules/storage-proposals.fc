@@ -30,8 +30,10 @@ global cell ctx_proposal_params;
 () load_proposal(int id) impure {
 
     ;; Load proposal
-    var (cl, found) = ctx_proposals_dict.udict_get_ref?(32, id);
+    var (itm, found) = ctx_proposals_dict.udict_get?(32, id); ;; NOTE: udict_get_ref could break stack
     throw_unless(error::invalid_message(), found);
+    var cl = itm~load_ref();
+    itm.end_parse();
     var cs = cl.begin_parse();
 
     ;; Read

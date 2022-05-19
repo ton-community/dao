@@ -1,4 +1,4 @@
-import { Address, beginCell, beginDict } from "ton";
+import { Address, beginCell, beginDict, toNano } from "ton";
 
 // ctx_version = ds~load_uint(16);
 //     ctx_total_shares = ds~load_uint(32);
@@ -50,6 +50,7 @@ export function createData(
             .storeCoins(params.baseTreshold)
             .storeCoins(params.successTreshold)
             .storeCoins(params.failureTreshold)
+            .storeCoins(toNano(10))
             .storeBit(true)
             .storeRef(beginCell()
                 .endCell())

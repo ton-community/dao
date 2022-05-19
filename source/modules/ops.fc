@@ -1,14 +1,21 @@
 () op_proposal(int member, int value, slice in_msg, int query_id) impure {
 
+    ;; Params
+    int proposalCost = load_proposal_cost(ctx_params);
+
     ;; Check input
     int seq = in_msg~load_uint(32);
     cell proposal = in_msg~load_ref();
     cell metadata = in_msg~load_ref();
     in_msg.end_parse();
     throw_unless(error::invalid_message(), check_proposal(proposal));
+    throw_unless(error::invalid_message(), proposalCost <= value);
 
     ;; Register input
     register_proposal(seq, proposal, metadata, member);
+
+    ;; Receipt
+    raw_reserve(proposalCost, 4); ;; Reserve existing balance + proposal cost
     send_empty_receipt_message(member, op::proposal::ok(), query_id);
 }
 

@@ -36,7 +36,7 @@ describe("voting", () => {
         // Create proposal
         let res = await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,
@@ -137,7 +137,7 @@ describe("voting", () => {
         // Create proposal
         let res = await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,
@@ -213,7 +213,7 @@ describe("voting", () => {
         // Create proposal
         let res = await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,
@@ -314,7 +314,7 @@ describe("voting", () => {
         // Create proposal
         let res = await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,
@@ -377,7 +377,7 @@ describe("voting", () => {
         // Create proposal
         let res = await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,
@@ -453,7 +453,7 @@ describe("voting", () => {
         // Create proposal
         await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,

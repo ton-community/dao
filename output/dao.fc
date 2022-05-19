@@ -47,6 +47,13 @@ int params::max_shares() inline {
 }
 
 ;;
+;; Coins
+;;
+
+int coins::1() asm "1000000000 PUSHINT";
+int coins::100() asm "100000000000 PUSHINT";
+
+;;
 ;; Basic workchain addresses
 ;;
 
@@ -145,6 +152,14 @@ builder store_builder_ref(builder to, builder what) asm(what to) "STBREFR";
   send_empty_std_message(serialize_work_addr(to_addr), 0, 64, op, query_id);
 }
 
+() send_empty_receipt_message_remaining(
+  int to_addr,
+  int op, 
+  int query_id
+) impure {
+  send_empty_std_message(serialize_work_addr(to_addr), 0, 128, op, query_id);
+}
+
 global int ctx_version;
 global int ctx_code_version;
 global int ctx_params_version;
@@ -216,9 +231,8 @@ global cell ctx_extras;
 ;;
 ;; Members storage
 ;; NOTE: this storage have to store ONLY voting shares, do not add anything else here
-;;       since it is copied furing proposal creation
+;;       since it is copied during proposal creation
 ;;
-
 
 int load_shares(cell dict, int member) {
     var (cs, found) = dict.udict_get?(256, member);
@@ -280,8 +294,10 @@ global cell ctx_proposal_params;
 () load_proposal(int id) impure {
 
     ;; Load proposal
-    var (cl, found) = ctx_proposals_dict.udict_get_ref?(32, id);
+    var (itm, found) = ctx_proposals_dict.udict_get?(32, id); ;; NOTE: udict_get_ref could break stack
     throw_unless(error::invalid_message(), found);
+    var cl = itm~load_ref();
+    itm.end_parse();
     var cs = cl.begin_parse();
 
     ;; Read
@@ -362,6 +378,11 @@ _ check_params(cell src) {
     throw_unless(error::internal_error(), base >= success);
     throw_unless(error::internal_error(), base >= failure);
 
+    ;; Proposal cost
+    var proposalCost = cs~load_coins();
+    throw_unless(error::internal_error(), proposalCost > coins::1());
+    throw_unless(error::internal_error(), proposalCost <= coins::100());
+
     ;; Check metadata
     if (cs~load_int(1)) {
         cs~load_ref();
@@ -369,6 +390,25 @@ _ check_params(cell src) {
 
     cs.end_parse();
     return true;
+}
+
+_ load_proposal_cost(cell src) {
+    var cs = src.begin_parse();
+
+    ;; Serialization version
+    var version = cs~load_uint(1);
+    throw_unless(error::internal_error(), version == 0);
+
+    ;; Allocated
+    cs~load_coins();
+
+    ;; Params
+    cs~load_coins(); ;; Base
+    cs~load_coins(); ;; Success
+    cs~load_coins(); ;; Failure
+
+    ;; Proposal cost
+    return cs~load_coins();
 }
 
 _ load_total_shares_number(cell src) {
@@ -957,7 +997,7 @@ _ get_proposal_vote(int id, slice addr) method_id {
 ;; Membership
 ;;
 
-_ get_membership(slice addr) method_id {
+_ get_member(slice addr) method_id {
 
     ;; Load address
     (int sender_wc, slice sender_addr) = parse_var_addr(addr);
@@ -976,9 +1016,32 @@ _ get_membership(slice addr) method_id {
     }
 }
 
-_ get_members_raw() method_id {
+_ get_members(slice after, int limit) method_id {
+    throw_unless(error::invalid_message(), limit > 0);
+    throw_unless(error::invalid_message(), limit < 100);
     load_base_data();
-    return ctx_members_dict;
+    var member = parse_work_addr(after);
+    var count = 0;
+    var members = null();
+    do {
+        (member, var cs, var f) = ctx_members_dict.udict_get_next?(256, member);
+        if (f) {
+
+            ;; Parse
+            cell rf = cs~load_ref();
+            cs.end_parse();
+            var cs2 = rf.begin_parse();
+            var shares = cs2~load_coins();
+            cs2.end_parse();
+
+            ;; Members
+            members = cons([serialize_work_addr(member), shares], members);
+
+            ;; Increase counter
+            count = count + 1;
+        }
+    } until ((~ f) | (count >= limit));
+    return members;
 }
 
 ;;
@@ -994,15 +1057,22 @@ _ supported_interfaces() method_id {
 
 () op_proposal(int member, int value, slice in_msg, int query_id) impure {
 
+    ;; Params
+    int proposalCost = load_proposal_cost(ctx_params);
+
     ;; Check input
     int seq = in_msg~load_uint(32);
     cell proposal = in_msg~load_ref();
     cell metadata = in_msg~load_ref();
     in_msg.end_parse();
     throw_unless(error::invalid_message(), check_proposal(proposal));
+    throw_unless(error::invalid_message(), proposalCost <= value);
 
     ;; Register input
     register_proposal(seq, proposal, metadata, member);
+
+    ;; Receipt
+    raw_reserve(proposalCost, 4); ;; Reserve existing balance + proposal cost
     send_empty_receipt_message(member, op::proposal::ok(), query_id);
 }
 

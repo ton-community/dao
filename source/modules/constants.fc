@@ -45,3 +45,10 @@ int state::cancelled() asm "5 PUSHINT";
 int params::max_shares() inline {
     return 2 << 128;
 }
+
+;;
+;; Coins
+;;
+
+int coins::1() asm "1000000000 PUSHINT";
+int coins::100() asm "100000000000 PUSHINT";

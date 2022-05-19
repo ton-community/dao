@@ -28,7 +28,7 @@ describe("proposals", () => {
 
         let res = await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,
@@ -82,7 +82,7 @@ describe("proposals", () => {
 
         let res = await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,
@@ -137,7 +137,7 @@ describe("proposals", () => {
         await expect(
             sendMessage(
                 exectutor,
-                toNano(1),
+                toNano(10),
                 outsider,
                 createProposal(
                     0,
@@ -172,7 +172,7 @@ describe("proposals", () => {
         await expect(
             sendMessage(
                 exectutor,
-                toNano(1),
+                toNano(10),
                 member1,
                 createProposal(
                     100,

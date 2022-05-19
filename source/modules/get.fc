@@ -86,7 +86,7 @@ _ get_proposal_vote(int id, slice addr) method_id {
 ;; Membership
 ;;
 
-_ get_membership(slice addr) method_id {
+_ get_member(slice addr) method_id {
 
     ;; Load address
     (int sender_wc, slice sender_addr) = parse_var_addr(addr);
@@ -105,9 +105,32 @@ _ get_membership(slice addr) method_id {
     }
 }
 
-_ get_members_raw() method_id {
+_ get_members(slice after, int limit) method_id {
+    throw_unless(error::invalid_message(), limit > 0);
+    throw_unless(error::invalid_message(), limit < 100);
     load_base_data();
-    return ctx_members_dict;
+    var member = parse_work_addr(after);
+    var count = 0;
+    var members = null();
+    do {
+        (member, var cs, var f) = ctx_members_dict.udict_get_next?(256, member);
+        if (f) {
+
+            ;; Parse
+            cell rf = cs~load_ref();
+            cs.end_parse();
+            var cs2 = rf.begin_parse();
+            var shares = cs2~load_coins();
+            cs2.end_parse();
+
+            ;; Members
+            members = cons([serialize_work_addr(member), shares], members);
+
+            ;; Increase counter
+            count = count + 1;
+        }
+    } until ((~ f) | (count >= limit));
+    return members;
 }
 
 ;;

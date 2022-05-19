@@ -96,3 +96,11 @@ builder store_builder_ref(builder to, builder what) asm(what to) "STBREFR";
 ) impure {
   send_empty_std_message(serialize_work_addr(to_addr), 0, 64, op, query_id);
 }
+
+() send_empty_receipt_message_remaining(
+  int to_addr,
+  int op, 
+  int query_id
+) impure {
+  send_empty_std_message(serialize_work_addr(to_addr), 0, 128, op, query_id);
+}

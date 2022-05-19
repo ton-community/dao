@@ -6,6 +6,7 @@ PROGRAM{
   DECLPROC send_empty_std_message
   DECLPROC send_receipt_message
   DECLPROC send_empty_receipt_message
+  DECLPROC send_empty_receipt_message_remaining
   DECLPROC load_base_data
   DECLPROC store_base_data
   1666 DECLMETHOD storage_upgrade
@@ -14,6 +15,7 @@ PROGRAM{
   DECLPROC load_proposal
   DECLPROC store_proposal
   DECLPROC check_params
+  DECLPROC load_proposal_cost
   DECLPROC load_total_shares_number
   DECLPROC load_voting_params
   DECLPROC load_metadata
@@ -34,8 +36,8 @@ PROGRAM{
   129834 DECLMETHOD get_last_proposal_id
   94347 DECLMETHOD get_proposal
   99394 DECLMETHOD get_proposal_vote
-  116485 DECLMETHOD get_membership
-  89295 DECLMETHOD get_members_raw
+  70558 DECLMETHOD get_member
+  127654 DECLMETHOD get_members
   113617 DECLMETHOD supported_interfaces
   DECLPROC op_proposal
   DECLPROC op_vote
@@ -160,6 +162,16 @@ PROGRAM{
     2SWAP
     64 PUSHINT
     s0 s2 XCHG	//  _3 _4=0 _5=64 op query_id
+    send_empty_std_message CALLDICT
+  }>
+  send_empty_receipt_message_remaining PROC:<{
+    //  to_addr op query_id
+    s0 s2 XCHG	//  query_id op to_addr
+    serialize_work_addr CALLDICT	//  query_id op _3
+    0 PUSHINT	//  query_id op _3 _4=0
+    2SWAP
+    7 PUSHPOW2
+    s0 s2 XCHG	//  _3 _4=0 _5=128 op query_id
     send_empty_std_message CALLDICT
   }>
   load_base_data PROC:<{
@@ -290,71 +302,74 @@ PROGRAM{
     ctx_proposals_dict GETGLOB	//  id _3
     s1 s(-1) PUXC
     32 PUSHINT	//  id id _3 _4=32
-    DICTUGETREF	//  id cl found
-    72 PUSHINT	//  id cl found _6
-    SWAP	//  id cl _6 found
+    DICTUGET
+    NULLSWAPIFNOT	//  id itm found
+    72 PUSHINT	//  id itm found _6
+    SWAP	//  id itm _6 found
     THROWANYIFNOT
+    LDREF	//  id cl itm
+    ENDS
     CTOS	//  id cs
     SWAP	//  cs id
     ctx_proposal_id SETGLOB
-    72 PUSHINT	//  cs _10
-    SWAP	//  _10 cs
-    1 LDU	//  _10 _11 cs
-    SWAP	//  _10 cs _11
-    0 NEQINT	//  _10 cs _15
-    s1 s2 XCHG	//  cs _10 _15
+    72 PUSHINT	//  cs _14
+    SWAP	//  _14 cs
+    1 LDU	//  _14 _15 cs
+    SWAP	//  _14 cs _15
+    0 NEQINT	//  _14 cs _19
+    s1 s2 XCHG	//  cs _14 _19
     THROWANYIF
-    4 LDU	//  _17 cs
-    SWAP	//  cs _17
+    4 LDU	//  _21 cs
+    SWAP	//  cs _21
     ctx_proposal_state SETGLOB
-    LDGRAMS	//  _20 cs
-    SWAP	//  cs _20
-    ctx_proposal_voted_yes SETGLOB
-    LDGRAMS	//  _22 cs
-    SWAP	//  cs _22
-    ctx_proposal_voted_no SETGLOB
     LDGRAMS	//  _24 cs
     SWAP	//  cs _24
+    ctx_proposal_voted_yes SETGLOB
+    LDGRAMS	//  _26 cs
+    SWAP	//  cs _26
+    ctx_proposal_voted_no SETGLOB
+    LDGRAMS	//  _28 cs
+    SWAP	//  cs _28
     ctx_proposal_voted_abstain SETGLOB
     LDREF	//  params_cell cs
-    LDREF	//  params_cell _29 cs
-    SWAP	//  params_cell cs _29
+    LDREF	//  params_cell _33 cs
+    SWAP	//  params_cell cs _33
     ctx_proposal_votes SETGLOB
-    LDREF	//  params_cell _31 cs
-    SWAP	//  params_cell cs _31
+    LDREF	//  params_cell _35 cs
+    SWAP	//  params_cell cs _35
     ctx_proposal_body SETGLOB
     LDREF	//  params_cell members_cell cs
     ENDS
     SWAP	//  members_cell params_cell
     CTOS	//  members_cell cs
-    256 LDU	//  members_cell _38 cs
-    SWAP	//  members_cell cs _38
+    256 LDU	//  members_cell _42 cs
+    SWAP	//  members_cell cs _42
     ctx_proposal_author SETGLOB
-    32 LDU	//  members_cell _41 cs
-    SWAP	//  members_cell cs _41
+    32 LDU	//  members_cell _45 cs
+    SWAP	//  members_cell cs _45
     ctx_proposal_created SETGLOB
-    LDGRAMS	//  members_cell _44 cs
-    SWAP	//  members_cell cs _44
-    ctx_proposal_treshold_success SETGLOB
-    LDGRAMS	//  members_cell _46 cs
-    SWAP	//  members_cell cs _46
-    ctx_proposal_treshold_failure SETGLOB
-    LDREF	//  members_cell _48 cs
+    LDGRAMS	//  members_cell _48 cs
     SWAP	//  members_cell cs _48
-    ctx_proposal_params SETGLOB
-    LDREF	//  members_cell _50 cs
+    ctx_proposal_treshold_success SETGLOB
+    LDGRAMS	//  members_cell _50 cs
     SWAP	//  members_cell cs _50
+    ctx_proposal_treshold_failure SETGLOB
+    LDREF	//  members_cell _52 cs
+    SWAP	//  members_cell cs _52
+    ctx_proposal_params SETGLOB
+    LDREF	//  members_cell _54 cs
+    SWAP	//  members_cell cs _54
     ctx_proposal_metadata SETGLOB
     ENDS
     CTOS	//  cs
-    LDGRAMS	//  _54 cs
-    SWAP	//  cs _54
-    ctx_proposal_members_shares SETGLOB
-    LDGRAMS	//  _56 cs
-    SWAP	//  cs _56
-    ctx_proposal_members_total SETGLOB
-    LDREF	//  _58 cs
+    LDGRAMS	//  _58 cs
     SWAP	//  cs _58
+    ctx_proposal_members_shares SETGLOB
+    LDGRAMS	//  _60 cs
+    SWAP	//  cs _60
+    ctx_proposal_members_total SETGLOB
+    LDREF	//  _62 cs
+    SWAP	//  cs _62
     ctx_proposal_members SETGLOB
     ENDS
   }>
@@ -437,14 +452,46 @@ PROGRAM{
     GEQ	//  _30 cs _31
     s1 s2 XCHG	//  cs _30 _31
     THROWANYIFNOT
-    1 LDI	//  _33 cs
-    SWAP	//  cs _33
+    LDGRAMS	//  proposalCost cs
+    74 PUSHINT	//  proposalCost cs _36
+    1000000000 PUSHINT	//  proposalCost cs _36 _37
+    s3 s(-1) PUXC	//  proposalCost cs _36 proposalCost _37
+    GREATER	//  proposalCost cs _36 _38
+    THROWANYIFNOT
+    74 PUSHINT	//  proposalCost cs _40
+    100000000000 PUSHINT	//  proposalCost cs _40 _41
+    s1 s3 XCHG	//  _40 cs proposalCost _41
+    LEQ	//  _40 cs _42
+    s1 s2 XCHG	//  cs _40 _42
+    THROWANYIFNOT
+    1 LDI	//  _44 cs
+    SWAP	//  cs _44
     IF:<{	//  cs
-      LDREF	//  _53 _52
+      LDREF	//  _66 _65
       NIP	//  cs
     }>	//  cs
     ENDS
-    TRUE	//  _39
+    TRUE	//  _50
+  }>
+  load_proposal_cost PROC:<{
+    //  src
+    CTOS	//  cs
+    1 LDU	//  version cs
+    74 PUSHINT	//  version cs _7
+    s0 s2 XCHG	//  _7 cs version
+    0 EQINT	//  _7 cs _9
+    s1 s2 XCHG	//  cs _7 _9
+    THROWANYIFNOT
+    LDGRAMS	//  _24 _23
+    NIP	//  cs
+    LDGRAMS	//  _26 _25
+    NIP	//  cs
+    LDGRAMS	//  _28 _27
+    NIP	//  cs
+    LDGRAMS	//  _30 _29
+    NIP	//  cs
+    LDGRAMS	//  _32 _31
+    DROP	//  _19
   }>
   load_total_shares_number PROC:<{
     //  src
@@ -1178,7 +1225,7 @@ PROGRAM{
     s2 s4 XCHG
     s2 s3 XCHG	//  _28=0 existingVote votingPower _29 _30
   }>
-  get_membership PROC:<{
+  get_member PROC:<{
     //  addr
     REWRITEVARADDR	//  sender_wc sender_addr
     72 PUSHINT	//  sender_wc sender_addr _4
@@ -1202,10 +1249,55 @@ PROGRAM{
     0 PUSHINT	//  _19=0
     DUP	//  _19=0 _20=0
   }>
-  get_members_raw PROC:<{
-    // 
+  get_members PROC:<{
+    //  after limit
+    72 PUSHINT	//  after limit _2
+    OVER	//  after limit _2 limit
+    0 GTINT	//  after limit _2 _4
+    THROWANYIFNOT
+    72 PUSHINT	//  after limit _6
+    OVER	//  after limit _6 limit
+    100 LESSINT	//  after limit _6 _8
+    THROWANYIFNOT
     load_base_data CALLDICT
-    ctx_members_dict GETGLOB	//  _1
+    SWAP	//  limit after
+    parse_work_addr CALLDICT	//  limit member
+    0 PUSHINT	//  limit member count=0
+    PUSHNULL	//  limit member count=0 members
+    UNTIL:<{
+      ctx_members_dict GETGLOB	//  limit member count members _19
+      s1 s3 XCHG
+      8 PUSHPOW2	//  limit members count member _19 _20=256
+      DICTUGETNEXT
+      NULLSWAPIFNOT2	//  limit members count cs member f
+      DUP	//  limit members count cs member f f
+      IF:<{	//  limit members count cs member f
+        s0 s2 XCHG	//  limit members count f member cs
+        LDREF	//  limit members count f member rf cs
+        ENDS
+        CTOS	//  limit members count f member cs2
+        LDGRAMS	//  limit members count f member shares cs2
+        ENDS
+        OVER	//  limit members count f member shares member
+        serialize_work_addr CALLDICT	//  limit members count f member shares _33
+        SWAP	//  limit members count f member _33 shares
+        PAIR	//  limit members count f member _32
+        s0 s4 XCHG2	//  limit member count f _32 members
+        CONS	//  limit member count f members
+        s0 s2 XCHG	//  limit member members f count
+        INC	//  limit member members f count
+        s0 s1 s3 XCHG3	//  limit members count f member
+      }>ELSE<{
+        s2 POP	//  limit members count f member
+      }>
+      SWAP	//  limit members count member f
+      NOT	//  limit members count member _37
+      s2 s4 PUSH2	//  limit members count member _37 count limit
+      GEQ	//  limit members count member _37 _38
+      OR	//  limit members count member _39
+      s1 s3 XCHG	//  limit member count members _39
+    }>	//  limit member count members
+    3 1 BLKDROP2	//  members
   }>
   supported_interfaces PROC:<{
     // 
@@ -1214,19 +1306,29 @@ PROGRAM{
   }>
   op_proposal PROC:<{
     //  member value in_msg query_id
-    s2 POP	//  member query_id in_msg
-    32 LDU	//  member query_id seq in_msg
-    LDREF	//  member query_id seq proposal in_msg
-    LDREF	//  member query_id seq proposal metadata in_msg
+    ctx_params GETGLOB	//  member value in_msg query_id _5
+    load_proposal_cost CALLDICT	//  member value in_msg query_id proposalCost
+    s0 s2 XCHG	//  member value proposalCost query_id in_msg
+    32 LDU	//  member value proposalCost query_id seq in_msg
+    LDREF	//  member value proposalCost query_id seq proposal in_msg
+    LDREF	//  member value proposalCost query_id seq proposal metadata in_msg
     ENDS
-    72 PUSHINT	//  member query_id seq proposal metadata _15
-    s2 PUSH	//  member query_id seq proposal metadata _15 proposal
-    check_proposal CALLDICT	//  member query_id seq proposal metadata _15 _16
+    72 PUSHINT	//  member value proposalCost query_id seq proposal metadata _18
+    s2 PUSH	//  member value proposalCost query_id seq proposal metadata _18 proposal
+    check_proposal CALLDICT	//  member value proposalCost query_id seq proposal metadata _18 _19
     THROWANYIFNOT
-    s4 PUSH	//  member query_id seq proposal metadata member
+    72 PUSHINT	//  member value proposalCost query_id seq proposal metadata _21
+    s5 s6 PUXC	//  member _21 proposalCost query_id seq proposal metadata proposalCost value
+    LEQ	//  member _21 proposalCost query_id seq proposal metadata _22
+    s1 s6 XCHG	//  member metadata proposalCost query_id seq proposal _21 _22
+    THROWANYIFNOT
+    s1 s0 s4 XCHG3
+    s5 PUSH	//  member query_id proposalCost seq proposal metadata member
     register_proposal CALLDICT
-    2391675301 PUSHINT	//  member query_id _19
-    SWAP	//  member _19 query_id
+    4 PUSHINT	//  member query_id proposalCost _25=4
+    RAWRESERVE
+    2391675301 PUSHINT	//  member query_id _27
+    SWAP	//  member _27 query_id
     send_empty_receipt_message CALLDICT
   }>
   op_vote PROC:<{

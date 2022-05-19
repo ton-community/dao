@@ -30,7 +30,7 @@ describe("abort", () => {
         // Create proposal
         await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,

@@ -30,7 +30,7 @@ describe("execute", () => {
         // Create proposal
         await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,
@@ -94,7 +94,7 @@ describe("execute", () => {
         // Create proposal
         await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,
@@ -149,7 +149,7 @@ describe("execute", () => {
         // Create proposal
         await sendMessage(
             executor,
-            toNano(1),
+            toNano(10),
             member1,
             createProposal(
                 0,
@@ -162,6 +162,7 @@ describe("execute", () => {
                         .storeCoins(750)
                         .storeCoins(250)
                         .storeCoins(250)
+                        .storeCoins(toNano(10))
                         .storeBit(true)
                         .storeRef(beginCell()
                             .endCell())
