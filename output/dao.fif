@@ -150,8 +150,8 @@ PROGRAM{
     serialize_work_addr CALLDICT	//  content op query_id _4
     0 PUSHINT	//  content op query_id _4 _5=0
     s4 s3 XCHG2
-    64 PUSHINT
-    s1 s3 s3 XCHG3	//  _4 _5=0 _6=64 op query_id content
+    66 PUSHINT
+    s1 s3 s3 XCHG3	//  _4 _5=0 _8 op query_id content
     send_std_message CALLDICT
   }>
   send_empty_receipt_message PROC:<{
@@ -160,8 +160,8 @@ PROGRAM{
     serialize_work_addr CALLDICT	//  query_id op _3
     0 PUSHINT	//  query_id op _3 _4=0
     2SWAP
-    64 PUSHINT
-    s0 s2 XCHG	//  _3 _4=0 _5=64 op query_id
+    66 PUSHINT
+    s0 s2 XCHG	//  _3 _4=0 _7 op query_id
     send_empty_std_message CALLDICT
   }>
   send_empty_receipt_message_remaining PROC:<{
@@ -170,8 +170,8 @@ PROGRAM{
     serialize_work_addr CALLDICT	//  query_id op _3
     0 PUSHINT	//  query_id op _3 _4=0
     2SWAP
-    7 PUSHPOW2
-    s0 s2 XCHG	//  _3 _4=0 _5=128 op query_id
+    130 PUSHINT
+    s0 s2 XCHG	//  _3 _4=0 _7 op query_id
     send_empty_std_message CALLDICT
   }>
   load_base_data PROC:<{
@@ -1118,7 +1118,7 @@ PROGRAM{
     // 
     0 PUSHINT	//  _0=0
     DUP	//  _0=0 _1=0
-    6 PUSHINT	//  _0=0 _1=0 _2=6
+    7 PUSHINT	//  _0=0 _1=0 _2=7
   }>
   get_code_version PROC:<{
     // 
@@ -1304,18 +1304,23 @@ PROGRAM{
     check_proposal CALLDICT	//  member value proposalCost query_id seq proposal metadata _18 _19
     THROWANYIFNOT
     72 PUSHINT	//  member value proposalCost query_id seq proposal metadata _21
-    s5 s6 PUXC	//  member _21 proposalCost query_id seq proposal metadata proposalCost value
-    LEQ	//  member _21 proposalCost query_id seq proposal metadata _22
-    s1 s6 XCHG	//  member metadata proposalCost query_id seq proposal _21 _22
+    s5 s6 PUSH2	//  member value proposalCost query_id seq proposal metadata _21 proposalCost value
+    LEQ	//  member value proposalCost query_id seq proposal metadata _21 _22
     THROWANYIFNOT
-    s1 s0 s4 XCHG3
-    s5 PUSH	//  member query_id proposalCost seq proposal metadata member
+    s6 PUSH	//  member value proposalCost query_id seq proposal metadata member
     register_proposal CALLDICT
-    4 PUSHINT	//  member query_id proposalCost _25=4
+    BALANCE	//  member value proposalCost query_id _27
+    UNPAIR	//  member value proposalCost query_id _43 _44
+    DROP	//  member value proposalCost query_id balance
+    s0 s3 XCHG2	//  member query_id proposalCost balance value
+    SUB	//  member query_id proposalCost _29
+    SWAP	//  member query_id _29 proposalCost
+    ADD	//  member query_id _30
+    2 PUSHINT	//  member query_id _30 _33
     RAWRESERVE
-    2391675301 PUSHINT	//  member query_id _27
-    SWAP	//  member _27 query_id
-    send_empty_receipt_message CALLDICT
+    2391675301 PUSHINT	//  member query_id _35
+    SWAP	//  member _35 query_id
+    send_empty_receipt_message_remaining CALLDICT
   }>
   op_vote PROC:<{
     //  member value in_msg query_id

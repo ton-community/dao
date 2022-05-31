@@ -43,7 +43,7 @@ describe("proposals", () => {
             )
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 128 + 2,
             to: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
             value: '0'
         }]);
@@ -97,7 +97,7 @@ describe("proposals", () => {
             )
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 128 + 2,
             to: 'kQBStTCAtTy3Q2iGrVompkIhu23dPgBYEvle14f8XVhZTkkC',
             value: '0'
         }]);

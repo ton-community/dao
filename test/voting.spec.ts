@@ -51,7 +51,7 @@ describe("voting", () => {
             )
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 128 + 2,
             to: member1.toFriendly({ testOnly: true }),
             value: '0'
         }]);
@@ -64,7 +64,7 @@ describe("voting", () => {
             createVote(0, 'yes')
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 64 + 2,
             to: member1.toFriendly({ testOnly: true }),
             value: '0'
         }]);
@@ -75,7 +75,7 @@ describe("voting", () => {
             createVote(0, 'yes')
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 64 + 2,
             to: member2.toFriendly({ testOnly: true }),
             value: '0'
         }]);
@@ -100,7 +100,7 @@ describe("voting", () => {
             createVote(0, 'yes')
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 64 + 2,
             to: member3.toFriendly({ testOnly: true }),
             value: '0'
         }]);
@@ -163,7 +163,7 @@ describe("voting", () => {
             )
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 128 + 2,
             to: member1.toFriendly({ testOnly: true }),
             value: '0'
         }]);
@@ -176,7 +176,7 @@ describe("voting", () => {
             createVote(0, 'no')
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 64 + 2,
             to: member2.toFriendly({ testOnly: true }),
             value: '0'
         }]);
@@ -239,7 +239,7 @@ describe("voting", () => {
             )
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 128 + 2,
             to: member1.toFriendly({ testOnly: true }),
             value: '0'
         }]);
@@ -252,7 +252,7 @@ describe("voting", () => {
             createVote(0, 'abstain')
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 64 + 2,
             to: member2.toFriendly({ testOnly: true }),
             value: '0'
         }]);
@@ -277,7 +277,7 @@ describe("voting", () => {
             createVote(0, 'abstain')
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 64 + 2,
             to: member3.toFriendly({ testOnly: true }),
             value: '0'
         }]);
@@ -340,7 +340,7 @@ describe("voting", () => {
             )
         );
         expect(res).toMatchObject([{
-            mode: 64,
+            mode: 128 + 2,
             to: member1.toFriendly({ testOnly: true }),
             value: '0'
         }]);

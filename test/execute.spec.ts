@@ -63,7 +63,7 @@ describe("execute", () => {
         );
         expect(res).toMatchObject([
             {
-                mode: 64,
+                mode: 64 + 2,
                 to: member1.toFriendly({ testOnly: true }),
                 value: '0'
             },
@@ -131,7 +131,7 @@ describe("execute", () => {
         );
         expect(res).toMatchObject([
             {
-                mode: 64,
+                mode: 64 + 2,
                 to: member1.toFriendly({ testOnly: true }),
                 value: '0'
             }
@@ -206,7 +206,7 @@ describe("execute", () => {
         );
         expect(res).toMatchObject([
             {
-                mode: 64,
+                mode: 64 + 2,
                 to: member1.toFriendly({ testOnly: true }),
                 value: '0'
             }

@@ -15,8 +15,9 @@
     register_proposal(seq, proposal, metadata, member);
 
     ;; Receipt
-    raw_reserve(proposalCost, 4); ;; Reserve existing balance + proposal cost
-    send_empty_receipt_message(member, op::proposal::ok(), query_id);
+    var [balance, extra] = get_balance();
+    raw_reserve(balance - value + proposalCost, 0 + 2); ;; Reserve existing balance + proposal cost
+    send_empty_receipt_message_remaining(member, op::proposal::ok(), query_id);
 }
 
 () op_vote(int member, int value, slice in_msg, int query_id) impure {
