@@ -16,7 +16,7 @@ _ check_params(cell src) {
 
     ;; Proposal cost
     var proposalCost = cs~load_coins();
-    throw_unless(error::internal_error(), proposalCost > coins::1());
+    throw_unless(error::internal_error(), proposalCost >= coins::1());
     throw_unless(error::internal_error(), proposalCost <= coins::100());
 
     ;; Check metadata

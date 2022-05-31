@@ -1,5 +1,5 @@
 _ get_version() method_id {
-    return (0, 0, 5);
+    return (0, 0, 6);
 }
 
 _ get_code_version() method_id {

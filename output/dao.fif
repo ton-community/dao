@@ -456,7 +456,7 @@ PROGRAM{
     74 PUSHINT	//  proposalCost cs _36
     1000000000 PUSHINT	//  proposalCost cs _36 _37
     s3 s(-1) PUXC	//  proposalCost cs _36 proposalCost _37
-    GREATER	//  proposalCost cs _36 _38
+    GEQ	//  proposalCost cs _36 _38
     THROWANYIFNOT
     74 PUSHINT	//  proposalCost cs _40
     100000000000 PUSHINT	//  proposalCost cs _40 _41
@@ -1118,7 +1118,7 @@ PROGRAM{
     // 
     0 PUSHINT	//  _0=0
     DUP	//  _0=0 _1=0
-    5 PUSHINT	//  _0=0 _1=0 _2=5
+    6 PUSHINT	//  _0=0 _1=0 _2=6
   }>
   get_code_version PROC:<{
     // 
