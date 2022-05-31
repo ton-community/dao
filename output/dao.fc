@@ -1043,7 +1043,7 @@ _ get_members(slice after, int limit) method_id {
 _ supported_interfaces() method_id {
     return (
         123515602279859691144772641439386770278, ;; org.ton.introspection.v0
-        122913010600626208305166324626056938280 ;; com.tonwhales.dao.v0
+        235309305202366707147534501513037963513 ;; com.tonwhales.dao.v1
     );
 }
 
