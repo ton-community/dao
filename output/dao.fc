@@ -446,10 +446,11 @@ _ load_metadata(cell src) {
     
     var version = cs~load_uint(1);
     throw_unless(error::internal_error(), version == 0);
-    cs~load_coins();
-    cs~load_coins();
-    cs~load_coins();
-    cs~load_coins();
+    cs~load_coins(); ;; Allocated
+    cs~load_coins(); ;; Base
+    cs~load_coins(); ;; Success
+    cs~load_coins(); ;; Failure
+    cs~load_coins(); ;; Proposal Price
 
     ;; Check metadata
     if (cs~load_int(1)) {

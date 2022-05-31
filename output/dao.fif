@@ -535,22 +535,24 @@ PROGRAM{
     0 EQINT	//  _7 cs _9
     s1 s2 XCHG	//  cs _7 _9
     THROWANYIFNOT
-    LDGRAMS	//  _28 _27
-    NIP	//  cs
     LDGRAMS	//  _30 _29
     NIP	//  cs
     LDGRAMS	//  _32 _31
     NIP	//  cs
     LDGRAMS	//  _34 _33
     NIP	//  cs
-    1 LDI	//  _19 cs
-    SWAP	//  cs _19
+    LDGRAMS	//  _36 _35
+    NIP	//  cs
+    LDGRAMS	//  _38 _37
+    NIP	//  cs
+    1 LDI	//  _21 cs
+    SWAP	//  cs _21
     IFJMP:<{	//  cs
-      LDREF	//  _38 _37
-      DROP	//  _22
+      LDREF	//  _42 _41
+      DROP	//  _24
     }>	//  cs
     DROP	// 
-    PUSHNULL	//  _24
+    PUSHNULL	//  _26
   }>
   check_proposal PROC:<{
     //  proposal
