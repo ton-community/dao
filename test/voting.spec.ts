@@ -60,6 +60,17 @@ describe("voting", () => {
         res = await sendMessage(
             executor,
             toNano(1),
+            member1,
+            createVote(0, 'yes')
+        );
+        expect(res).toMatchObject([{
+            mode: 64,
+            to: member1.toFriendly({ testOnly: true }),
+            value: '0'
+        }]);
+        res = await sendMessage(
+            executor,
+            toNano(1),
             member2,
             createVote(0, 'yes')
         );
@@ -174,7 +185,7 @@ describe("voting", () => {
         let proposal = await getProposal(executor, 0);
         expect(proposal).toMatchObject({
             state: 'failure',
-            votedYes: 1000,
+            votedYes: 0,
             votedNo: 1000, // Reached treshold
             votedAbstain: 0,
             author: member1.toFriendly({ testOnly: true }),
@@ -250,7 +261,7 @@ describe("voting", () => {
         let proposal = await getProposal(executor, 0);
         expect(proposal).toMatchObject({
             state: 'pending',
-            votedYes: 1000,
+            votedYes: 0,
             votedNo: 0,
             votedAbstain: 1000,
             author: member1.toFriendly({ testOnly: true }),
@@ -275,7 +286,7 @@ describe("voting", () => {
         proposal = await getProposal(executor, 0);
         expect(proposal).toMatchObject({
             state: 'failure',
-            votedYes: 1000,
+            votedYes: 0,
             votedNo: 0,
             votedAbstain: 2000,
             author: member1.toFriendly({ testOnly: true }),
@@ -288,69 +299,6 @@ describe("voting", () => {
             executor,
             toNano(1),
             member4,
-            createVote(0, 'abstain')
-        )).rejects.toThrowError('Error 72');
-    });
-
-    it("should throw on author vote", async () => {
-
-        // Create contract
-        const executor = await SmartContract.fromCell(
-            createCode(),
-            createData({
-                totalShares: 5000,
-                baseTreshold: 100,
-                failureTreshold: 25,
-                successTreshold: 75,
-                members: [
-                    { address: member1, shares: 1000 },
-                    { address: member2, shares: 1000 },
-                    { address: member3, shares: 1000 },
-                    { address: member4, shares: 1000 },
-                ]
-            })
-        );
-
-        // Create proposal
-        let res = await sendMessage(
-            executor,
-            toNano(10),
-            member1,
-            createProposal(
-                0,
-                beginCell()
-                    .storeUint(1225918510, 32) // Transaction proposal
-                    .storeAddress(outsider) // Target
-                    .storeCoins(toNano(10)) // Value
-                    .storeBit(false) // No state init
-                    .storeBit(false) // No payload
-                    .endCell(),
-                createMetadata()
-            )
-        );
-        expect(res).toMatchObject([{
-            mode: 64,
-            to: member1.toFriendly({ testOnly: true }),
-            value: '0'
-        }]);
-
-        // Vote
-        await expect(sendMessage(
-            executor,
-            toNano(1),
-            member1,
-            createVote(0, 'yes')
-        )).rejects.toThrowError('Error 72');
-        await expect(sendMessage(
-            executor,
-            toNano(1),
-            member1,
-            createVote(0, 'no')
-        )).rejects.toThrowError('Error 72');
-        await expect(sendMessage(
-            executor,
-            toNano(1),
-            member1,
             createVote(0, 'abstain')
         )).rejects.toThrowError('Error 72');
     });
@@ -397,20 +345,15 @@ describe("voting", () => {
             value: '0'
         }]);
 
-        // Vote
-        res = await sendMessage(
+        // Create initial vote
+        await sendMessage(
             executor,
             toNano(1),
-            member2,
-            createVote(0, 'abstain')
+            member1,
+            createVote(0, 'yes')
         );
-        expect(res).toMatchObject([{
-            mode: 64,
-            to: member2.toFriendly({ testOnly: true }),
-            value: '0'
-        }]);
 
-        // Double Vote
+        // Vote
         await expect(sendMessage(
             executor,
             toNano(1),
@@ -468,6 +411,15 @@ describe("voting", () => {
             )
         );
 
+        // Vote
+        await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createVote(0, 'yes')
+        );
+
+        // Get proposal state
         let vote = await executor.invokeGetMethod('get_proposal_vote', [{
             type: 'int',
             value: '0'
@@ -476,7 +428,7 @@ describe("voting", () => {
             value: beginCell().storeAddress(member1).endCell().toBoc({ idx: false }).toString('base64')
         }]);
 
-        
+
         // Version
         expect((vote.result[0] as BN).toString(10)).toBe('0');
         // Vote YES

@@ -45,6 +45,14 @@ describe("abort", () => {
             )
         );
 
+        // Vote
+        await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createVote(0, 'yes')
+        );
+
         // Create proposal
         let res = await sendMessage(
             executor,

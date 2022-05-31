@@ -12,23 +12,17 @@
     throw_unless(error::invalid_message(), seq == ctx_proposals_seq);
 
     ;; Resolve tresholds
-    int state = state::pending();
     var (treshold_base, treshold_success_src, treshold_failure_src) = load_voting_params(ctx_params);
     var treshold_success = (ctx_members_shares * treshold_success_src) / treshold_base;
     var treshold_failure = (ctx_members_shares * treshold_failure_src) / treshold_base;
-
-    ;; Check if auto-success
-    if (shares >= treshold_success) {
-        state = state::success();
-    }
     
     ;;
     ;; Prepare proposal data
     ;;
 
     ctx_proposal_id = seq;
-    ctx_proposal_state = state;
-    ctx_proposal_voted_yes = shares;
+    ctx_proposal_state = state::pending();
+    ctx_proposal_voted_yes = 0;
     ctx_proposal_voted_no = 0;
     ctx_proposal_voted_abstain = 0;
 
@@ -38,9 +32,7 @@
     ctx_proposal_treshold_failure = treshold_failure;
     ctx_proposal_metadata = metadata;
 
-    cell votes = null();
-    votes~udict_set_builder(256, member, begin_cell().store_uint(vote::yes(), 2));
-    ctx_proposal_votes = votes;
+    ctx_proposal_votes = null();
     ctx_proposal_body = proposal;
 
     ctx_proposal_members = ctx_members_dict;

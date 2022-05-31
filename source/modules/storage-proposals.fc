@@ -44,7 +44,7 @@ global cell ctx_proposal_params;
     ctx_proposal_voted_no = cs~load_coins();
     ctx_proposal_voted_abstain = cs~load_coins();
     cell params_cell = cs~load_ref();
-    ctx_proposal_votes = cs~load_ref();
+    ctx_proposal_votes = cs~load_dict();
     ctx_proposal_body = cs~load_ref();
     cell members_cell = cs~load_ref();
     cs.end_parse();
@@ -84,7 +84,7 @@ global cell ctx_proposal_params;
             .store_ref(ctx_proposal_params)
             .store_ref(ctx_proposal_metadata)
         .end_cell())
-        .store_ref(ctx_proposal_votes)
+        .store_dict(ctx_proposal_votes)
         .store_ref(ctx_proposal_body)
         .store_ref(begin_cell()
             .store_coins(ctx_proposal_members_shares)

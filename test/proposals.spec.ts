@@ -56,7 +56,7 @@ describe("proposals", () => {
         let proposal = await getProposal(executor, 0);
         expect(proposal).toMatchObject({
             state: 'pending',
-            votedYes: 1000,
+            votedYes: 0,
             votedNo: 0,
             votedAbstain: 0,
             author: member1.toFriendly({ testOnly: true }),
@@ -65,7 +65,7 @@ describe("proposals", () => {
         });
     });
 
-    it("should auto accept proposal if have enought voting power", async () => {
+    it("should NOT auto accept proposal if have enought voting power", async () => {
         const executor = await SmartContract.fromCell(
             createCode(),
             createData({
@@ -109,8 +109,8 @@ describe("proposals", () => {
         // Proposal
         let proposal = await getProposal(executor, 0);
         expect(proposal).toMatchObject({
-            state: 'success',
-            votedYes: 5000,
+            state: 'pending',
+            votedYes: 0,
             votedNo: 0,
             votedAbstain: 0,
             author: member1.toFriendly({ testOnly: true }),

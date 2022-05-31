@@ -332,7 +332,7 @@ PROGRAM{
     SWAP	//  cs _28
     ctx_proposal_voted_abstain SETGLOB
     LDREF	//  params_cell cs
-    LDREF	//  params_cell _33 cs
+    LDDICT	//  params_cell _33 cs
     SWAP	//  params_cell cs _33
     ctx_proposal_votes SETGLOB
     LDREF	//  params_cell _35 cs
@@ -411,7 +411,7 @@ PROGRAM{
     ctx_proposal_voted_abstain GETGLOB	//  _8 _9 _10 _26 _37 _38
     STGRAMS	//  _8 _9 _10 _26 _39
     STREF	//  _8 _9 _10 _40
-    STREF	//  _8 _9 _41
+    STDICT	//  _8 _9 _41
     STREF	//  _8 _42
     STREF	//  _43
     ENDC	//  container
@@ -682,71 +682,55 @@ PROGRAM{
     OVER	//  seq proposal metadata member _5 member
     load_shares CALLDICT	//  seq proposal metadata member shares
     77 PUSHINT	//  seq proposal metadata member shares _7
-    OVER	//  seq proposal metadata member shares _7 shares
-    0 GTINT	//  seq proposal metadata member shares _7 _9
+    SWAP	//  seq proposal metadata member _7 shares
+    0 GTINT	//  seq proposal metadata member _7 _9
     THROWANYIFNOT
-    72 PUSHINT	//  seq proposal metadata member shares _11
-    ctx_proposals_seq GETGLOB	//  seq proposal metadata member shares _11 _12
-    s6 s(-1) PUXC	//  seq proposal metadata member shares _11 seq _12
-    EQUAL	//  seq proposal metadata member shares _11 _13
+    72 PUSHINT	//  seq proposal metadata member _11
+    ctx_proposals_seq GETGLOB	//  seq proposal metadata member _11 _12
+    s5 s(-1) PUXC	//  seq proposal metadata member _11 seq _12
+    EQUAL	//  seq proposal metadata member _11 _13
     THROWANYIFNOT
-    0 PUSHINT	//  seq proposal metadata member shares state
-    ctx_params GETGLOB	//  seq proposal metadata member shares state _20
-    load_voting_params CALLDICT	//  seq proposal metadata member shares state treshold_base treshold_success_src treshold_failure_src
-    ctx_members_shares GETGLOB	//  seq proposal metadata member shares state treshold_base treshold_success_src treshold_failure_src _23
-    ROT	//  seq proposal metadata member shares state treshold_base treshold_failure_src _23 treshold_success_src
-    MUL	//  seq proposal metadata member shares state treshold_base treshold_failure_src _24
-    s2 PUSH	//  seq proposal metadata member shares state treshold_base treshold_failure_src _24 treshold_base
-    DIV	//  seq proposal metadata member shares state treshold_base treshold_failure_src treshold_success
-    ctx_members_shares GETGLOB	//  seq proposal metadata member shares state treshold_base treshold_failure_src treshold_success _27
-    ROT	//  seq proposal metadata member shares state treshold_base treshold_success _27 treshold_failure_src
-    MUL	//  seq proposal metadata member shares state treshold_base treshold_success _28
-    ROT	//  seq proposal metadata member shares state treshold_success _28 treshold_base
-    DIV	//  seq proposal metadata member shares state treshold_success treshold_failure
-    s3 s1 PUSH2	//  seq proposal metadata member shares state treshold_success treshold_failure shares treshold_success
-    GEQ	//  seq proposal metadata member shares state treshold_success treshold_failure _30
-    IF:<{	//  seq proposal metadata member shares state treshold_success treshold_failure
-      s2 POP	//  seq proposal metadata member shares treshold_failure treshold_success
-      1 PUSHINT	//  seq proposal metadata member shares treshold_failure treshold_success state
-      s0 s2 XCHG	//  seq proposal metadata member shares state treshold_success treshold_failure
-    }>	//  seq proposal metadata member shares state treshold_success treshold_failure
-    s7 PUSH	//  seq proposal metadata member shares state treshold_success treshold_failure seq
+    ctx_params GETGLOB	//  seq proposal metadata member _18
+    load_voting_params CALLDICT	//  seq proposal metadata member treshold_base treshold_success_src treshold_failure_src
+    ctx_members_shares GETGLOB	//  seq proposal metadata member treshold_base treshold_success_src treshold_failure_src _21
+    ROT	//  seq proposal metadata member treshold_base treshold_failure_src _21 treshold_success_src
+    MUL	//  seq proposal metadata member treshold_base treshold_failure_src _22
+    s2 PUSH	//  seq proposal metadata member treshold_base treshold_failure_src _22 treshold_base
+    DIV	//  seq proposal metadata member treshold_base treshold_failure_src treshold_success
+    ctx_members_shares GETGLOB	//  seq proposal metadata member treshold_base treshold_failure_src treshold_success _25
+    ROT	//  seq proposal metadata member treshold_base treshold_success _25 treshold_failure_src
+    MUL	//  seq proposal metadata member treshold_base treshold_success _26
+    ROT	//  seq proposal metadata member treshold_success _26 treshold_base
+    DIV	//  seq proposal metadata member treshold_success treshold_failure
+    s5 PUSH	//  seq proposal metadata member treshold_success treshold_failure seq
     ctx_proposal_id SETGLOB
-    s0 s2 XCHG	//  seq proposal metadata member shares treshold_failure treshold_success state
+    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _28
     ctx_proposal_state SETGLOB
-    s0 s2 XCHG	//  seq proposal metadata member treshold_success treshold_failure shares
+    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _29=0
     ctx_proposal_voted_yes SETGLOB
-    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _32=0
+    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _30=0
     ctx_proposal_voted_no SETGLOB
-    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _33=0
+    0 PUSHINT	//  seq proposal metadata member treshold_success treshold_failure _31=0
     ctx_proposal_voted_abstain SETGLOB
-    s2 PUSH	//  seq proposal metadata member treshold_success treshold_failure member
+    s0 s2 XCHG	//  seq proposal metadata treshold_failure treshold_success member
     ctx_proposal_author SETGLOB
-    NOW	//  seq proposal metadata member treshold_success treshold_failure _34
+    NOW	//  seq proposal metadata treshold_failure treshold_success _32
     ctx_proposal_created SETGLOB
-    SWAP	//  seq proposal metadata member treshold_failure treshold_success
     ctx_proposal_treshold_success SETGLOB
     ctx_proposal_treshold_failure SETGLOB
-    SWAP	//  seq proposal member metadata
     ctx_proposal_metadata SETGLOB
-    PUSHNULL	//  seq proposal member votes
-    1 PUSHINT	//  seq proposal member votes _38
-    NEWC	//  seq proposal member votes _38 _39
-    2 STU	//  seq proposal member votes _41
-    -ROT
-    8 PUSHPOW2	//  seq proposal _41 member votes _42=256
-    DICTUSETB	//  seq proposal votes
+    PUSHNULL	//  seq proposal _33
     ctx_proposal_votes SETGLOB
     ctx_proposal_body SETGLOB
-    ctx_members_dict GETGLOB	//  seq _44
+    ctx_members_dict GETGLOB	//  seq _34
     ctx_proposal_members SETGLOB
-    ctx_members_total GETGLOB	//  seq _45
+    ctx_members_total GETGLOB	//  seq _35
     ctx_proposal_members_total SETGLOB
-    ctx_members_shares GETGLOB	//  seq _46
+    ctx_members_shares GETGLOB	//  seq _36
     ctx_proposal_members_shares SETGLOB
-    ctx_params GETGLOB	//  seq _47
+    ctx_params GETGLOB	//  seq _37
     ctx_proposal_params SETGLOB
-    INC	//  _49
+    INC	//  _39
     ctx_proposals_seq SETGLOB
     store_proposal CALLDICT
     store_base_data CALLDICT

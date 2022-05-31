@@ -45,7 +45,16 @@ describe("execute", () => {
             )
         );
 
-        // Create proposal
+        // Vote
+        await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createVote(0, 'yes')
+        );
+
+
+        // Execute proposal
         let res = await sendMessage(
             executor,
             toNano(1),
@@ -105,7 +114,15 @@ describe("execute", () => {
             )
         );
 
-        // Create proposal
+        // Vote
+        await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createVote(0, 'yes')
+        );
+
+        // Execute proposal
         let res = await sendMessage(
             executor,
             toNano(1),
@@ -170,6 +187,14 @@ describe("execute", () => {
                     .endCell(),
                 createMetadata()
             )
+        );
+
+        // Vote
+        await sendMessage(
+            executor,
+            toNano(1),
+            member1,
+            createVote(0, 'yes')
         );
 
         // Create proposal
